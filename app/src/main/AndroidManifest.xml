@@ -14,6 +14,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VolunHub">
+<!--        <meta-data-->
+<!--            android:name="CLOUDINARY_CLOUD_NAME"-->
+<!--            android:value="dw1ccoqrq" />-->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -32,7 +35,7 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".organization.OrgHomeActivity"
+            android:name=".org.OrgHomeActivity"
             android:exported="false">
         </activity>
         <activity

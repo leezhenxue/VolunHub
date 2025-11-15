@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/org_nav_graph"
+    app:startDestination="@+id/org_nav_dashboard">
+
+    <fragment
+        android:id="@+id/org_nav_dashboard"
+        android:name="com.example.volunhub.org.fragments.OrgDashboardFragment"
+        android:label="Dashboard"
+        tools:layout="@layout/fragment_org_dashboard" />
+
+    <fragment
+        android:id="@+id/org_nav_service"
+        android:name="com.example.volunhub.org.fragments.service.OrgServiceFragment"
+        android:label="My Services"
+        tools:layout="@layout/fragment_org_service" />
+
+    <fragment
+        android:id="@+id/org_nav_profile"
+        android:name="com.example.volunhub.org.fragments.OrgProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_org_profile" />
+</navigation>
