@@ -2,13 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
+    id("androidx.navigation.safeargs")
 }
 
 android {
     namespace = "com.example.volunhub"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.volunhub"
@@ -64,4 +63,6 @@ dependencies {
     // Java versions of Jetpack Navigation
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

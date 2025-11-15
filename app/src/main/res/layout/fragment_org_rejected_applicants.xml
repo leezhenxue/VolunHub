@@ -4,14 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".org.fragments.service.OrgServiceFragment">
+    tools:context=".org.fragments.service.OrgRejectedApplicantsFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_org_services"
+        android:id="@+id/recycler_rejected_applicants"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:listitem="@layout/item_org_service" />
+        tools:listitem="@layout/item_applicant" />
+
+    <TextView
+        android:id="@+id/text_empty_rejected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No rejected applicants."
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,6 +21,17 @@
         android:id="@+id/student_nav_profile"
         android:name="com.example.volunhub.student.fragments.StudentProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_student_profile" />
+        tools:layout="@layout/fragment_student_profile" >
+
+        <action
+            android:id="@+id/action_student_profile_to_edit_profile"
+            app:destination="@id/student_edit_profile" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/student_edit_profile"
+        android:name="com.example.volunhub.student.fragments.StudentEditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_student_edit_profile" />
 
 </navigation>
