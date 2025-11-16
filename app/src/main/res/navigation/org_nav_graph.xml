@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/org_nav_graph"
+    app:startDestination="@+id/org_nav_dashboard">
+
+    <fragment
+        android:id="@+id/org_nav_dashboard"
+        android:name="com.example.volunhub.org.fragments.OrgDashboardFragment"
+        android:label="Dashboard"
+        tools:layout="@layout/fragment_org_dashboard" >
+
+        <action
+            android:id="@+id/action_org_dashboard_to_post_service"
+            app:destination="@id/org_post_service" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/org_post_service"
+        android:name="com.example.volunhub.org.fragments.service.OrgPostServiceFragment"
+        android:label="Post New Service"
+        tools:layout="@layout/fragment_org_post_service" />
+
+    <fragment
+        android:id="@+id/org_nav_service"
+        android:name="com.example.volunhub.org.fragments.service.OrgServiceFragment"
+        android:label="My Services"
+        tools:layout="@layout/fragment_org_service" >
+        <!-- This action ID name is from your file -->
+        <action
+            android:id="@+id/action_org_service_to_manage_service"
+            app:destination="@id/org_manage_service" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/org_nav_profile"
+        android:name="com.example.volunhub.org.fragments.OrgProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_org_profile" >
+
+        <action
+            android:id="@+id/action_org_profile_to_edit_profile"
+            app:destination="@id/org_edit_profile" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/org_edit_profile"
+        android:name="com.example.volunhub.org.fragments.OrgEditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_org_edit_profile" />
+
+    <fragment
+        android:id="@+id/org_manage_service"
+        android:name="com.example.volunhub.org.fragments.service.OrgManageServiceFragment"
+        android:label="Manage Service"
+        tools:layout="@layout/fragment_org_manage_service" >
+        <argument
+            android:name="serviceId"
+            app:argType="string" />
+
+        <!-- 1.  ADD THIS ACTION  -->
+        <!-- This creates the "road" from the Manage page to the Profile page -->
+        <action
+            android:id="@+id/action_manage_service_to_view_student"
+            app:destination="@id/org_view_student_profile" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/org_view_student_profile"
+        android:name="com.example.volunhub.org.fragments.service.ViewStudentProfileFragment"
+        android:label="Student Profile"
+        tools:layout="@layout/fragment_view_student_profile" >
+
+        <!-- 2.  ADD THIS ARGUMENT  -->
+        <!-- This tells the fragment to expect a studentId -->
+        <argument
+            android:name="studentId"
+            app:argType="string" />
+    </fragment>
+
+</navigation>

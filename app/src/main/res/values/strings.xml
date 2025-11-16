@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">VolunHub</string>
+    <string name="login_email_hint">Enter your email to receive a password reset link.</string>
 </resources>

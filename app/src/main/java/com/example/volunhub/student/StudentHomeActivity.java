@@ -2,45 +2,70 @@ package com.example.volunhub.student;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.util.Log;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
+import com.example.volunhub.MainActivity;
 import com.example.volunhub.R;
-import com.example.volunhub.auth.LoginActivity;
+import com.example.volunhub.databinding.ActivityStudentHomeBinding;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class StudentHomeActivity extends AppCompatActivity {
 
-    // Declare Firebase Auth
+    private static final String TAG = "StudentHomeActivity";
     private FirebaseAuth mAuth;
-
-    // Declare UI elements
-    private Button buttonStudentHomeLogout;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_student_home);
-        buttonStudentHomeLogout = findViewById(R.id.button_student_home_logout);
+        ActivityStudentHomeBinding binding = ActivityStudentHomeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        // Initialize Firebase Auth
+        BottomNavigationView studentBottomNav = binding.studentBottomNav;
+        Toolbar toolbar = binding.toolbar;
         mAuth = FirebaseAuth.getInstance();
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.student_nav_host_fragment);
 
-        buttonStudentHomeLogout.setOnClickListener(v -> {
-            // Sign the user out of Firebase
-            mAuth.signOut();
+        if (navHostFragment != null) {
+            navController = navHostFragment.getNavController();
+            setSupportActionBar(toolbar);
 
-            // Send the user back to the LoginActivity
-            goToLogin();
-        });
+            Set<Integer> topLevelDestinations = new HashSet<>();
+            topLevelDestinations.add(R.id.student_nav_home);
+            topLevelDestinations.add(R.id.student_nav_application);
+            topLevelDestinations.add(R.id.student_nav_profile);
+
+            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations).build();
+            NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
+            NavigationUI.setupWithNavController(studentBottomNav, navController);
+        } else {
+            Log.e(TAG, "ERROR: NavHostFragment not found in layout!");
+        }
     }
 
-    private void goToLogin() {
-        Intent intent = new Intent(StudentHomeActivity.this, LoginActivity.class);
-        // These flags are important for a clean logout
+    public void returnToMain() {
+        if (mAuth != null) {
+            mAuth.signOut();
+        }
+        Intent intent = new Intent(StudentHomeActivity.this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        finish(); // Destroy this activity
+        finish();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return navController.navigateUp() || super.onSupportNavigateUp();
     }
 }

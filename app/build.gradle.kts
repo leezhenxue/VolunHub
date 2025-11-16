@@ -2,13 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
+    id("androidx.navigation.safeargs")
 }
 
 android {
     namespace = "com.example.volunhub"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.volunhub"
@@ -33,6 +32,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -41,6 +43,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
+    implementation(libs.fragment)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -56,5 +59,10 @@ dependencies {
     // For Firestore Database (To store jobs, users, etc.)
     implementation("com.google.firebase:firebase-firestore")
 
-    implementation("com.cloudinary:cloudinary-android:2.4.0")
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+    // Java versions of Jetpack Navigation
+    implementation("androidx.navigation:navigation-fragment:2.7.7")
+    implementation("androidx.navigation:navigation-ui:2.7.7")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }
