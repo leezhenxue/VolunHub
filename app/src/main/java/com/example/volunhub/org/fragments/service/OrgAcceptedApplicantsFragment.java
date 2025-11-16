@@ -11,26 +11,23 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.volunhub.R;
-import com.example.volunhub.databinding.FragmentOrgAcceptedApplicantsBinding; // Changed
+import com.example.volunhub.databinding.FragmentOrgAcceptedApplicantsBinding;
 import com.example.volunhub.models.Applicant;
 import com.example.volunhub.org.ApplicantAdapter;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrgAcceptedApplicantsFragment extends Fragment {
 
-    private static final String TAG = "OrgAcceptedFragment"; // Changed
-    private FragmentOrgAcceptedApplicantsBinding binding; // Changed
+    private static final String TAG = "OrgAcceptedFragment";
+    private FragmentOrgAcceptedApplicantsBinding binding;
     private FirebaseFirestore db;
     private ApplicantAdapter adapter;
-    private List<Applicant> applicantList = new ArrayList<>();
+    final private List<Applicant> applicantList = new ArrayList<>();
     private String serviceId;
 
     public OrgAcceptedApplicantsFragment() {}
@@ -114,7 +111,9 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
                     List<Task<com.google.firebase.firestore.DocumentSnapshot>> userTasks = new ArrayList<>();
                     for (com.google.firebase.firestore.DocumentSnapshot appDoc : applicationSnapshots.getDocuments()) {
                         String studentId = appDoc.getString("studentId");
-                        userTasks.add(db.collection("users").document(studentId).get());
+                        if (studentId != null) {
+                            userTasks.add(db.collection("users").document(studentId).get());
+                        }
                     }
 
                     Tasks.whenAllSuccess(userTasks).addOnSuccessListener(userSnapshots -> {
@@ -138,9 +137,9 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
                         adapter.notifyDataSetChanged();
                     });
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading accepted applicants", e);
-                });
+                .addOnFailureListener(e ->
+                    Log.e(TAG, "Error loading accepted applicants", e)
+                );
     }
 
     @Override

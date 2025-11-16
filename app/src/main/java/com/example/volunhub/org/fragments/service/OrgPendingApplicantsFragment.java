@@ -14,19 +14,14 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation; // <-- Import this
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgPendingApplicantsBinding;
 import com.example.volunhub.models.Applicant;
 import com.example.volunhub.org.ApplicantAdapter;
-// --- 1. IMPORT THE PARENT FRAGMENT'S DIRECTIONS CLASS ---
-import com.example.volunhub.org.fragments.service.OrgManageServiceFragmentDirections;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
@@ -38,7 +33,7 @@ public class OrgPendingApplicantsFragment extends Fragment {
     private FragmentOrgPendingApplicantsBinding binding;
     private FirebaseFirestore db;
     private ApplicantAdapter adapter;
-    private List<Applicant> applicantList = new ArrayList<>();
+    final private List<Applicant> applicantList = new ArrayList<>();
     private String serviceId;
 
     public OrgPendingApplicantsFragment() {}
@@ -163,7 +158,9 @@ public class OrgPendingApplicantsFragment extends Fragment {
 
                     for (com.google.firebase.firestore.DocumentSnapshot appDoc : applicationSnapshots.getDocuments()) {
                         String studentId = appDoc.getString("studentId");
-                        userTasks.add(db.collection("users").document(studentId).get());
+                        if (studentId != null) {
+                            userTasks.add(db.collection("users").document(studentId).get());
+                        }
                     }
 
                     Tasks.whenAllSuccess(userTasks).addOnSuccessListener(userSnapshots -> {
@@ -187,9 +184,9 @@ public class OrgPendingApplicantsFragment extends Fragment {
                         adapter.notifyDataSetChanged();
                     });
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading pending applicants", e);
-                });
+                .addOnFailureListener(e ->
+                    Log.e(TAG, "Error loading pending applicants", e)
+                );
     }
 
     @Override

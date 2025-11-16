@@ -1,6 +1,5 @@
 package com.example.volunhub.org;
 
-import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -26,8 +25,6 @@ public class OrgManageViewPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         // --- 3. Pass the serviceId to each fragment ---
         switch (position) {
-            case 0:
-                return OrgPendingApplicantsFragment.newInstance(serviceId);
             case 1:
                 return OrgAcceptedApplicantsFragment.newInstance(serviceId);
             case 2:

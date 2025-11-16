@@ -9,7 +9,12 @@
         android:id="@+id/student_nav_home"
         android:name="com.example.volunhub.student.fragments.StudentHomeFragment"
         android:label="Home"
-        tools:layout="@layout/fragment_student_home" />
+        tools:layout="@layout/fragment_student_home">
+        <action
+            android:id="@+id/action_home_to_service_detail"
+            app:destination="@id/student_service_detail" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/student_nav_application"
@@ -33,5 +38,16 @@
         android:name="com.example.volunhub.student.fragments.StudentEditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_student_edit_profile" />
+
+    <fragment
+        android:id="@+id/student_service_detail"
+        android:name="com.example.volunhub.student.fragments.StudentServiceDetailFragment"
+        android:label="Service Details"
+        tools:layout="@layout/fragment_student_service_detail">
+
+        <argument
+            android:name="serviceId"
+            app:argType="string" />
+    </fragment>
 
 </navigation>

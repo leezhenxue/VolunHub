@@ -21,7 +21,6 @@ public class OrgManageServiceFragment extends Fragment {
     private static final String TAG = "OrgManageService";
     private FirebaseFirestore db;
     private FragmentOrgManageServiceBinding binding;
-    private OrgManageViewPagerAdapter viewPagerAdapter;
     private String serviceId; // To hold the serviceId
 
     public OrgManageServiceFragment() {} // constructor
@@ -55,7 +54,7 @@ public class OrgManageServiceFragment extends Fragment {
         loadServiceDetails();
 
         // 2. --- Pass the serviceId to the ViewPager adapter ---
-        viewPagerAdapter = new OrgManageViewPagerAdapter(requireActivity(), serviceId);
+        OrgManageViewPagerAdapter viewPagerAdapter = new OrgManageViewPagerAdapter(requireActivity(), serviceId);
 
         binding.viewPagerOrg.setAdapter(viewPagerAdapter);
 

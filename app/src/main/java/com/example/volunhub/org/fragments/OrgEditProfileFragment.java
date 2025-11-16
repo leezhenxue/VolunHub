@@ -15,7 +15,6 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.volunhub.Constants;
-import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgEditProfileBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -28,8 +27,6 @@ public class OrgEditProfileFragment extends Fragment {
 
     private static final String TAG = "OrgEditProfileFragment";
     private FragmentOrgEditProfileBinding binding;
-    private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
     private DocumentReference orgDocRef;
 
     public OrgEditProfileFragment() {}
@@ -44,8 +41,8 @@ public class OrgEditProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() == null) {
             // No user, something is wrong
@@ -81,9 +78,9 @@ public class OrgEditProfileFragment extends Fragment {
     }
 
     private void saveProfileChanges() {
-        String orgName = binding.editTextEditOrgName.getText().toString().trim();
-        String orgField = binding.autoCompleteEditOrgField.getText().toString().trim();
-        String orgDesc = binding.editTextEditOrgDesc.getText().toString().trim();
+        String orgName = getSafeText(binding.editTextEditOrgName.getText());
+        String orgField = getSafeText(binding.autoCompleteEditOrgField.getText());
+        String orgDesc = getSafeText(binding.editTextEditOrgDesc.getText());
 
         if (orgName.isEmpty() || orgField.isEmpty() || orgDesc.isEmpty()) {
             Toast.makeText(getContext(), "All fields are required", Toast.LENGTH_SHORT).show();
@@ -107,6 +104,15 @@ public class OrgEditProfileFragment extends Fragment {
                     Toast.makeText(getContext(), "Error updating profile.", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Error updating document", e);
                 });
+    }
+
+    /**
+     * Safely gets text from an EditText, trims it, and handles nulls.
+     * @param editable The Editable text from binding.editText.getText()
+     * @return A trimmed String, or an empty String ("") if it was null.
+     */
+    private String getSafeText(android.text.Editable editable) {
+        return (editable == null) ? "" : editable.toString().trim();
     }
 
     @Override

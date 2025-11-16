@@ -13,12 +13,9 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgServiceBinding;
 import com.example.volunhub.models.Service;
 import com.example.volunhub.org.OrgServiceAdapter;
-// --- 1. THIS IS THE MISSING IMPORT ---
-import com.example.volunhub.org.fragments.service.OrgServiceFragmentDirections;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -33,7 +30,7 @@ public class OrgServiceFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private OrgServiceAdapter adapter;
-    private List<Service> serviceList = new ArrayList<>();
+    final private List<Service> serviceList = new ArrayList<>();
 
     // constructor
     public OrgServiceFragment() {}
@@ -57,8 +54,8 @@ public class OrgServiceFragment extends Fragment {
 
     private void setupRecyclerView() {
         adapter = new OrgServiceAdapter(serviceList);
-        binding.recyclerOrgServices.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.recyclerOrgServices.setAdapter(adapter);
+        binding.recyclerOrgService.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.recyclerOrgService.setAdapter(adapter);
 
         // --- 2. THIS CODE IS NOW CORRECT ---
         adapter.setOnItemClickListener(service -> {
@@ -103,9 +100,9 @@ public class OrgServiceFragment extends Fragment {
 
                     adapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading services", e);
-                });
+                .addOnFailureListener(e ->
+                    Log.e(TAG, "Error loading services", e)
+                );
     }
 
     @Override

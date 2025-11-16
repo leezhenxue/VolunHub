@@ -18,7 +18,7 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
     private final List<Applicant> applicantList;
     private final String tabMode;
     private final ApplicantClickListener listener;
-    private Context context;
+    final private Context context;
 
     // 1. Click listener interface for Accept, Reject, and viewing the profile
     public interface ApplicantClickListener {

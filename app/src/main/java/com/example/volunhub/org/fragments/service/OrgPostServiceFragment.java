@@ -15,15 +15,12 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.volunhub.databinding.FragmentOrgPostServiceBinding;
-import com.example.volunhub.models.Service; // Your Service model
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ServerTimestamp; // For createdAt
-import com.google.firebase.firestore.FieldValue; // For createdAt
+import com.google.firebase.firestore.FieldValue;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.HashMap;
@@ -79,10 +76,10 @@ public class OrgPostServiceFragment extends Fragment {
     }
 
     private void postService() {
-        String title = binding.editTextTitle.getText().toString().trim();
-        String description = binding.editTextDescription.getText().toString().trim();
-        String requirements = binding.editTextRequirements.getText().toString().trim();
-        String volunteersNeededStr = binding.editTextVolunteersNeeded.getText().toString().trim();
+        String title = getSafeText(binding.editTextTitle.getText());
+        String description = getSafeText(binding.editTextDescription.getText());
+        String requirements = getSafeText(binding.editTextRequirements.getText());
+        String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
 
         if (TextUtils.isEmpty(title)) {
             binding.inputLayoutTitle.setError("Title is required");
@@ -157,5 +154,14 @@ public class OrgPostServiceFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    /**
+     * Safely gets text from an EditText, trims it, and handles nulls.
+     * @param editable The Editable text from binding.editText.getText()
+     * @return A trimmed String, or an empty String ("") if it was null.
+     */
+    private String getSafeText(android.text.Editable editable) {
+        return (editable == null) ? "" : editable.toString().trim();
     }
 }

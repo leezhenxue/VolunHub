@@ -7,7 +7,7 @@
     tools:context=".org.fragments.service.OrgServiceFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_org_services"
+        android:id="@+id/recycler_org_service"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
