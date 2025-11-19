@@ -48,6 +48,20 @@
         <argument
             android:name="serviceId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_service_detail_to_view_org_profile"
+            app:destination="@id/student_view_org_profile" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/student_view_org_profile"
+        android:name="com.example.volunhub.student.fragments.ViewOrgProfileFragment"
+        android:label="Organization Profile"
+        tools:layout="@layout/fragment_view_org_profile">
+
+        <argument
+            android:name="orgId"
+            app:argType="string" />
     </fragment>
 
 </navigation>

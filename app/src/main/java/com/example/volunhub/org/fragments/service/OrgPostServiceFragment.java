@@ -133,6 +133,7 @@ public class OrgPostServiceFragment extends Fragment {
         serviceData.put("serviceDate", selectedServiceDate);
         serviceData.put("createdAt", FieldValue.serverTimestamp()); // Firestore will set this
         serviceData.put("status", "Active");
+        serviceData.put("searchTitle", title.toLowerCase());
 
         db.collection("services")
                 .add(serviceData)
