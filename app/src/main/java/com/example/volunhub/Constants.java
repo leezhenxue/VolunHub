@@ -3,7 +3,6 @@ package com.example.volunhub;
 public final class Constants {
 
     private Constants() {}
-    public static final String DEFAULT_PROFILE_PIC_URL = "https://res.cloudinary.com/dw1ccoqrq/image/upload/v1762680274/default_profile_picture_bnprgw.png";
     public static final String[] ORG_FIELDS = new String[] {
             // Health & Wellness
             "Health Services",

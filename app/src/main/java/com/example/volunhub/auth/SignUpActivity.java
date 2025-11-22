@@ -123,7 +123,6 @@ public class SignUpActivity extends BaseRouterActivity {
                 if (selectedImageUri != null) {
                     uploadImageToCloudinary(uid, selectedImageUri, userData, role);
                 } else {
-                    userData.put("profileImageUrl", Constants.DEFAULT_PROFILE_PIC_URL);
                     saveMapToFirestore(uid, userData, role);
                 }
 
@@ -230,7 +229,6 @@ public class SignUpActivity extends BaseRouterActivity {
                 public void onError(String requestId, ErrorInfo error) {
                     Log.w(TAG, "Error uploading to Cloudinary: " + error.getDescription());
                     Toast.makeText(SignUpActivity.this, "Image upload failed", Toast.LENGTH_SHORT).show();
-                    userData.put("profileImageUrl", Constants.DEFAULT_PROFILE_PIC_URL);
                     saveMapToFirestore(uid, userData, role);
                 }
 
