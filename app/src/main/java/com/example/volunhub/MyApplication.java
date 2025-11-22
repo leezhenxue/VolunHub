@@ -15,6 +15,6 @@ public class MyApplication extends Application {
         // read config from AndroidManifest.xml to find CLOUDINARY_CLOUD_NAME
         Map<String, String> config = new HashMap<>();
         config.put("cloud_name", "dw1ccoqrq");
-        MediaManager.init(this);
+        MediaManager.init(this, config);
     }
 }
