@@ -15,10 +15,19 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * An abstract base class that provides common authentication and navigation logic.
+ * Activities that need to check user roles or handle routing (like MainActivity and LoginActivity)
+ * should extend this class to inherit shared functionality.
+ */
 public abstract class BaseRouterActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseRouterActivity";
+
+    /** Shared instance of FirebaseAuth for child activities. */
     public FirebaseAuth mAuth;
+
+    /** Shared instance of FirebaseFirestore for child activities. */
     public FirebaseFirestore db;
 
     @Override
@@ -28,6 +37,17 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Fetches the user's document from Firestore and routes them based on their 'role'.
+     *
+     * <ul>
+     * <li>Student -> StudentHomeActivity</li>
+     * <li>Organization -> OrgHomeActivity</li>
+     * <li>Unknown/Error -> LoginActivity (and signs out)</li>
+     * </ul>
+     *
+     * @param uid The unique user ID (UID) from Firebase Authentication.
+     */
     public void routeUser(String uid) {
         DocumentReference docRef = db.collection("users").document(uid);
         docRef.get().addOnCompleteListener(task -> {
@@ -65,6 +85,12 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * A helper method to start a new Activity and finish the current one.
+     * This prevents the user from navigating back to the previous screen (e.g., Login or Splash).
+     *
+     * @param activityClass The class of the Activity to start (e.g., StudentHomeActivity.class).
+     */
     public void goToActivity(Class<?> activityClass) {
         Intent intent = new Intent(this, activityClass);
         startActivity(intent);

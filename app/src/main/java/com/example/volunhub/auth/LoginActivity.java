@@ -12,6 +12,18 @@ import com.example.volunhub.databinding.DialogForgotPasswordBinding;
 
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * Handles the user login process.
+ *
+ * <p>This activity is responsible for:
+ * <ul>
+ * <li>Validating email and password input.</li>
+ * <li>Authenticating against Firebase Auth.</li>
+ * <li>Fetching the user's role (Student/Org) from Firestore upon success.</li>
+ * <li>Routing the user to the correct dashboard via {@link com.example.volunhub.BaseRouterActivity}.</li>
+ * </ul>
+ * </p>
+ */
 public class LoginActivity extends BaseRouterActivity {
 
     private static final String TAG = "LoginActivity";

@@ -30,6 +30,18 @@ import java.util.HashMap;
 import java.util.Map;
 import com.example.volunhub.databinding.ActivitySignUpBinding;
 
+/**
+ * Handles new user registration for both Students and Organizations.
+ *
+ * <p>This activity manages a complex flow:
+ * <ol>
+ * <li><b>Validation:</b> checks for empty fields, password strength, and role-specific requirements.</li>
+ * <li><b>Authentication:</b> Creates a new user in Firebase Auth.</li>
+ * <li><b>Media Upload:</b> Uploads the profile picture to Cloudinary (if selected).</li>
+ * <li><b>Database:</b> Creates a new document in the 'users' Firestore collection.</li>
+ * </ol>
+ * </p>
+ */
 public class SignUpActivity extends BaseRouterActivity {
 
     private static final String TAG = "SignUpActivity";
@@ -90,10 +102,16 @@ public class SignUpActivity extends BaseRouterActivity {
     }
 
     /**
-     * Controls the sign-up flow.
-     * 1. Gathers and validates input.
-     * 2. Creates the Firebase Auth user.
-     * 3. Triggers image upload (if selected) or saves data directly.
+     * Handles the user login process.
+     *
+     * <p>This activity is responsible for:
+     * <ul>
+     * <li>Validating email and password input.</li>
+     * <li>Authenticating against Firebase Auth.</li>
+     * <li>Fetching the user's role (Student/Org) from Firestore upon success.</li>
+     * <li>Routing the user to the correct dashboard via {@link com.example.volunhub.BaseRouterActivity}.</li>
+     * </ul>
+     * </p>
      */
     private void registerUser() {
         String email = binding.editTextSignUpEmail.getText().toString().trim();
