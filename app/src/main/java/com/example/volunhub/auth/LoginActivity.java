@@ -42,34 +42,19 @@ public class LoginActivity extends BaseRouterActivity {
         );
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            Log.d(TAG, "User already logged in. Checking role...");
-            routeUser(currentUser.getUid());
-        }
-    }
-
+    /**
+     * Displays a custom AlertDialog to capture the user's email.
+     * If the input is valid and exist in Firebase Auth, it triggers the password reset email.
+     */
     private void showForgotPasswordDialog() {
-        // Inflate your new XML layout using View Binding
         DialogForgotPasswordBinding dialogBinding = DialogForgotPasswordBinding.inflate(LayoutInflater.from(this));
-
-        // Create the Alert Dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Reset Password");
         builder.setMessage("Enter your email to receive a password reset link.");
-
-        // Set the binding's root view as the dialog's view
         builder.setView(dialogBinding.getRoot());
 
-        // Set up the "Send" button
         builder.setPositiveButton("Send", (dialog, which) -> {
-
-            // Access the EditText directly from the binding object
             String email = dialogBinding.edittextDialogForgotEmail.getText().toString().trim();
-
             if (email.isEmpty()) {
                 Toast.makeText(LoginActivity.this, "Please enter your email", Toast.LENGTH_SHORT).show();
                 return;
@@ -77,13 +62,16 @@ public class LoginActivity extends BaseRouterActivity {
             sendPasswordResetEmail(email);
         });
 
-        // Set up the "Cancel" button
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-        // Show the dialog
         builder.show();
     }
 
+    /**
+     * Sends a password reset email via Firebase Auth.
+     * Displays a success or error Toast based on the result.
+     *
+     * @param email The email address entered in the dialog.
+     */
     private void sendPasswordResetEmail(String email) {
         mAuth.sendPasswordResetEmail(email).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -100,6 +88,14 @@ public class LoginActivity extends BaseRouterActivity {
         });
     }
 
+    /**
+     * Authenticates the user with Firebase using email and password.
+     * On success: Retrieves the User ID and routes to the correct home screen.
+     * On failure: Displays an error message.
+     *
+     * @param email    The user's email.
+     * @param password The user's password.
+     */
     private void signIn(String email, String password) {
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {

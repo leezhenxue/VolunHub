@@ -2,6 +2,7 @@ package com.example.volunhub.auth;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -23,11 +24,11 @@ import android.widget.ArrayAdapter;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
 import com.example.volunhub.databinding.ActivitySignUpBinding;
-
 
 public class SignUpActivity extends BaseRouterActivity {
 
@@ -42,6 +43,10 @@ public class SignUpActivity extends BaseRouterActivity {
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        binding.editTextStudentName.setFilters(new InputFilter[] {
+            new InputFilter.AllCaps()
+        });
+
         binding.buttonBackToLogin.setOnClickListener(v ->
             goToActivity(LoginActivity.class)
         );
@@ -51,7 +56,7 @@ public class SignUpActivity extends BaseRouterActivity {
         );
 
         binding.autoCompleteOrgField.setOnClickListener(v ->
-                binding.autoCompleteOrgField.showDropDown()
+            binding.autoCompleteOrgField.showDropDown()
         );
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
@@ -84,6 +89,12 @@ public class SignUpActivity extends BaseRouterActivity {
 
     }
 
+    /**
+     * Controls the sign-up flow.
+     * 1. Gathers and validates input.
+     * 2. Creates the Firebase Auth user.
+     * 3. Triggers image upload (if selected) or saves data directly.
+     */
     private void registerUser() {
         String email = binding.editTextSignUpEmail.getText().toString().trim();
         String password = binding.editTextSignUpPassword.getText().toString().trim();
@@ -103,8 +114,8 @@ public class SignUpActivity extends BaseRouterActivity {
             role = binding.radioButtonOrganization.getText().toString();
         }
 
-        if (!validateForm(password, retypePassword, role)) {
-            return; // Validation failed, stop here
+        if (!validateForm(email, password, retypePassword, role)) {
+            return;
         }
 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(SignUpActivity.this, task -> {
@@ -134,14 +145,33 @@ public class SignUpActivity extends BaseRouterActivity {
     }
 
     /**
-     * Helper method to validate all form fields.
-     * @return true if all fields are valid, false otherwise.
+     * Validates all input fields based on the selected role.
+     * Performs checks for empty fields, email format, password strength, and role-specific requirements.
+     *
+     * @param email          The email entered by the user.
+     * @param password       The password entered by the user.
+     * @param retypePassword The confirmation password.
+     * @param role           The selected role ("Student" or "Organization").
+     * @return true if all fields are valid; false otherwise (sets error on the invalid view).
      */
-    private boolean validateForm(String password, String retypePassword, String role) {
-        if (!checkNotEmpty(binding.editTextSignUpEmail, "Email is required")) return false;
-        if (!checkNotEmpty(binding.editTextSignUpPassword, "Password is required")) return false;
-        if (password.length() < 6) {
-            binding.editTextSignUpPassword.setError("Password must be at least 6 characters");
+    private boolean validateForm(String email, String password, String retypePassword, String role) {
+        if (!checkEditTextNotEmpty(binding.editTextSignUpEmail, "Email is required")) return false;
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.editTextSignUpEmail.setError("Invalid email format");
+            binding.editTextSignUpEmail.requestFocus();
+            return false;
+        }
+
+        if (!checkEditTextNotEmpty(binding.editTextSignUpPassword, "Password is required")) return false;
+        if (password.length() < 6 || password.length() > 20) {
+            binding.editTextSignUpPassword.setError("Password length must between 6 to 20 characters");
+            binding.editTextSignUpPassword.requestFocus();
+            return false;
+        }
+        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{6,20}$";
+
+        if (!password.matches(passwordPattern)) {
+            binding.editTextSignUpPassword.setError("Password must contain 1 uppercase, 1 lowercase, 1 number, and 1 symbol");
             binding.editTextSignUpPassword.requestFocus();
             return false;
         }
@@ -151,23 +181,39 @@ public class SignUpActivity extends BaseRouterActivity {
             return false;
         }
 
-        // --- Role-specific fields ---
         if (role.equals("Student")) {
-            if (!checkNotEmpty(binding.editTextStudentName, "Full Name is required")) return false;
+            if (!checkEditTextNotEmpty(binding.editTextStudentName, "Full Name is required")) return false;
+
+            if (binding.editTextStudentName.getText().toString().matches(".*\\d.*")) {
+                binding.editTextStudentName.setError("Name cannot contain numbers");
+                binding.editTextStudentName.requestFocus();
+                return false;
+            }
 
             String ageText = binding.editTextStudentAge.getText().toString().trim();
-            if (TextUtils.isEmpty(ageText) || Integer.parseInt(ageText) == 0) {
+            if (TextUtils.isEmpty(ageText)) {
                 binding.editTextStudentAge.setError("Age is required");
                 binding.editTextStudentAge.requestFocus();
                 return false;
             }
 
-            if (!checkNotEmpty(binding.editTextStudentExperience, "Experience is required")) return false;
-            return checkNotEmpty(binding.editTextStudentIntroduction, "Introduction is required");
+            int age = Integer.parseInt(ageText);
+            if (age < 1 || age > 200) {
+                binding.editTextStudentAge.setError("Age must be between 1 and 200");
+                binding.editTextStudentAge.requestFocus();
+                return false;
+            }
+
+            if (binding.radioGroupStudentGender.getCheckedRadioButtonId() == -1) {
+                Toast.makeText(SignUpActivity.this, "Please select a gender", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            return checkEditTextNotEmpty(binding.editTextStudentIntroduction, "Introduction is required");
         } else if (role.equals("Organization")) {
-            if (!checkNotEmpty(binding.editTextOrgCompanyName, "Company Name is required")) return false;
-            if (!checkNotEmpty(binding.editTextOrgDescription, "Description is required")) return false;
-            return checkNotEmpty(binding.autoCompleteOrgField, "Field is required");
+            if (!checkEditTextNotEmpty(binding.editTextOrgCompanyName, "Company Name is required")) return false;
+            if (!checkEditTextNotEmpty(binding.editTextOrgDescription, "Description is required")) return false;
+            return checkEditTextNotEmpty(binding.autoCompleteOrgField, "Field is required");
         } else {
             Log.e(TAG, "Unknown role: " + role);
             return false;
@@ -175,6 +221,15 @@ public class SignUpActivity extends BaseRouterActivity {
 
     }
 
+    /**
+     * Constructs the User Data Map to be saved in Firestore.
+     * Filters and adds only the fields relevant to the selected role.
+     *
+     * @param email The validated email address.
+     * @param role  The selected role.
+     * @return A Map containing the key-value pairs for the user document.
+     */
+    @NonNull
     private Map<String, Object> buildUserData(String email, String role) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("email", email);
@@ -182,17 +237,13 @@ public class SignUpActivity extends BaseRouterActivity {
 
         if (role.equals("Student")) {
             userData.put("studentName", binding.editTextStudentName.getText().toString().trim());
-            int studentAge = 0;
-            try {
-                // We know this is safe now because validateForm() already checked it
-                studentAge = Integer.parseInt(binding.editTextStudentAge.getText().toString().trim());
-            } catch (NumberFormatException e) {
-                Log.w(TAG, "Student age was empty, defaulting to 0.");
-            }
-            userData.put("studentAge", studentAge);
+            userData.put("studentAge", binding.editTextStudentAge.getText().toString().trim());
             String studentGender = binding.radioGroupStudentGender.getCheckedRadioButtonId() == R.id.radio_button_student_male ? "Male" : "Female";
             userData.put("studentGender", studentGender);
-            userData.put("studentExperience", binding.editTextStudentExperience.getText().toString().trim());
+            String studentExperience = binding.editTextStudentExperience.getText().toString().trim();
+            if (!studentExperience.isEmpty()) {
+                userData.put("studentExperience", studentExperience);
+            }
             userData.put("studentIntroduction", binding.editTextStudentIntroduction.getText().toString().trim());
         } else if (role.equals("Organization")) {
             userData.put("orgCompanyName", binding.editTextOrgCompanyName.getText().toString().trim());
@@ -202,6 +253,16 @@ public class SignUpActivity extends BaseRouterActivity {
         return userData;
     }
 
+    /**
+     * Uploads the profile image to Cloudinary.
+     * Upon success, it retrieves the image URL and then triggers the Firestore save.
+     * Upon failure, it defaults to a local image and triggers the Firestore save.
+     *
+     * @param uid       The user's Firebase Auth UID.
+     * @param imageUri  The URI of the selected image.
+     * @param userData  The map of user data to be updated with the image URL.
+     * @param role      The user's role for navigation.
+     */
     private void uploadImageToCloudinary(String uid, Uri imageUri, Map<String, Object> userData, final String role) {
         Toast.makeText(SignUpActivity.this, "Uploading image...", Toast.LENGTH_SHORT).show();
 
@@ -270,22 +331,20 @@ public class SignUpActivity extends BaseRouterActivity {
 
     /**
      * A helper method to check if an EditText is empty.
-     * If it is, it sets an error and returns false.
+     * If it is empty, it sets an error and returns false.
      *
      * @param field        The EditText to check.
      * @param errorMessage The error message to display.
      * @return true if the field is not empty, false if it is.
      */
-    private boolean checkNotEmpty(EditText field, String errorMessage) {
+    private boolean checkEditTextNotEmpty(@NonNull EditText field, String errorMessage) {
         String text = field.getText().toString().trim();
         if (TextUtils.isEmpty(text)) {
             field.setError(errorMessage);
             field.requestFocus();
-            return false; // Validation failed
+            return false;
         }
-        return true; // Validation passed
+        return true;
     }
-
-
 
 }

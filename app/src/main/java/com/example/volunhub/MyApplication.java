@@ -11,9 +11,8 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        // read config from AndroidManifest.xml to find CLOUDINARY_CLOUD_NAME
         Map<String, String> config = new HashMap<>();
+        //noinspection SpellCheckingInspection
         config.put("cloud_name", "dw1ccoqrq");
         MediaManager.init(this, config);
     }

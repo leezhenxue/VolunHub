@@ -57,7 +57,7 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
                     goToActivity(LoginActivity.class);
                 }
             } else {
-                Log.w(TAG, "get failed with ", task.getException());
+                Log.w(TAG, "routeUser get failed with ", task.getException());
                 Toast.makeText(this, "Failed to read user data.", Toast.LENGTH_SHORT).show();
                 mAuth.signOut();
                 goToActivity(LoginActivity.class);
