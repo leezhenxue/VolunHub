@@ -87,6 +87,13 @@ public class SignUpActivity extends BaseRouterActivity {
 
         imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
+                    long fileSizeInBytes = getFileSize(uri);
+                    long sizeInMB = fileSizeInBytes / (1024 * 1024);
+                    if (sizeInMB > 5) {
+                        Toast.makeText(SignUpActivity.this, "Image is too large! Please choose an image under 5MB.", Toast.LENGTH_LONG).show();
+                        selectedImageUri = null;
+                        return;
+                    }
                     selectedImageUri = uri;
                     Toast.makeText(SignUpActivity.this, "Image selected", Toast.LENGTH_SHORT).show();
                     binding.imageViewProfilePicture.setImageURI(uri);
@@ -363,6 +370,24 @@ public class SignUpActivity extends BaseRouterActivity {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Helper method to get the size of a file from its URI.
+     *
+     * @param uri The URI of the selected file.
+     * @return The size of the file in bytes, or -1 if it cannot be determined.
+     */
+    private long getFileSize(Uri uri) {
+        android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        if (cursor != null) {
+            int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+            cursor.moveToFirst();
+            long size = cursor.getLong(sizeIndex);
+            cursor.close();
+            return size;
+        }
+        return -1;
     }
 
 }
