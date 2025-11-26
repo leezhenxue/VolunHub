@@ -4,8 +4,11 @@ import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.ServerTimestamp;
 import java.util.Date;
 
+/**
+ * Represents a document in the "services" collection.
+ * Contains details about a volunteer opportunity posted by an Organization.
+ */
 public class Service {
-    // These field names MUST match your Firestore fields
     private String orgId;
     private String orgName;
     private String title;
@@ -19,8 +22,9 @@ public class Service {
     private String status;
     @Exclude
     private String documentId;
+    private String searchTitle;
 
-    // An empty constructor is REQUIRED for Firestore
+    // Empty constructor for Firestore
     public Service() {}
 
     @Exclude

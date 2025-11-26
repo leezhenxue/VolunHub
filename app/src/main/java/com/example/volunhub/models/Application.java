@@ -3,7 +3,10 @@ package com.example.volunhub.models;
 import com.google.firebase.firestore.ServerTimestamp;
 import java.util.Date;
 
-// This POJO class MUST match your "applications" collection fields
+/**
+ * Represents a document in the "applications" collection.
+ * Links a Student to a Service with a status (Pending/Accepted/Rejected).
+ */
 public class Application {
     private String orgId;
     private String orgName;
@@ -14,7 +17,7 @@ public class Application {
     @ServerTimestamp
     private Date appliedAt;
 
-    // Required empty constructor for Firestore
+    // Empty constructor for Firestore
     public Application() {}
 
     // --- Getters ---
