@@ -5,15 +5,17 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.volunhub.BaseRouterActivity;
 import com.example.volunhub.R;
-import com.example.volunhub.org.OrgHomeActivity;
-import com.example.volunhub.student.StudentHomeActivity;
+import com.example.volunhub.databinding.FragmentSignUpBinding;
 import com.example.volunhub.Constants;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import com.cloudinary.android.MediaManager;
@@ -25,10 +27,12 @@ import android.widget.ArrayAdapter;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.example.volunhub.databinding.ActivitySignUpBinding;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * Handles new user registration for both Students and Organizations.
@@ -42,28 +46,36 @@ import com.example.volunhub.databinding.ActivitySignUpBinding;
  * </ol>
  * </p>
  */
-public class SignUpActivity extends BaseRouterActivity {
+public class SignUpFragment extends Fragment {
 
-    private static final String TAG = "SignUpActivity";
-    private ActivitySignUpBinding binding;
+    private static final String TAG = "SignUpFragment";
+    private FragmentSignUpBinding binding;
     private Uri selectedImageUri = null;
     private ActivityResultLauncher<String> imagePickerLauncher;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivitySignUpBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentSignUpBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         binding.editTextStudentName.setFilters(new InputFilter[] {
             new InputFilter.AllCaps()
         });
 
         binding.buttonBackToLogin.setOnClickListener(v ->
-            goToActivity(LoginActivity.class)
+            Navigation.findNavController(v).navigate(R.id.action_sign_up_to_login)
         );
 
-        binding.buttonSignUp.setOnClickListener(View ->
+        binding.buttonSignUp.setOnClickListener(v ->
             registerUser()
         );
 
@@ -71,7 +83,7 @@ public class SignUpActivity extends BaseRouterActivity {
             binding.autoCompleteOrgField.showDropDown()
         );
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
         binding.autoCompleteOrgField.setAdapter(adapter);
 
         binding.radioGroupRole.setOnCheckedChangeListener((group, checkedId) -> {
@@ -90,15 +102,15 @@ public class SignUpActivity extends BaseRouterActivity {
                     long fileSizeInBytes = getFileSize(uri);
                     long sizeInMB = fileSizeInBytes / (1024 * 1024);
                     if (sizeInMB > 5) {
-                        Toast.makeText(SignUpActivity.this, "Image is too large! Please choose an image under 5MB.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Image is too large! Please choose an image under 5MB.", Toast.LENGTH_LONG).show();
                         selectedImageUri = null;
                         return;
                     }
                     selectedImageUri = uri;
-                    Toast.makeText(SignUpActivity.this, "Image selected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Image selected", Toast.LENGTH_SHORT).show();
                     binding.imageViewProfilePicture.setImageURI(uri);
                 } else {
-                    Toast.makeText(SignUpActivity.this, "No image selected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "No image selected", Toast.LENGTH_SHORT).show();
                 }
         });
 
@@ -128,7 +140,7 @@ public class SignUpActivity extends BaseRouterActivity {
         int selectedId = binding.radioGroupRole.getCheckedRadioButtonId();
 
         if (selectedId == -1) {
-            Toast.makeText(this, "Please select a role (Student or Organization)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Please select a role (Student or Organization)", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -143,13 +155,13 @@ public class SignUpActivity extends BaseRouterActivity {
             return;
         }
 
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(SignUpActivity.this, task -> {
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
             if (task.isSuccessful()) {
-                Toast.makeText(SignUpActivity.this, "Sign up successful", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Sign up successful", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "createUserWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
                 if (user == null) {
-                    Toast.makeText(SignUpActivity.this, "Sign up failed, user is null.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Sign up failed, user is null.", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 String uid = user.getUid();
@@ -157,14 +169,14 @@ public class SignUpActivity extends BaseRouterActivity {
                 Map<String, Object> userData = buildUserData(email, role);
 
                 if (selectedImageUri != null) {
-                    uploadImageToCloudinary(uid, selectedImageUri, userData, role);
+                    uploadImageToCloudinary(uid, selectedImageUri, userData);
                 } else {
-                    saveMapToFirestore(uid, userData, role);
+                    saveMapToFirestore(uid, userData);
                 }
 
             } else {
                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                Toast.makeText(SignUpActivity.this, "Sign up failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Sign up failed", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -230,7 +242,7 @@ public class SignUpActivity extends BaseRouterActivity {
             }
 
             if (binding.radioGroupStudentGender.getCheckedRadioButtonId() == -1) {
-                Toast.makeText(SignUpActivity.this, "Please select a gender", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Please select a gender", Toast.LENGTH_SHORT).show();
                 return false;
             }
 
@@ -286,10 +298,9 @@ public class SignUpActivity extends BaseRouterActivity {
      * @param uid       The user's Firebase Auth UID.
      * @param imageUri  The URI of the selected image.
      * @param userData  The map of user data to be updated with the image URL.
-     * @param role      The user's role for navigation.
      */
-    private void uploadImageToCloudinary(String uid, Uri imageUri, Map<String, Object> userData, final String role) {
-        Toast.makeText(SignUpActivity.this, "Uploading image...", Toast.LENGTH_SHORT).show();
+    private void uploadImageToCloudinary(String uid, Uri imageUri, Map<String, Object> userData) {
+        Toast.makeText(getContext(), "Uploading image...", Toast.LENGTH_SHORT).show();
 
         MediaManager.get().upload(imageUri)
             .option("folder", "profileImages")
@@ -308,14 +319,14 @@ public class SignUpActivity extends BaseRouterActivity {
                     String imageUrl = (String) resultData.get("secure_url");
                     Log.d(TAG, "Image uploaded to Cloudinary: " + imageUrl);
                     userData.put("profileImageUrl", imageUrl);
-                    saveMapToFirestore(uid, userData, role);
+                    saveMapToFirestore(uid, userData);
                 }
 
                 @Override
                 public void onError(String requestId, ErrorInfo error) {
                     Log.w(TAG, "Error uploading to Cloudinary: " + error.getDescription());
-                    Toast.makeText(SignUpActivity.this, "Image upload failed", Toast.LENGTH_SHORT).show();
-                    saveMapToFirestore(uid, userData, role);
+                    Toast.makeText(getContext(), "Image upload failed", Toast.LENGTH_SHORT).show();
+                    saveMapToFirestore(uid, userData);
                 }
 
                 @Override
@@ -331,22 +342,19 @@ public class SignUpActivity extends BaseRouterActivity {
      *
      * @param uid      The user's unique ID from Firebase Authentication.
      * @param userData The Map containing all the user's data (email, role, name, etc.).
-     * @param role     The user's role ("Student" or "Organization") to decide navigation.
      */
-    private void saveMapToFirestore(String uid, Map<String, Object> userData, final String role) {
+    private void saveMapToFirestore(String uid, Map<String, Object> userData) {
         db.collection("users").document(uid).set(userData)
             .addOnSuccessListener(aVoid -> {
                 Log.d(TAG, "User document successfully created in Firestore!");
-                Toast.makeText(SignUpActivity.this, "Sign up successful", Toast.LENGTH_SHORT).show();
-                if (role.equals("Student")) {
-                    goToActivity(StudentHomeActivity.class);
-                } else if (role.equals("Organization")) {
-                    goToActivity(OrgHomeActivity.class);
+                Toast.makeText(getContext(), "Sign up successful", Toast.LENGTH_SHORT).show();
+                if (getActivity() instanceof BaseRouterActivity) {
+                    ((BaseRouterActivity) getActivity()).routeUser(uid);
                 }
             })
             .addOnFailureListener(e -> {
                 Log.w(TAG, "Error creating user document in Firestore", e);
-                Toast.makeText(SignUpActivity.this, "Error: Could not save user data.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Error: Could not save user data.", Toast.LENGTH_LONG).show();
                 FirebaseUser user = mAuth.getCurrentUser();
                 if (user != null) {
                     user.delete();
@@ -379,7 +387,7 @@ public class SignUpActivity extends BaseRouterActivity {
      * @return The size of the file in bytes, or -1 if it cannot be determined.
      */
     private long getFileSize(Uri uri) {
-        android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null);
         if (cursor != null) {
             int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
             cursor.moveToFirst();

@@ -4,12 +4,20 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import com.example.volunhub.BaseRouterActivity;
-import com.example.volunhub.databinding.ActivityLoginBinding;
+import com.example.volunhub.R;
 import com.example.volunhub.databinding.DialogForgotPasswordBinding;
 
+import com.example.volunhub.databinding.FragmentLoginBinding;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
@@ -24,32 +32,40 @@ import com.google.firebase.auth.FirebaseUser;
  * </ul>
  * </p>
  */
-public class LoginActivity extends BaseRouterActivity {
+public class LoginFragment extends Fragment {
 
-    private static final String TAG = "LoginActivity";
-    private ActivityLoginBinding binding;
+    private static final String TAG = "LoginFragment";
+    private FragmentLoginBinding binding;
+    private FirebaseAuth mAuth;
+
+    public LoginFragment() {}
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityLoginBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentLoginBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
 
-        binding.buttonLogin.setOnClickListener(view -> {
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+
+        binding.buttonLogin.setOnClickListener(v -> {
             String email = binding.editTextLoginEmail.getText().toString().trim();
             String password = binding.editTextLoginPassword.getText().toString().trim();
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Email and password cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Email and password cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
             }
             signIn(email, password);
         });
 
-        binding.buttonGoToSignUp.setOnClickListener(view ->
-            goToActivity(SignUpActivity.class)
+        binding.buttonGoToSignUp.setOnClickListener(v ->
+            Navigation.findNavController(v).navigate(R.id.action_login_to_sign_up)
         );
 
-        binding.textViewForgotPassword.setOnClickListener(view ->
+        binding.textViewForgotPassword.setOnClickListener(v ->
             showForgotPasswordDialog()
         );
     }
@@ -59,8 +75,9 @@ public class LoginActivity extends BaseRouterActivity {
      * If the input is valid and exist in Firebase Auth, it triggers the password reset email.
      */
     private void showForgotPasswordDialog() {
-        DialogForgotPasswordBinding dialogBinding = DialogForgotPasswordBinding.inflate(LayoutInflater.from(this));
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if (getContext() == null) return;
+        DialogForgotPasswordBinding dialogBinding = DialogForgotPasswordBinding.inflate(LayoutInflater.from(getContext()));
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Reset Password");
         builder.setMessage("Enter your email to receive a password reset link.");
         builder.setView(dialogBinding.getRoot());
@@ -68,7 +85,7 @@ public class LoginActivity extends BaseRouterActivity {
         builder.setPositiveButton("Send", (dialog, which) -> {
             String email = dialogBinding.edittextDialogForgotEmail.getText().toString().trim();
             if (email.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Please enter your email", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Please enter your email", Toast.LENGTH_SHORT).show();
                 return;
             }
             sendPasswordResetEmail(email);
@@ -88,14 +105,14 @@ public class LoginActivity extends BaseRouterActivity {
         mAuth.sendPasswordResetEmail(email).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d(TAG, "Password reset email sent.");
-                Toast.makeText(LoginActivity.this, "Reset link sent to your email.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Reset link sent to your email.", Toast.LENGTH_LONG).show();
             } else {
                 Log.w(TAG, "Error sending reset email", task.getException());
                 String errorMessage = "Failed to send reset email. Please try again.";
                 if (task.getException() != null && task.getException().getMessage() != null) {
                     errorMessage = task.getException().getMessage();
                 }
-                Toast.makeText(LoginActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Error: " + errorMessage, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -109,19 +126,20 @@ public class LoginActivity extends BaseRouterActivity {
      * @param password The user's password.
      */
     private void signIn(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d(TAG, "signInWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
-                if (user != null) {
-                    routeUser(user.getUid());
+                androidx.fragment.app.FragmentActivity activity = getActivity();
+                if (user != null && activity instanceof BaseRouterActivity) {
+                    ((BaseRouterActivity) getActivity()).routeUser(user.getUid());
                 } else {
                     Log.w(TAG, "signIn:success, but currentUser is null.");
-                    Toast.makeText(LoginActivity.this, "Login failed. Please try again.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Login failed. Please try again.", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Log.w(TAG, "signInWithEmail:failure", task.getException());
-                Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Authentication failed.", Toast.LENGTH_SHORT).show();
             }
         });
     }
