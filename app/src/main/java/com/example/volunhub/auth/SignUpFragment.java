@@ -165,7 +165,12 @@ public class SignUpFragment extends Fragment {
             return;
         }
 
+        binding.progressBarSignup.setVisibility(View.VISIBLE);
+        binding.buttonSignUp.setEnabled(false);
+
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
+            binding.progressBarSignup.setVisibility(View.GONE);
+            binding.buttonSignUp.setEnabled(true);
             if (task.isSuccessful()) {
                 Toast.makeText(getContext(), "Sign up successful", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "createUserWithEmail:success");
@@ -185,8 +190,15 @@ public class SignUpFragment extends Fragment {
                 }
 
             } else {
+                Exception e = task.getException();
                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                Toast.makeText(getContext(), "Sign up failed", Toast.LENGTH_SHORT).show();
+                if (e instanceof com.google.firebase.auth.FirebaseAuthUserCollisionException) {
+                    Toast.makeText(getContext(), "This email is already registered.", Toast.LENGTH_LONG).show();
+                    binding.textInputLayoutEmail.setError("Email already in use");
+                    binding.textInputLayoutEmail.requestFocus();
+                } else {
+                    Toast.makeText(getContext(), "Sign up failed.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
