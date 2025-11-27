@@ -74,6 +74,7 @@
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/text_input_layout_email"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
@@ -87,10 +88,12 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/text_input_layout_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:hint="Password"
+                        app:endIconDrawable="@drawable/selector_password_eye"
                         app:endIconMode="password_toggle"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
@@ -101,10 +104,12 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/text_input_layout_retype_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="Retype Password"
+                        app:endIconDrawable="@drawable/selector_password_eye"
                         app:endIconMode="password_toggle"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
@@ -150,6 +155,7 @@
                         android:visibility="gone">
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_layout_student_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
@@ -163,6 +169,7 @@
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_layout_student_age"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
@@ -201,6 +208,7 @@
                         </RadioGroup>
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_layout_student_experience"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
@@ -215,6 +223,7 @@
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_layout_student_introduction"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
@@ -237,6 +246,7 @@
                         android:visibility="gone">
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_layout_org_company_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
@@ -264,6 +274,7 @@
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/text_input_layout_org_description"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"

@@ -67,6 +67,17 @@ public class SignUpFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
+        clearErrorOnType(binding.textInputLayoutEmail);
+        clearErrorOnType(binding.textInputLayoutPassword);
+        clearErrorOnType(binding.textInputLayoutRetypePassword);
+        clearErrorOnType(binding.textInputLayoutStudentName);
+        clearErrorOnType(binding.textInputLayoutStudentAge);
+        clearErrorOnType(binding.textInputLayoutStudentIntroduction);
+        clearErrorOnType(binding.textInputLayoutOrgCompanyName);
+        clearErrorOnType(binding.textInputLayoutOrgField);
+        clearErrorOnType(binding.textInputLayoutOrgDescription);
+
+
         binding.editTextStudentName.setFilters(new InputFilter[] {
             new InputFilter.AllCaps()
         });
@@ -192,69 +203,75 @@ public class SignUpFragment extends Fragment {
      * @return true if all fields are valid; false otherwise (sets error on the invalid view).
      */
     private boolean validateForm(String email, String password, String retypePassword, String role) {
-        if (!checkEditTextNotEmpty(binding.editTextSignUpEmail, "Email is required")) return false;
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.editTextSignUpEmail.setError("Invalid email format");
-            binding.editTextSignUpEmail.requestFocus();
-            return false;
+        boolean isValid = true;
+        if (!checkEditTextNotEmpty(binding.textInputLayoutEmail, binding.editTextSignUpEmail, "Email is required")) {
+            isValid = false;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.textInputLayoutEmail.setError("Invalid email format");
+            isValid = false;
         }
 
-        if (!checkEditTextNotEmpty(binding.editTextSignUpPassword, "Password is required")) return false;
-        if (password.length() < 6 || password.length() > 20) {
-            binding.editTextSignUpPassword.setError("Password length must between 6 to 20 characters");
-            binding.editTextSignUpPassword.requestFocus();
-            return false;
+        if (!checkEditTextNotEmpty(binding.textInputLayoutPassword, binding.editTextSignUpPassword, "Password is required")) {
+            isValid = false;
+        } else if (password.length() < 6 || password.length() > 20) {
+            binding.textInputLayoutPassword.setError("Password length must between 6 to 20 characters");
+            isValid = false;
+        } else {
+            String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{6,20}$";
+            if (!password.matches(passwordPattern)) {
+                binding.textInputLayoutPassword.setError("Password must contain 1 uppercase, 1 lowercase, 1 number, and 1 symbol");
+                isValid = false;
+            }
         }
-        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{6,20}$";
 
-        if (!password.matches(passwordPattern)) {
-            binding.editTextSignUpPassword.setError("Password must contain 1 uppercase, 1 lowercase, 1 number, and 1 symbol");
-            binding.editTextSignUpPassword.requestFocus();
-            return false;
-        }
         if (!password.equals(retypePassword)) {
-            binding.editTextSignUpRetypePassword.setError("Passwords do not match");
-            binding.editTextSignUpRetypePassword.requestFocus();
-            return false;
+            binding.textInputLayoutRetypePassword.setError("Passwords do not match");
+            isValid = false;
         }
 
         if (role.equals("Student")) {
-            if (!checkEditTextNotEmpty(binding.editTextStudentName, "Full Name is required")) return false;
-
-            if (binding.editTextStudentName.getText().toString().matches(".*\\d.*")) {
-                binding.editTextStudentName.setError("Name cannot contain numbers");
-                binding.editTextStudentName.requestFocus();
-                return false;
+            if (!checkEditTextNotEmpty(binding.textInputLayoutStudentName, binding.editTextStudentName, "Full Name is required")) {
+                isValid = false;
+            } else if (binding.editTextStudentName.getText().toString().matches(".*\\d.*")) {
+                binding.textInputLayoutStudentName.setError("Name cannot contain numbers");
+                isValid = false;
             }
 
             String ageText = binding.editTextStudentAge.getText().toString().trim();
             if (TextUtils.isEmpty(ageText)) {
-                binding.editTextStudentAge.setError("Age is required");
-                binding.editTextStudentAge.requestFocus();
-                return false;
-            }
-
-            int age = Integer.parseInt(ageText);
-            if (age < 1 || age > 200) {
-                binding.editTextStudentAge.setError("Age must be between 1 and 200");
-                binding.editTextStudentAge.requestFocus();
-                return false;
+                binding.textInputLayoutStudentAge.setError("Age is required");
+                isValid = false;
+            } else {
+                int age = Integer.parseInt(ageText);
+                if (age < 1 || age > 200) {
+                    binding.textInputLayoutStudentAge.setError("Age must be between 1 and 200");
+                    isValid = false;
+                }
             }
 
             if (binding.radioGroupStudentGender.getCheckedRadioButtonId() == -1) {
                 Toast.makeText(getContext(), "Please select a gender", Toast.LENGTH_SHORT).show();
-                return false;
+                isValid = false;
             }
-
-            return checkEditTextNotEmpty(binding.editTextStudentIntroduction, "Introduction is required");
+            if (!checkEditTextNotEmpty(binding.textInputLayoutStudentIntroduction, binding.editTextStudentIntroduction, "Introduction is required")) {
+                isValid = false;
+            }
         } else if (role.equals("Organization")) {
-            if (!checkEditTextNotEmpty(binding.editTextOrgCompanyName, "Company Name is required")) return false;
-            if (!checkEditTextNotEmpty(binding.editTextOrgDescription, "Description is required")) return false;
-            return checkEditTextNotEmpty(binding.autoCompleteOrgField, "Field is required");
+            if (!checkEditTextNotEmpty(binding.textInputLayoutOrgCompanyName, binding.editTextOrgCompanyName, "Company Name is required")) {
+                isValid = false;
+            }
+            if (!checkEditTextNotEmpty(binding.textInputLayoutOrgDescription, binding.editTextOrgDescription, "Description is required")) {
+                isValid = false;
+            }
+            if (!checkEditTextNotEmpty(binding.textInputLayoutOrgField, binding.autoCompleteOrgField, "Field is required")) {
+                isValid = false;
+            }
         } else {
             Log.e(TAG, "Unknown role: " + role);
-            return false;
+            isValid = false;
         }
+
+        return isValid;
 
     }
 
@@ -370,14 +387,15 @@ public class SignUpFragment extends Fragment {
      * @param errorMessage The error message to display.
      * @return true if the field is not empty, false if it is.
      */
-    private boolean checkEditTextNotEmpty(@NonNull EditText field, String errorMessage) {
+    private boolean checkEditTextNotEmpty(com.google.android.material.textfield.TextInputLayout inputLayout, @NonNull EditText field, String errorMessage) {
         String text = field.getText().toString().trim();
         if (TextUtils.isEmpty(text)) {
-            field.setError(errorMessage);
-            field.requestFocus();
+            inputLayout.setError(errorMessage);
             return false;
+        } else {
+            inputLayout.setError(null);
+            return true;
         }
-        return true;
     }
 
     /**
@@ -396,6 +414,37 @@ public class SignUpFragment extends Fragment {
             return size;
         }
         return -1;
+    }
+
+    /**
+     * Automatically clears the error message and the error state from the TextInputLayout
+     * as soon as the user starts typing in its child EditText.
+     *
+     * <p>This improves user experience by removing the "red" error feedback immediately
+     * when the user attempts to fix the input, rather than waiting for the next
+     * validation check.</p>
+     *
+     * @param textInputLayout The TextInputLayout wrapper that is displaying the error.
+     */
+    private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout textInputLayout) {
+        if (textInputLayout.getEditText() == null) return;
+
+        textInputLayout.getEditText().addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // The moment they type ANYTHING, hide the error.
+                // We will re-check validity when they click "Sign Up" again.
+                if (textInputLayout.getError() != null) {
+                    textInputLayout.setError(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
     }
 
 }
