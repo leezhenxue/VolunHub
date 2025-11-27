@@ -1,55 +1,43 @@
-# VolunHub 🤝
+# VolunHub
 
-A centralized Android platform connecting student volunteers with non-profit organizations for meaningful community service.
+VolunHub is a centralized Android platform designed to connect student volunteers with non-profit organizations, facilitating meaningful community service engagement.
 
-## 📱 Features
+## Features
 
-### 🎓 For Students
-* **Service Discovery:** Browse and search for volunteer opportunities with real-time filtering.
-* **One-Click Application:** Apply to services instantly.
-* **Application Tracking:** View status of applications (Pending, Accepted, Rejected) in real-time.
-* **History & Saved:** Keep track of completed services and bookmark interesting opportunities.
-* **Profile Management:** Manage personal details and experience.
+### For Students
+* **Service Discovery:** Browse and search for volunteer opportunities with real-time filtering capabilities.
+* **One-Click Application:** Streamlined application process for volunteer services.
+* **Application Tracking:** Monitor the status of applications (Pending, Accepted, Rejected) in real-time.
+* **History & Saved:** Maintain a record of completed services and bookmark opportunities for future reference.
+* **Profile Management:** Manage personal details, volunteer experience, and self-introduction.
 
-### 🏢 For Organizations
-* **Dashboard:** At-a-glance view of new applicants and key statistics.
-* **Service Management:** Post new volunteer opportunities and manage existing ones.
-* **Applicant Review:** Accept or reject student applicants with a simple interface.
-* **Profile Management:** Showcase organization details and mission.
+### For Organizations
+* **Dashboard:** View key statistics and new applicant notifications at a glance.
+* **Service Management:** Create, post, and manage volunteer opportunities.
+* **Applicant Review:** Review student applicants with options to accept or reject candidates.
+* **Profile Management:** Showcase organization details, mission, and branding.
 
-## 🛠️ Tech Stack
+## Technical Stack
 
 * **Language:** Java
 * **UI/UX:** XML, Material Design 3, ConstraintLayout
 * **Architecture:** Single-Activity Architecture (Fragments + Jetpack Navigation Component)
 * **Binding:** View Binding
 * **Backend:** Firebase Authentication, Cloud Firestore
-* **Media Storage:** Cloudinary (for profile images)
+* **Media Storage:** Cloudinary (Profile Image Management)
 * **Build System:** Gradle (Kotlin DSL)
 
-## 🚀 Setup Instructions
+## Project Structure
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/leezhenxue/VolunHub.git](https://github.com/leezhenxue/VolunHub.git)
-    ```
-
-2.  **Add Configuration Files:**
-    * **Firebase:** Obtain the `google-services.json` file from the Tech Lead and place it in the `app/` directory.
-    * **Cloudinary:** Ensure the `CLOUDINARY_CLOUD_NAME` is configured in `MyApplication.java` (or AndroidManifest, depending on current configuration).
-
-3.  **Build & Run:**
-    * Open the project in Android Studio (Ladybug or newer recommended).
-    * Sync Gradle files.
-    * Run on an Emulator (API 24+) or physical device.
-
-## 📂 Project Structure
-
-The project follows a feature-based package structure:
+The application follows a feature-based package structure to ensure modularity and maintainability:
 
 * `com.example.volunhub`
-    * `auth/` - Login and Sign Up logic.
-    * `student/` - Student home, application list, and profile fragments.
-    * `org/` - Organization dashboard, service posting, and applicant management.
-    * `models/` - POJO classes for Firestore data (Service, Application, User).
-    * `BaseRouterActivity` - Handles common auth routing logic.
+    * `auth/` - Handles user authentication logic, including Login and Sign Up flows.
+    * `student/` - Contains UI and logic for the Student experience (Home, Application Lists, Profile).
+    * `org/` - Contains UI and logic for the Organization experience (Dashboard, Service Posting, Applicant Management).
+    * `models/` - Data models (POJOs) representing Firestore documents (Service, Application, User, Applicant).
+    * **Foundational Classes:**
+        * `MyApplication` - The app entry point; handles global library initialization (Cloudinary).
+        * `MainActivity` - The launcher activity; acts as a splash screen to route users based on auth state.
+        * `BaseRouterActivity` - Abstract base class handling common authentication routing and navigation logic.
+        * `Constants` - Centralized file for static data (e.g., Organization Fields).

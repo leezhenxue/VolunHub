@@ -6,8 +6,6 @@
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -23,11 +21,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".auth.LoginActivity"
-            android:exported="false">
-        </activity>
-        <activity
-            android:name=".auth.SignUpActivity"
+            android:name=".auth.AuthActivity"
             android:exported="false">
         </activity>
         <activity

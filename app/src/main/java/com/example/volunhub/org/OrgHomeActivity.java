@@ -12,7 +12,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.volunhub.R;
-import com.example.volunhub.auth.LoginActivity;
+import com.example.volunhub.auth.LoginFragment;
 import com.example.volunhub.databinding.ActivityOrgHomeBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,7 +58,7 @@ public class OrgHomeActivity extends AppCompatActivity {
         if (mAuth != null) {
             mAuth.signOut();
         }
-        Intent intent = new Intent(OrgHomeActivity.this, LoginActivity.class);
+        Intent intent = new Intent(OrgHomeActivity.this, LoginFragment.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

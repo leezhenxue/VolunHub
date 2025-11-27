@@ -2,7 +2,7 @@ package com.example.volunhub;
 
 import android.os.Bundle;
 
-import com.example.volunhub.auth.LoginActivity;
+import com.example.volunhub.auth.AuthActivity;
 import com.example.volunhub.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -40,7 +40,7 @@ public class MainActivity extends BaseRouterActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
-            goToActivity(LoginActivity.class);
+            goToActivity(AuthActivity.class);
         } else {
             routeUser(currentUser.getUid());
         }
