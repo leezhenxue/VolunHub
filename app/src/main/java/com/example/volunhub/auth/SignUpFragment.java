@@ -77,7 +77,6 @@ public class SignUpFragment extends Fragment {
         clearErrorOnType(binding.textInputLayoutOrgField);
         clearErrorOnType(binding.textInputLayoutOrgDescription);
 
-
         binding.editTextStudentName.setFilters(new InputFilter[] {
             new InputFilter.AllCaps()
         });
@@ -144,9 +143,9 @@ public class SignUpFragment extends Fragment {
      * </p>
      */
     private void registerUser() {
-        String email = binding.editTextSignUpEmail.getText().toString().trim();
-        String password = binding.editTextSignUpPassword.getText().toString().trim();
-        String retypePassword = binding.editTextSignUpRetypePassword.getText().toString().trim();
+        String email = getSafeText(binding.editTextSignUpEmail.getText());
+        String password = getSafeText(binding.editTextSignUpPassword.getText());
+        String retypePassword = getSafeText(binding.editTextSignUpRetypePassword.getText());
 
         int selectedId = binding.radioGroupRole.getCheckedRadioButtonId();
 
@@ -204,14 +203,14 @@ public class SignUpFragment extends Fragment {
      */
     private boolean validateForm(String email, String password, String retypePassword, String role) {
         boolean isValid = true;
-        if (!checkEditTextNotEmpty(binding.textInputLayoutEmail, binding.editTextSignUpEmail, "Email is required")) {
+        if (checkEditTextIsEmpty(binding.textInputLayoutEmail, binding.editTextSignUpEmail, "Email is required")) {
             isValid = false;
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             binding.textInputLayoutEmail.setError("Invalid email format");
             isValid = false;
         }
 
-        if (!checkEditTextNotEmpty(binding.textInputLayoutPassword, binding.editTextSignUpPassword, "Password is required")) {
+        if (checkEditTextIsEmpty(binding.textInputLayoutPassword, binding.editTextSignUpPassword, "Password is required")) {
             isValid = false;
         } else if (password.length() < 6 || password.length() > 20) {
             binding.textInputLayoutPassword.setError("Password length must between 6 to 20 characters");
@@ -230,14 +229,14 @@ public class SignUpFragment extends Fragment {
         }
 
         if (role.equals("Student")) {
-            if (!checkEditTextNotEmpty(binding.textInputLayoutStudentName, binding.editTextStudentName, "Full Name is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutStudentName, binding.editTextStudentName, "Full Name is required")) {
                 isValid = false;
-            } else if (binding.editTextStudentName.getText().toString().matches(".*\\d.*")) {
+            } else if (getSafeText(binding.editTextStudentName.getText()).matches(".*\\d.*")) {
                 binding.textInputLayoutStudentName.setError("Name cannot contain numbers");
                 isValid = false;
             }
 
-            String ageText = binding.editTextStudentAge.getText().toString().trim();
+            String ageText = getSafeText(binding.editTextStudentAge.getText());
             if (TextUtils.isEmpty(ageText)) {
                 binding.textInputLayoutStudentAge.setError("Age is required");
                 isValid = false;
@@ -253,17 +252,17 @@ public class SignUpFragment extends Fragment {
                 Toast.makeText(getContext(), "Please select a gender", Toast.LENGTH_SHORT).show();
                 isValid = false;
             }
-            if (!checkEditTextNotEmpty(binding.textInputLayoutStudentIntroduction, binding.editTextStudentIntroduction, "Introduction is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutStudentIntroduction, binding.editTextStudentIntroduction, "Introduction is required")) {
                 isValid = false;
             }
         } else if (role.equals("Organization")) {
-            if (!checkEditTextNotEmpty(binding.textInputLayoutOrgCompanyName, binding.editTextOrgCompanyName, "Company Name is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutOrgCompanyName, binding.editTextOrgCompanyName, "Company Name is required")) {
                 isValid = false;
             }
-            if (!checkEditTextNotEmpty(binding.textInputLayoutOrgDescription, binding.editTextOrgDescription, "Description is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutOrgDescription, binding.editTextOrgDescription, "Description is required")) {
                 isValid = false;
             }
-            if (!checkEditTextNotEmpty(binding.textInputLayoutOrgField, binding.autoCompleteOrgField, "Field is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutOrgField, binding.autoCompleteOrgField, "Field is required")) {
                 isValid = false;
             }
         } else {
@@ -290,18 +289,18 @@ public class SignUpFragment extends Fragment {
         userData.put("role", role);
 
         if (role.equals("Student")) {
-            userData.put("studentName", binding.editTextStudentName.getText().toString().trim());
-            userData.put("studentAge", binding.editTextStudentAge.getText().toString().trim());
+            userData.put("studentName", getSafeText(binding.editTextStudentName.getText()));
+            userData.put("studentAge", getSafeText(binding.editTextStudentAge.getText()));
             String studentGender = binding.radioGroupStudentGender.getCheckedRadioButtonId() == R.id.radio_button_student_male ? "Male" : "Female";
             userData.put("studentGender", studentGender);
-            String studentExperience = binding.editTextStudentExperience.getText().toString().trim();
+            String studentExperience = getSafeText(binding.editTextStudentExperience.getText());
             if (!studentExperience.isEmpty()) {
                 userData.put("studentExperience", studentExperience);
             }
-            userData.put("studentIntroduction", binding.editTextStudentIntroduction.getText().toString().trim());
+            userData.put("studentIntroduction", getSafeText(binding.editTextStudentIntroduction.getText()));
         } else if (role.equals("Organization")) {
-            userData.put("orgCompanyName", binding.editTextOrgCompanyName.getText().toString().trim());
-            userData.put("orgDescription", binding.editTextOrgDescription.getText().toString().trim());
+            userData.put("orgCompanyName", getSafeText(binding.editTextOrgCompanyName.getText()));
+            userData.put("orgDescription", getSafeText(binding.editTextOrgDescription.getText()));
             userData.put("orgField", binding.autoCompleteOrgField.getText().toString().trim());
         }
         return userData;
@@ -385,16 +384,16 @@ public class SignUpFragment extends Fragment {
      *
      * @param field        The EditText to check.
      * @param errorMessage The error message to display.
-     * @return true if the field is not empty, false if it is.
+     * @return true if the field is empty (invalid), false if it has text (valid).
      */
-    private boolean checkEditTextNotEmpty(com.google.android.material.textfield.TextInputLayout inputLayout, @NonNull EditText field, String errorMessage) {
+    private boolean checkEditTextIsEmpty(com.google.android.material.textfield.TextInputLayout inputLayout, @NonNull EditText field, String errorMessage) {
         String text = field.getText().toString().trim();
         if (TextUtils.isEmpty(text)) {
             inputLayout.setError(errorMessage);
-            return false;
+            return true;
         } else {
             inputLayout.setError(null);
-            return true;
+            return false;
         }
     }
 
@@ -445,6 +444,20 @@ public class SignUpFragment extends Fragment {
             @Override
             public void afterTextChanged(android.text.Editable s) {}
         });
+    }
+
+    /**
+     * Safely retrieves text from an {@link android.text.Editable} object, handling potential null values.
+     *
+     * <p>This helper method prevents {@link NullPointerException} when accessing text from an EditText,
+     * as {@code getText()} can theoretically return null. It also automatically trims leading and
+     * trailing whitespace from the result.</p>
+     *
+     * @param editable The Editable object returned by {@code EditText.getText()}.
+     * @return A trimmed String containing the text, or an empty String ("") if the input was null.
+     */
+    private String getSafeText(android.text.Editable editable) {
+        return (editable == null) ? "" : editable.toString().trim();
     }
 
 }

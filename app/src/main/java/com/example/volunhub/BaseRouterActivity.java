@@ -8,7 +8,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.volunhub.auth.AuthActivity;
-import com.example.volunhub.auth.LoginFragment;
 import com.example.volunhub.org.OrgHomeActivity;
 import com.example.volunhub.student.StudentHomeActivity;
 import com.google.firebase.auth.FirebaseAuth;

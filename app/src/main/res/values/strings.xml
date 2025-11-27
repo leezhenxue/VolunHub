@@ -1,4 +1,39 @@
 <resources>
     <string name="app_name">VolunHub</string>
-    <string name="login_email_hint">Email</string>
+
+    <!-- Main Activity -->
+    <string name="checking_account_credentials">Checking account credentials...</string>
+
+    <!-- Login Fragment and Sign Up Fragment -->
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+
+    <!-- Login Fragment -->
+    <string name="title_login">Login</string>
+    <string name="btn_login">Login</string>
+    <string name="action_login">Login to account</string>
+    <string name="link_forgot_password">Forgot Password?</string>
+    <string name="link_go_to_sign_up">Don\'t have an account? Sign Up</string>
+
+    <!-- Sign Up Fragment -->
+    <string name="title_sign_up">Sign Up</string>
+    <string name="btn_upload_image">Upload Image</string>
+    <string name="hint_retype_password">Retype Password</string>
+    <string name="label_i_am_a">I am a:</string>
+    <string name="radio_student">Student</string>
+    <string name="radio_organization">Organization</string>
+    <string name="hint_full_name">Full Name</string>
+    <string name="hint_age">Age</string>
+    <string name="label_gender">Gender:</string>
+    <string name="radio_male">Male</string>
+    <string name="radio_female">Female</string>
+    <string name="hint_experience">Volunteer Experience (Optional)</string>
+    <string name="hint_about_me">About Me</string>
+    <string name="hint_company_name">Company Name</string>
+    <string name="hint_field">Field</string>
+    <string name="hint_description">Description</string>
+    <string name="btn_sign_up">Sign Up</string>
+    <string name="action_complete_signup">Complete registration</string>
+    <string name="link_go_to_login">Already have an account? Login</string>
+
 </resources>

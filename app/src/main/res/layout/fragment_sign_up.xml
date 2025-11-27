@@ -26,7 +26,7 @@
                 android:id="@+id/text_view_sign_up"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sign Up"
+                android:text="@string/title_sign_up"
                 android:textSize="34sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
@@ -70,7 +70,7 @@
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Upload Image" />
+                            android:text="@string/btn_upload_image" />
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -78,7 +78,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:hint="Email"
+                        android:hint="@string/hint_email"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/edit_text_sign_up_email"
@@ -92,7 +92,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:hint="Password"
+                        android:hint="@string/hint_password"
                         app:endIconDrawable="@drawable/selector_password_eye"
                         app:endIconMode="password_toggle"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
@@ -108,7 +108,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="Retype Password"
+                        android:hint="@string/hint_retype_password"
                         app:endIconDrawable="@drawable/selector_password_eye"
                         app:endIconMode="password_toggle"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
@@ -122,7 +122,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="I am a:"
+                        android:text="@string/label_i_am_a"
                         android:textAppearance="?attr/textAppearanceBody1"
                         android:layout_marginBottom="8dp"/>
 
@@ -138,13 +138,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="24dp"
-                            android:text="Student" />
+                            android:text="@string/radio_student" />
 
                         <RadioButton
                             android:id="@+id/radio_button_organization"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Organization" />
+                            android:text="@string/radio_organization" />
                     </RadioGroup>
 
                     <LinearLayout
@@ -159,7 +159,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="Full Name"
+                            android:hint="@string/hint_full_name"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_student_name"
@@ -173,7 +173,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="Age"
+                            android:hint="@string/hint_age"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_student_age"
@@ -185,7 +185,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Gender:"
+                            android:text="@string/label_gender"
                             android:layout_marginBottom="8dp"/>
 
                         <RadioGroup
@@ -199,12 +199,12 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="24dp"
-                                android:text="Male" />
+                                android:text="@string/radio_male" />
                             <RadioButton
                                 android:id="@+id/radio_button_student_female"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Female" />
+                                android:text="@string/radio_female" />
                         </RadioGroup>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -212,7 +212,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="Volunteer Experience (Optional)"
+                            android:hint="@string/hint_experience"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_student_experience"
@@ -227,7 +227,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="About Me"
+                            android:hint="@string/hint_about_me"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_student_introduction"
@@ -250,7 +250,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="Company Name"
+                            android:hint="@string/hint_company_name"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_org_company_name"
@@ -265,12 +265,13 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="Field">
+                            android:hint="@string/hint_field">
                             <AutoCompleteTextView
                                 android:id="@+id/auto_complete_org_field"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="none" />
+                                android:inputType="none"
+                                android:hint="@string/hint_field"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -278,7 +279,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="Description"
+                            android:hint="@string/hint_description"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_org_description"
@@ -297,7 +298,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Sign Up"
+                android:text="@string/btn_sign_up"
+                android:contentDescription="@string/action_complete_signup"
                 app:layout_constraintBottom_toTopOf="@id/button_back_to_login"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -307,7 +309,7 @@
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Already have an account? Login"
+                android:text="@string/link_go_to_login"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />

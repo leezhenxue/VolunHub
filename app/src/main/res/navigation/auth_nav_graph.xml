@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/auth_nav_graph"
     app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.volunhub.auth.LoginFragment"
-        android:label="Login">
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_login_to_sign_up"
             app:destination="@id/signUpFragment" />
@@ -16,7 +18,8 @@
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.volunhub.auth.SignUpFragment"
-        android:label="Sign Up">
+        android:label="Sign Up"
+        tools:layout="@layout/fragment_sign_up">
         <action
             android:id="@+id/action_sign_up_to_login"
             app:destination="@id/loginFragment"

@@ -52,8 +52,8 @@ public class LoginFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
 
         binding.buttonLogin.setOnClickListener(v -> {
-            String email = binding.editTextLoginEmail.getText().toString().trim();
-            String password = binding.editTextLoginPassword.getText().toString().trim();
+            String email = getSafeText(binding.editTextLoginEmail.getText());
+            String password = getSafeText(binding.editTextLoginPassword.getText());
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), "Email and password cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
@@ -83,7 +83,7 @@ public class LoginFragment extends Fragment {
         builder.setView(dialogBinding.getRoot());
 
         builder.setPositiveButton("Send", (dialog, which) -> {
-            String email = dialogBinding.edittextDialogForgotEmail.getText().toString().trim();
+            String email = getSafeText(dialogBinding.edittextDialogForgotEmail.getText());
             if (email.isEmpty()) {
                 Toast.makeText(getContext(), "Please enter your email", Toast.LENGTH_SHORT).show();
                 return;
@@ -142,6 +142,20 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "Authentication failed.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * Safely retrieves text from an {@link android.text.Editable} object, handling potential null values.
+     *
+     * <p>This helper method prevents {@link NullPointerException} when accessing text from an EditText,
+     * as {@code getText()} can theoretically return null. It also automatically trims leading and
+     * trailing whitespace from the result.</p>
+     *
+     * @param editable The Editable object returned by {@code EditText.getText()}.
+     * @return A trimmed String containing the text, or an empty String ("") if the input was null.
+     */
+    private String getSafeText(android.text.Editable editable) {
+        return (editable == null) ? "" : editable.toString().trim();
     }
 
 }
