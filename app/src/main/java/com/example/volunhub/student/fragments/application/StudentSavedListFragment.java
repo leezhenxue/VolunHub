@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,8 @@ public class StudentSavedListFragment extends Fragment {
     private final List<Service> savedList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private ListenerRegistration savedListener;
+
 
     public StudentSavedListFragment() {}
 
@@ -64,27 +67,54 @@ public class StudentSavedListFragment extends Fragment {
         if (mAuth.getCurrentUser() == null) return;
         String myId = mAuth.getCurrentUser().getUid();
 
-        db.collection("users").document(myId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
+        // If a previous Firestore listener exists, remove it to avoid duplicates
+        if (savedListener != null) {
+            savedListener.remove();
+            savedListener = null;
+        }
 
-                        // --- 3. This safely handles the 'Unchecked cast' warning ---
-                        List<String> savedIds = new ArrayList<>();
-                        Object savedServicesField = documentSnapshot.get("savedServices");
-                        if (savedServicesField instanceof List) {
-                            try {
-                                savedIds = (List<String>) savedServicesField;
-                            } catch (ClassCastException e) {
-                                Log.e(TAG, "Error casting savedServices", e);
-                            }
-                        }
+        // Start a real-time listener on the current user's document
+        savedListener = db.collection("users")
+                .document(myId)
+                .addSnapshotListener((documentSnapshot, e) -> {
+                    // Handle Firestore listener errors
+                    if (e != null) {
+                        Log.e(TAG, "Error listening to saved services", e);
+                        return;
+                    }
 
-                        if (savedIds != null && !savedIds.isEmpty()) {
-                            fetchServicesFromIds(savedIds);
-                        } else {
-                            Log.d(TAG, "No saved services.");
-                            binding.textEmptySaved.setVisibility(View.VISIBLE);
+                    // If document does not exist, show empty state
+                    if (documentSnapshot == null || !documentSnapshot.exists()) {
+                        savedList.clear();                       // your saved-list variable
+                        adapter.notifyDataSetChanged();
+                        binding.textEmptySaved.setVisibility(View.VISIBLE);
+                        Log.d(TAG, "User document not found.");
+                        return;
+                    }
+
+                    // Safely read the 'savedServices' field (List<String>)
+                    List<String> savedIds = new ArrayList<>();
+                    Object savedServicesField = documentSnapshot.get("savedServices");
+
+                    if (savedServicesField instanceof List) {
+                        try {
+                            //noinspection unchecked
+                            savedIds = (List<String>) savedServicesField;
+                        } catch (ClassCastException ex) {
+                            Log.e(TAG, "Error casting savedServices", ex);
                         }
+                    }
+
+                    // If there are saved IDs, fetch service details from Firestore
+                    if (savedIds != null && !savedIds.isEmpty()) {
+                        binding.textEmptySaved.setVisibility(View.GONE);
+                        fetchServicesFromIds(savedIds);          // your existing function
+                    } else {
+                        // If list is empty, show empty message
+                        savedList.clear();
+                        adapter.notifyDataSetChanged();
+                        binding.textEmptySaved.setVisibility(View.VISIBLE);
+                        Log.d(TAG, "No saved services.");
                     }
                 });
     }
@@ -104,7 +134,7 @@ public class StudentSavedListFragment extends Fragment {
                     Service service = doc.toObject(Service.class);
                     if (service != null) {
                         service.setDocumentId(doc.getId());
-                        savedList.add(service);
+                        savedList.add(0,service);
                     }
                 }
             }
@@ -121,6 +151,13 @@ public class StudentSavedListFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        // Stop real-time updates when the fragment is destroyed
+        if (savedListener != null) {
+            savedListener.remove();   // cancel Firestore listener to avoid memory leaks
+            savedListener = null;
+        }
+
         binding = null;
     }
 }
