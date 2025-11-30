@@ -22,7 +22,7 @@
         android:label="My Applications"
         tools:layout="@layout/fragment_student_applications">
         <action
-            android:id="@+id/action_my_apps_to_service_detail"
+            android:id="@+id/action_apps_host_to_service_detail"
             app:destination="@id/student_service_detail" />
     </fragment>
 

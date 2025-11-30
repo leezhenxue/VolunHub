@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.volunhub.databinding.FragmentStudentSavedListBinding;
@@ -60,7 +61,19 @@ public class StudentSavedListFragment extends Fragment {
         binding.recyclerStudentSaved.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerStudentSaved.setAdapter(adapter);
 
-        // TODO: Add click listener to navigate to StudentServiceDetailFragment
+        adapter.setOnItemClickListener(application -> {
+            // 1. Use the DIRECTIONS from the HOST fragment
+            // (Make sure you import this specific class)
+            StudentApplicationsFragmentDirections.ActionAppsHostToServiceDetail action =
+                    StudentApplicationsFragmentDirections.actionAppsHostToServiceDetail(
+                            application.getDocumentId()
+                    );
+
+            // 2. Find the NavController
+            // Since we are inside a ViewPager, standard findNavController(view) works fine
+            // because the ViewPager is part of the nav host.
+            Navigation.findNavController(requireView()).navigate(action);
+        });
     }
 
     private void loadSavedServiceIds() {

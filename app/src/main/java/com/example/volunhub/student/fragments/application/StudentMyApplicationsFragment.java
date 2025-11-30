@@ -55,6 +55,20 @@ public class StudentMyApplicationsFragment extends Fragment {
         adapter = new StudentApplicationAdapter(getContext(), applicationList);
         binding.recyclerStudentMyApplications.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerStudentMyApplications.setAdapter(adapter);
+
+        adapter.setOnItemClickListener(application -> {
+            // 1. Use the DIRECTIONS from the HOST fragment
+            // (Make sure you import this specific class)
+            StudentApplicationsFragmentDirections.ActionAppsHostToServiceDetail action =
+                    StudentApplicationsFragmentDirections.actionAppsHostToServiceDetail(
+                            application.getServiceId()
+                    );
+
+            // 2. Find the NavController
+            // Since we are inside a ViewPager, standard findNavController(view) works fine
+            // because the ViewPager is part of the nav host.
+            Navigation.findNavController(requireView()).navigate(action);
+        });
     }
 
     private void loadMyApplications() {

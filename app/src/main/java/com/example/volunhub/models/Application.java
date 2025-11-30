@@ -16,6 +16,7 @@ public class Application {
     private String studentId;
     @ServerTimestamp
     private Date appliedAt;
+    private String documentId;
 
     // Empty constructor for Firestore
     public Application() {}
@@ -28,4 +29,5 @@ public class Application {
     public String getStatus() { return status; }
     public String getStudentId() { return studentId; }
     public Date getAppliedAt() { return appliedAt; }
+    public String getDocumentId() { return documentId; }
 }
