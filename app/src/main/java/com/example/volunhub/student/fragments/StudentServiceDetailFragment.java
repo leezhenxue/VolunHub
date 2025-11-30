@@ -260,43 +260,6 @@ public class StudentServiceDetailFragment extends Fragment {
                 });
     }
 
-//    private void applyToService() {
-//        String studentId = mAuth.getCurrentUser().getUid();
-//        if (currentService == null || studentId == null) {
-//            Toast.makeText(getContext(), "Error: Cannot apply", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        // --- THIS IS THE KEY ---
-//        // 1. Create the new application map
-//        Map<String, Object> newApplication = new HashMap<>();
-//        newApplication.put("studentId", studentId);
-//        newApplication.put("serviceId", serviceId);
-//        newApplication.put("orgId", currentService.getOrgId());
-//        newApplication.put("orgName", currentService.getOrgName());
-//        newApplication.put("serviceTitle", currentService.getTitle());
-//        newApplication.put("status", "Pending");
-//        newApplication.put("appliedAt", Timestamp.now());
-//
-//        // 2. ADD THE SERVICEDATE
-//        newApplication.put("serviceDate", currentService.getServiceDate());
-//
-//        // 3. Save the new application to Firestore
-//        db.collection("applications")
-//                .add(newApplication) // "add()" creates an auto-ID
-//                .addOnSuccessListener(documentReference -> {
-//                    Toast.makeText(getContext(), "Application submitted!", Toast.LENGTH_SHORT).show();
-//
-//                    // Go back to the home screen
-//                    NavController navController = Navigation.findNavController(requireView());
-//                    navController.popBackStack();
-//                })
-//                .addOnFailureListener(e -> {
-//                    Toast.makeText(getContext(), "Error submitting application", Toast.LENGTH_SHORT).show();
-//                    Log.e(TAG, "Error adding document", e);
-//                });
-//    }
-
     private void applyToService() {
         // We no longer check for null here, as checkAndSetButtonState handles it
         if (currentApplicationStatus.equals("Pending")) {
