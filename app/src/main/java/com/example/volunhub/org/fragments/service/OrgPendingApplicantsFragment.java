@@ -23,6 +23,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,32 +110,62 @@ public class OrgPendingApplicantsFragment extends Fragment {
     private void updateApplicationStatus(Applicant applicant, String newStatus) {
         if (serviceId == null) return;
 
-        DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
-        DocumentReference serviceRef = db.collection("services").document(serviceId);
+        final DocumentReference serviceRef = db.collection("services").document(serviceId);
+        final DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
 
-        WriteBatch batch = db.batch();
-        batch.update(appRef, "status", newStatus);
+        db.runTransaction(transaction -> {
+            // 1. Read the Service document (This locks the document)
+            DocumentSnapshot serviceSnapshot = transaction.get(serviceRef);
 
-        if (newStatus.equals("Accepted")) {
-            batch.update(serviceRef, "volunteersApplied", FieldValue.increment(1));
-        }
+            // 2. Only check limits if we are attempting to ACCEPT
+            if (newStatus.equals("Accepted")) {
+                Long needed = serviceSnapshot.getLong("volunteersNeeded");
+                Long applied = serviceSnapshot.getLong("volunteersApplied");
 
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Applicant status updated successfully.");
-                    int position = applicantList.indexOf(applicant);
-                    if (position != -1) {
-                        applicantList.remove(position);
-                        adapter.notifyItemRemoved(position);
-                        if (applicantList.isEmpty()) {
-                            binding.textEmptyPending.setVisibility(View.VISIBLE);
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.w(TAG, "Error updating status", e);
-                    Toast.makeText(getContext(), "Failed to update status", Toast.LENGTH_SHORT).show();
-                });
+                if (needed == null || applied == null) {
+                    throw new FirebaseFirestoreException("Service data corrupted", FirebaseFirestoreException.Code.ABORTED);
+                }
+
+                // 3. THE CRITICAL CHECK: Is it full?
+                if (applied >= needed) {
+                    // If full, STOP everything and throw an exception
+                    throw new FirebaseFirestoreException("FULL", FirebaseFirestoreException.Code.ABORTED);
+                }
+
+                // 4. If not full, increment the count
+                transaction.update(serviceRef, "volunteersApplied", applied + 1);
+            }
+
+            // 5. Update the application status (we do this for both Accept and Reject)
+            transaction.update(appRef, "status", newStatus);
+
+            return null; // Transaction successful
+        }).addOnSuccessListener(aVoid -> {
+            // --- SUCCESS ---
+            Toast.makeText(getContext(), "Applicant " + newStatus, Toast.LENGTH_SHORT).show();
+
+            // Remove from list locally
+            int position = applicantList.indexOf(applicant);
+            if (position != -1) {
+                applicantList.remove(position);
+                adapter.notifyItemRemoved(position);
+                if (applicantList.isEmpty()) {
+                    binding.textEmptyPending.setVisibility(View.VISIBLE);
+                }
+            }
+        }).addOnFailureListener(e -> {
+            // 1. Check if it's our custom "FULL" error
+            if (e instanceof FirebaseFirestoreException) {
+                if ("FULL".equals(e.getMessage())) {
+                    Toast.makeText(getContext(), "The service has reached its application limit.", Toast.LENGTH_LONG).show();
+                    return; // Stop here so we don't crash
+                }
+            }
+
+            // 2. Log the actual error so you can see it in Logcat
+            Log.e(TAG, "Transaction failed: ", e);
+            Toast.makeText(getContext(), "Update failed. Check Logcat.", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void loadPendingApplicants() {
