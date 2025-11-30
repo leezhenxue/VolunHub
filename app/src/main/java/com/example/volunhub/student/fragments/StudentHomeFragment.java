@@ -74,9 +74,6 @@ public class StudentHomeFragment extends Fragment {
                     StudentHomeFragmentDirections.actionHomeToServiceDetail(
                             service.getDocumentId()
                     );
-            // We pass "NOT_APPLIED" because the home page doesn't know the status yet.
-            // The detail page will fetch the real status.
-            action.setInitialStatus("NOT_APPLIED");
             navController.navigate(action);
         });
 
@@ -128,6 +125,7 @@ public class StudentHomeFragment extends Fragment {
     private void loadInitialServices() {
         Log.d(TAG, "Loading initial services...");
         isLoading = true;
+        lastVisibleDocument = null;
         binding.progressBar.setVisibility(View.VISIBLE);
 
         db.collection("services")
@@ -225,6 +223,7 @@ public class StudentHomeFragment extends Fragment {
     private void searchServicesFirestore(String searchText) {
         Log.d(TAG, "Searching for: " + searchText);
         isLoading = true;
+        lastVisibleDocument = null;
         binding.progressBar.setVisibility(View.VISIBLE);
 
         String queryText = searchText.toLowerCase();

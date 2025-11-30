@@ -15,6 +15,7 @@ import com.example.volunhub.databinding.FragmentStudentMyApplicationsBinding;
 import com.example.volunhub.models.Application;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class StudentMyApplicationsFragment extends Fragment {
     private List<Application> applicationList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private ListenerRegistration applicationsListener;
 
     public StudentMyApplicationsFragment() {}
 
@@ -53,37 +55,61 @@ public class StudentMyApplicationsFragment extends Fragment {
         adapter = new StudentApplicationAdapter(getContext(), applicationList);
         binding.recyclerStudentMyApplications.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerStudentMyApplications.setAdapter(adapter);
+
+        adapter.setOnItemClickListener(application -> {
+            // 1. Use the DIRECTIONS from the HOST fragment
+            // (Make sure you import this specific class)
+            StudentApplicationsFragmentDirections.ActionAppsHostToServiceDetail action =
+                    StudentApplicationsFragmentDirections.actionAppsHostToServiceDetail(
+                            application.getServiceId()
+                    );
+
+            // 2. Find the NavController
+            // Since we are inside a ViewPager, standard findNavController(view) works fine
+            // because the ViewPager is part of the nav host.
+            Navigation.findNavController(requireView()).navigate(action);
+        });
     }
 
     private void loadMyApplications() {
         if (mAuth.getCurrentUser() == null) return;
         String myId = mAuth.getCurrentUser().getUid();
 
-        // This query finds all applications that are "Pending" OR "Accepted"
-        db.collection("applications")
+        // Real-time listener version
+        applicationsListener = db.collection("applications")
                 .whereEqualTo("studentId", myId)
-                .whereIn("status", Arrays.asList("Pending", "Accepted"))
+                .whereIn("status", Arrays.asList("Pending", "Accepted", "Rejected"))
                 .orderBy("appliedAt", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot.isEmpty()) {
-                        Log.d(TAG, "No applications found.");
-                        binding.textEmptyApplications.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.textEmptyApplications.setVisibility(View.GONE);
-                        applicationList.clear();
-                        applicationList.addAll(querySnapshot.toObjects(Application.class));
-                        adapter.notifyDataSetChanged();
+                .addSnapshotListener((querySnapshot, error) -> {
+
+                    if (error != null) {
+                        Log.e(TAG, "Error loading applications", error);
+                        return;
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading applications", e);
+
+                    if (querySnapshot == null || querySnapshot.isEmpty()) {
+                        Log.d(TAG, "No applications found.");
+
+                        binding.textEmptyApplications.setVisibility(View.VISIBLE);
+                        applicationList.clear();
+                        adapter.notifyDataSetChanged();
+                        return;
+                    }
+
+                    // If have data
+                    binding.textEmptyApplications.setVisibility(View.GONE);
+                    applicationList.clear();
+                    applicationList.addAll(querySnapshot.toObjects(Application.class));
+                    adapter.notifyDataSetChanged();
                 });
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (applicationsListener != null) {
+            applicationsListener.remove();
+        }
         binding = null;
     }
 
