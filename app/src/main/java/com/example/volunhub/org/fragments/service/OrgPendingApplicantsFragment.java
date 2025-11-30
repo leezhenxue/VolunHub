@@ -20,6 +20,7 @@ import com.example.volunhub.org.ApplicantAdapter;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
@@ -114,37 +115,29 @@ public class OrgPendingApplicantsFragment extends Fragment {
         final DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
 
         db.runTransaction(transaction -> {
-            // 1. Read the Service document (This locks the document)
+            // 1. READ: Get current service state
             DocumentSnapshot serviceSnapshot = transaction.get(serviceRef);
+            long applied = serviceSnapshot.getLong("volunteersApplied");
+            long needed = serviceSnapshot.getLong("volunteersNeeded");
 
-            // 2. Only check limits if we are attempting to ACCEPT
-            if (newStatus.equals("Accepted")) {
-                Long needed = serviceSnapshot.getLong("volunteersNeeded");
-                Long applied = serviceSnapshot.getLong("volunteersApplied");
-
-                if (needed == null || applied == null) {
-                    throw new FirebaseFirestoreException("Service data corrupted", FirebaseFirestoreException.Code.ABORTED);
-                }
-
-                // 3. THE CRITICAL CHECK: Is it full?
-                if (applied >= needed) {
-                    // If full, STOP everything and throw an exception
-                    throw new FirebaseFirestoreException("FULL", FirebaseFirestoreException.Code.ABORTED);
-                }
-
-                // 4. If not full, increment the count
-                transaction.update(serviceRef, "volunteersApplied", applied + 1);
-            }
-
-            // 5. Update the application status (we do this for both Accept and Reject)
+            // 2. WRITE: Update Application Status
             transaction.update(appRef, "status", newStatus);
 
-            return null; // Transaction successful
-        }).addOnSuccessListener(aVoid -> {
-            // --- SUCCESS ---
-            Toast.makeText(getContext(), "Applicant " + newStatus, Toast.LENGTH_SHORT).show();
+            // 3. WRITE: Update Service Counter & Check Full
+            if (newStatus.equals("Accepted")) {
+                long newCount = applied + 1;
+                transaction.update(serviceRef, "volunteersApplied", newCount);
 
-            // Remove from list locally
+                // Auto-close the service if full
+                if (newCount >= needed) {
+                    transaction.update(serviceRef, "status", "Closed");
+                }
+            }
+
+            return null; // Success
+        }).addOnSuccessListener(result -> {
+            // 4. UI Cleanup (Remove item from list)
+            Log.d(TAG, "Status updated successfully!");
             int position = applicantList.indexOf(applicant);
             if (position != -1) {
                 applicantList.remove(position);
