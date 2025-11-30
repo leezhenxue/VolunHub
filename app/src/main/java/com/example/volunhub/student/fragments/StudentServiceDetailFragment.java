@@ -160,6 +160,16 @@ public class StudentServiceDetailFragment extends Fragment {
                         // Populate the UI
                         binding.textDetailTitle.setText(currentService.getTitle());
                         binding.textDetailOrgName.setText(currentService.getOrgName());
+
+                        if (currentService.getServiceDate() != null) {
+                            // Import SimpleDateFormat and Locale
+                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM d, yyyy • h:mm a", java.util.Locale.getDefault());
+                            binding.textDetailDate.setText(sdf.format(currentService.getServiceDate()));
+                        } else {
+                            binding.textDetailDate.setText("Date TBD");
+                        }
+                        String stats = currentService.getVolunteersApplied() + " / " + currentService.getVolunteersNeeded();
+                        binding.textDetailVolunteers.setText(stats);
                         loadOrgLogo(currentService.getOrgId());
                         binding.textDetailDescription.setText("Description\n" + currentService.getDescription());
                         binding.textDetailRequirements.setText("Requirements\n" + currentService.getRequirements());
