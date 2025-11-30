@@ -24,6 +24,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,8 +111,8 @@ public class OrgPendingApplicantsFragment extends Fragment {
     private void updateApplicationStatus(Applicant applicant, String newStatus) {
         if (serviceId == null) return;
 
-        DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
-        DocumentReference serviceRef = db.collection("services").document(serviceId);
+        final DocumentReference serviceRef = db.collection("services").document(serviceId);
+        final DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
 
         db.runTransaction(transaction -> {
             // 1. READ: Get current service state
@@ -145,8 +147,17 @@ public class OrgPendingApplicantsFragment extends Fragment {
                 }
             }
         }).addOnFailureListener(e -> {
-            Log.w(TAG, "Transaction failed", e);
-            Toast.makeText(getContext(), "Failed to update status", Toast.LENGTH_SHORT).show();
+            // 1. Check if it's our custom "FULL" error
+            if (e instanceof FirebaseFirestoreException) {
+                if ("FULL".equals(e.getMessage())) {
+                    Toast.makeText(getContext(), "The service has reached its application limit.", Toast.LENGTH_LONG).show();
+                    return; // Stop here so we don't crash
+                }
+            }
+
+            // 2. Log the actual error so you can see it in Logcat
+            Log.e(TAG, "Transaction failed: ", e);
+            Toast.makeText(getContext(), "Update failed. Check Logcat.", Toast.LENGTH_SHORT).show();
         });
     }
 
