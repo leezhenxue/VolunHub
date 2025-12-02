@@ -1,5 +1,6 @@
 package com.example.volunhub.student.fragments;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
@@ -176,9 +178,108 @@ public class StudentServiceDetailFragment extends Fragment {
                         checkAndSetButtonState();
                     }
                 } else {
-                    Toast.makeText(getContext(), "Service not found", Toast.LENGTH_SHORT).show();
+                    // Service document does not exist (likely deleted by organization)
+                    Log.w(TAG, "Service document not found. ServiceId: " + serviceId + " - This volunteer opportunity may have been removed.");
+                    showServiceUnavailableDialog();
                 }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error loading service details", e);
+                Toast.makeText(getContext(), "Error loading service details", Toast.LENGTH_SHORT).show();
             });
+    }
+
+    /**
+     * Shows an AlertDialog when the service is unavailable (deleted by organization).
+     * If the user has an application for this service, provides option to remove it.
+     */
+    private void showServiceUnavailableDialog() {
+        // Check if user has an application for this service
+        if (mAuth.getCurrentUser() == null || serviceId == null) {
+            // No user or serviceId, just show simple dialog
+            showSimpleUnavailableDialog();
+            return;
+        }
+
+        String studentId = mAuth.getCurrentUser().getUid();
+        db.collection("applications")
+                .whereEqualTo("studentId", studentId)
+                .whereEqualTo("serviceId", serviceId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        // User has an application, show dialog with remove option
+                        DocumentSnapshot appDoc = querySnapshot.getDocuments().get(0);
+                        String applicationDocId = appDoc.getId();
+                        showUnavailableDialogWithRemoveOption(applicationDocId);
+                    } else {
+                        // No application found, show simple dialog
+                        showSimpleUnavailableDialog();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error checking application", e);
+                    // On error, show simple dialog
+                    showSimpleUnavailableDialog();
+                });
+    }
+
+    /**
+     * Shows a simple dialog without remove option (when user has no application).
+     */
+    private void showSimpleUnavailableDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.service_unavailable_title)
+                .setMessage(R.string.service_unavailable_message)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    Navigation.findNavController(requireView()).navigateUp();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    /**
+     * Shows a dialog with option to remove the application.
+     */
+    private void showUnavailableDialogWithRemoveOption(String applicationDocId) {
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.service_unavailable_title)
+                .setMessage(R.string.service_unavailable_message)
+                .setPositiveButton(R.string.remove_application, (d, which) -> {
+                    removeApplication(applicationDocId);
+                })
+                .setNegativeButton(R.string.cancel, (d, which) -> {
+                    Navigation.findNavController(requireView()).navigateUp();
+                })
+                .create();
+
+        dialog.setOnShowListener(d -> {
+            // Set positive button text color to red
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.error_red)
+            );
+        });
+
+        dialog.show();
+    }
+
+    /**
+     * Removes the application from Firestore and navigates back.
+     */
+    private void removeApplication(String applicationDocId) {
+        db.collection("applications").document(applicationDocId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Application removed successfully: " + applicationDocId);
+                    Toast.makeText(getContext(), R.string.application_removed_success, Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error removing application", e);
+                    Toast.makeText(getContext(), R.string.application_removed_error, Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).navigateUp();
+                });
     }
 
     private void checkAndSetButtonState() {

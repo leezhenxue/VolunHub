@@ -36,4 +36,20 @@
     <string name="action_complete_signup">Complete registration</string>
     <string name="link_go_to_login">Already have an account? Login</string>
 
+    <!-- Manage Service Fragment -->
+    <string name="delete_service">Delete Service</string>
+    <string name="delete_confirm_title">Delete Service</string>
+    <string name="delete_confirm_message">Are you sure you want to delete this service? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_success">Service deleted successfully</string>
+    <string name="delete_error">Error deleting service</string>
+
+    <!-- Student Service Detail Fragment -->
+    <string name="service_unavailable_title">Service Unavailable</string>
+    <string name="service_unavailable_message">This volunteer opportunity has been removed by the organization.</string>
+    <string name="remove_application">Remove Application</string>
+    <string name="application_removed_success">Application removed successfully</string>
+    <string name="application_removed_error">Error removing application</string>
+
 </resources>

@@ -10,13 +10,28 @@
         android:id="@+id/text_manage_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
         android:textAppearance="?attr/textAppearanceHeadlineSmall"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_delete_service"
         tools:text="Community Park Cleanup" />
+
+    <ImageButton
+        android:id="@+id/button_delete_service"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/delete_service"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="?attr/colorError" />
 
     <TextView
         android:id="@+id/text_manage_description"

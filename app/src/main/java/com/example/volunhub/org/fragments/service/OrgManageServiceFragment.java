@@ -1,18 +1,22 @@
 package com.example.volunhub.org.fragments.service;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 // --- 1. Add these imports ---
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.firestore.AggregateSource;
 
+import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgManageServiceBinding;
 import com.example.volunhub.models.Service;
 import com.example.volunhub.org.OrgManageViewPagerAdapter;
@@ -70,6 +74,9 @@ public class OrgManageServiceFragment extends Fragment {
 
         // 4. --- NEW: Fetch and update the counts on the tabs ---
         updateTabCounts();
+
+        // 5. Set up delete button click listener
+        binding.buttonDeleteService.setOnClickListener(v -> showDeleteConfirmationDialog());
     }
 
     private void loadServiceDetails() {
@@ -149,6 +156,52 @@ public class OrgManageServiceFragment extends Fragment {
                 tab.setText(title);
             }
         }
+    }
+
+    /**
+     * Shows a confirmation dialog before deleting the service.
+     */
+    private void showDeleteConfirmationDialog() {
+        if (serviceId == null) {
+            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.delete_confirm_title)
+                .setMessage(R.string.delete_confirm_message)
+                .setPositiveButton(R.string.delete, (dialog, which) -> deleteService())
+                .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    /**
+     * Deletes the service from Firestore.
+     * On success: Shows a success toast and navigates back to the previous screen.
+     * On failure: Shows an error toast.
+     */
+    private void deleteService() {
+        if (serviceId == null) {
+            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        db.collection("services").document(serviceId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Service deleted successfully: " + serviceId);
+                    Toast.makeText(getContext(), R.string.delete_success, Toast.LENGTH_SHORT).show();
+                    // Navigate back to the previous screen
+                    Navigation.findNavController(requireView()).popBackStack();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting service", e);
+                    String errorMsg = getString(R.string.delete_error);
+                    if (e.getMessage() != null) {
+                        errorMsg += ": " + e.getMessage();
+                    }
+                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                });
     }
 
     @Override
