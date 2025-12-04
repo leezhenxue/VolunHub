@@ -7,7 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.volunhub.auth.LoginActivity;
+import com.example.volunhub.auth.AuthActivity;
 import com.example.volunhub.org.OrgHomeActivity;
 import com.example.volunhub.student.StudentHomeActivity;
 import com.google.firebase.auth.FirebaseAuth;
@@ -68,19 +68,19 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
                         Log.w(TAG, "Role is null or unknown. Sending to LoginActivity.");
                         Toast.makeText(this, "User role not found.", Toast.LENGTH_SHORT).show();
                         mAuth.signOut();
-                        goToActivity(LoginActivity.class);
+                        goToActivity(AuthActivity.class);
                     }
                 } else {
                     Log.w(TAG, "No user document found in Firestore!");
                     Toast.makeText(this, "User data not found.", Toast.LENGTH_SHORT).show();
                     mAuth.signOut();
-                    goToActivity(LoginActivity.class);
+                    goToActivity(AuthActivity.class);
                 }
             } else {
                 Log.w(TAG, "routeUser get failed with ", task.getException());
                 Toast.makeText(this, "Failed to read user data.", Toast.LENGTH_SHORT).show();
                 mAuth.signOut();
-                goToActivity(LoginActivity.class);
+                goToActivity(AuthActivity.class);
             }
         });
     }

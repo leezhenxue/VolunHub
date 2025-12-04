@@ -10,30 +10,73 @@
         android:id="@+id/text_manage_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
         android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_delete_service"
+        tools:text="Community Park Cleanup" />
+
+    <ImageButton
+        android:id="@+id/button_delete_service"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/delete_service"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:text="Service Title" />
+        app:tint="?attr/colorError" />
 
     <TextView
         android:id="@+id/text_manage_description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
         app:layout_constraintTop_toBottomOf="@id/text_manage_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginHorizontal="16dp"
-        tools:text="This is the service description..." />
+        tools:text="Help us clean up the local park..." />
+
+    <TextView
+        android:id="@+id/text_manage_requirements"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        app:layout_constraintTop_toBottomOf="@id/text_manage_description"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginHorizontal="16dp"
+        tools:text="Requirements: Bring gloves." />
+
+    <TextView
+        android:id="@+id/text_manage_stats"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAppearance="?attr/textAppearanceLabelLarge"
+        android:textColor="?attr/colorPrimary"
+        app:layout_constraintTop_toBottomOf="@id/text_manage_requirements"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginHorizontal="16dp"
+        tools:text="Applicants: 5 / 20" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout_org"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/text_manage_description" />
+        app:layout_constraintTop_toBottomOf="@id/text_manage_stats" />
+
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager_org"
         android:layout_width="match_parent"

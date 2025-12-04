@@ -20,9 +20,12 @@ import com.example.volunhub.org.ApplicantAdapter;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,34 +109,96 @@ public class OrgPendingApplicantsFragment extends Fragment {
     }
 
     private void updateApplicationStatus(Applicant applicant, String newStatus) {
-        if (serviceId == null) return;
-
-        DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
-        DocumentReference serviceRef = db.collection("services").document(serviceId);
-
-        WriteBatch batch = db.batch();
-        batch.update(appRef, "status", newStatus);
-
-        if (newStatus.equals("Accepted")) {
-            batch.update(serviceRef, "volunteersApplied", FieldValue.increment(1));
+        // Validate inputs
+        if (serviceId == null) {
+            Log.e(TAG, "Service ID is null, cannot update application status.");
+            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Applicant status updated successfully.");
-                    int position = applicantList.indexOf(applicant);
-                    if (position != -1) {
-                        applicantList.remove(position);
-                        adapter.notifyItemRemoved(position);
-                        if (applicantList.isEmpty()) {
-                            binding.textEmptyPending.setVisibility(View.VISIBLE);
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.w(TAG, "Error updating status", e);
-                    Toast.makeText(getContext(), "Failed to update status", Toast.LENGTH_SHORT).show();
-                });
+        String applicationId = applicant.getApplicationId();
+        if (applicationId == null || applicationId.isEmpty()) {
+            Log.e(TAG, "Application ID is null or empty, cannot update application status.");
+            Toast.makeText(getContext(), "Error: Application ID is missing", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Updating application status. ApplicationId: " + applicationId + ", NewStatus: " + newStatus);
+
+        // Get document references - CRITICAL: Use existing document ID, NEVER create new document
+        final DocumentReference serviceRef = db.collection("services").document(serviceId);
+        final DocumentReference appRef = db.collection("applications").document(applicationId);
+
+        // Use transaction to ensure atomic update
+        db.runTransaction(transaction -> {
+            // 1. READ: Verify application document exists
+            DocumentSnapshot appSnapshot = transaction.get(appRef);
+            if (!appSnapshot.exists()) {
+                throw new IllegalStateException("Application document does not exist: " + applicationId);
+            }
+
+            // Verify current status is "Pending" (optional check for safety)
+            String currentStatus = appSnapshot.getString("status");
+            if (currentStatus == null || !currentStatus.equals("Pending")) {
+                Log.w(TAG, "Application status is not Pending. Current: " + currentStatus);
+                // Continue anyway, but log warning
+            }
+
+            // 2. READ: Get current service state
+            DocumentSnapshot serviceSnapshot = transaction.get(serviceRef);
+            if (!serviceSnapshot.exists()) {
+                throw new IllegalStateException("Service document does not exist: " + serviceId);
+            }
+            long applied = serviceSnapshot.getLong("volunteersApplied");
+            long needed = serviceSnapshot.getLong("volunteersNeeded");
+
+            // 3. WRITE: Update Application Status - CRITICAL: Use update(), NOT add() or set()
+            transaction.update(appRef, "status", newStatus);
+
+            // 4. WRITE: Update Service Counter & Check Full (only for Accepted)
+            if (newStatus.equals("Accepted")) {
+                long newCount = applied + 1;
+                transaction.update(serviceRef, "volunteersApplied", newCount);
+
+                // Auto-close the service if full
+                if (newCount >= needed) {
+                    transaction.update(serviceRef, "status", "Closed");
+                }
+            }
+
+            return null; // Success
+        }).addOnSuccessListener(result -> {
+            // 5. UI Cleanup: Remove item from Pending list immediately
+            Log.d(TAG, "Application status updated successfully! ApplicationId: " + applicationId);
+            Toast.makeText(getContext(), "Application " + newStatus.toLowerCase() + " successfully", Toast.LENGTH_SHORT).show();
+            
+            // Find and remove the applicant from the list
+            int position = applicantList.indexOf(applicant);
+            if (position != -1) {
+                applicantList.remove(position);
+                adapter.notifyItemRemoved(position);
+                adapter.notifyItemRangeChanged(position, applicantList.size()); // Notify remaining items
+                
+                // Show empty state if list is now empty
+                if (applicantList.isEmpty()) {
+                    binding.textEmptyPending.setVisibility(View.VISIBLE);
+                }
+            } else {
+                Log.w(TAG, "Applicant not found in list, refreshing entire list");
+                // Fallback: reload the entire list if item not found
+                loadPendingApplicants();
+            }
+        }).addOnFailureListener(e -> {
+            // Error handling
+            Log.e(TAG, "Failed to update application status. ApplicationId: " + applicationId, e);
+            
+            String errorMessage = "Failed to update application status";
+            if (e.getMessage() != null) {
+                errorMessage += ": " + e.getMessage();
+            }
+            
+            Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+        });
     }
 
     private void loadPendingApplicants() {
