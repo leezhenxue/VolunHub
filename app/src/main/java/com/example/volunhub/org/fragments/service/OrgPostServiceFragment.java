@@ -25,6 +25,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Calendar;
+import java.util.TimeZone;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 
 public class OrgPostServiceFragment extends Fragment {
 
@@ -58,6 +62,7 @@ public class OrgPostServiceFragment extends Fragment {
         binding.inputLayoutServiceDate.setEndIconOnClickListener(v -> showDatePicker());
     }
 
+    // Replace your old showDatePicker with this updated logic
     private void showDatePicker() {
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Select service date")
@@ -65,14 +70,55 @@ public class OrgPostServiceFragment extends Fragment {
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
-            // Convert the selected UTC milliseconds to a Date object
-            selectedServiceDate = new Date(selection);
-            // Format the date for display in the EditText
-            SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
-            binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+            // 1. Capture the selected date (It comes in UTC)
+            Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            utcCalendar.setTimeInMillis(selection);
+
+            // 2. Launch the Time Picker immediately
+            showTimePicker(utcCalendar);
         });
 
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
+    }
+
+    // Add this new method
+    private void showTimePicker(Calendar dateCalendar) {
+        // Default to 12:00 PM or current time
+        MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_12H)
+                .setHour(12)
+                .setMinute(0)
+                .setTitleText("Select service time")
+                .build();
+
+        timePicker.addOnPositiveButtonClickListener(v -> {
+            int hour = timePicker.getHour();
+            int minute = timePicker.getMinute();
+
+            // 3. Combine Date + Time
+            // We use a "Local" calendar to build the final object
+            Calendar finalCalendar = Calendar.getInstance();
+
+            // Copy Year/Month/Day from the Date Picker (UTC)
+            finalCalendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
+            finalCalendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
+            finalCalendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH));
+
+            // Set Hour/Minute from the Time Picker
+            finalCalendar.set(Calendar.HOUR_OF_DAY, hour);
+            finalCalendar.set(Calendar.MINUTE, minute);
+            finalCalendar.set(Calendar.SECOND, 0);
+            finalCalendar.set(Calendar.MILLISECOND, 0);
+
+            // 4. Save the final result
+            selectedServiceDate = finalCalendar.getTime();
+
+            // 5. Update the UI text
+            SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+            binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+        });
+
+        timePicker.show(getParentFragmentManager(), "TIME_PICKER");
     }
 
     private void postService() {
@@ -120,8 +166,20 @@ public class OrgPostServiceFragment extends Fragment {
         // You might need to fetch orgName from your Firestore "users" collection
         // For simplicity, let's assume you have it or fetch it before this
         // Or pass it as an argument if coming from OrgDashboardFragment
-        String orgName = "Unknown Organization"; // TODO: Fetch actual org name from Firestore
+        db.collection("users").document(orgId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String orgName = documentSnapshot.getString("orgCompanyName");
+                        if (orgName == null) orgName = "Unknown Organization";
+                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded);
+                    } else {
+                        Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
+    }
+    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded) {
+        // Create a new service document in the)
         Map<String, Object> serviceData = new HashMap<>();
         serviceData.put("orgId", orgId);
         serviceData.put("orgName", orgName); // Make sure this is correct
