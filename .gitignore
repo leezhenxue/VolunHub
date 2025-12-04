@@ -1,16 +1,31 @@
+# ========================
+# Android / Gradle Build
+# ========================
 *.iml
-.gradle
+.gradle/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-/.idea/markdown.xml
+/.idea/
 .DS_Store
-/build
-/captures
+/build/
+/captures/
 .externalNativeBuild
 .cxx
-local.properties
+*.apk
+*.aab
+*.class
+
+# ========================
+# Project Specific
+# ========================
+# Ignore the build folder inside the app module
+/app/build/
+
+# ========================
+# SECRETS (Very Important)
+# ========================
+# Ignore google-services.json specifically in the app folder
+/app/google-services.json
+
+# If you have keystores, ignore them too
+*.jks
+*.keystore
