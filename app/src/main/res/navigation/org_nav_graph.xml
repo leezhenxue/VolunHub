@@ -79,4 +79,10 @@
             app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/viewStudentProfileFragment"
+        android:name="com.example.volunhub.org.fragments.ViewStudentProfileFragment"
+        android:label="Student Profile"
+        tools:layout="@layout/fragment_view_student_profile" />
+
 </navigation>
