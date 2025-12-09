@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Student gender options -->
+    <string-array name="gender_options">
+        <item>Male</item>
+        <item>Female</item>
+        <item>Other</item>
+        <item>Prefer not to say</item>
+    </string-array>
+
+    <!-- Organization fields -->
+    <string-array name="org_field_options">
+        <item>Environment</item>
+        <item>Education</item>
+        <item>Healthcare</item>
+        <item>Animal Welfare</item>
+        <item>Social Services</item>
+        <item>Community Development</item>
+        <item>Arts &amp; Culture</item>
+        <item>Youth Development</item>
+        <item>Disaster Relief</item>
+        <item>Technology</item>
+    </string-array>
+</resources>

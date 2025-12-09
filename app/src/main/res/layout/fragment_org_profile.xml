@@ -8,25 +8,24 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
         android:paddingBottom="80dp"
-        android:clipToPadding="false">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <com.google.android.material.imageview.ShapeableImageView
+            <ImageView
                 android:id="@+id/image_org_profile_logo"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:scaleType="centerCrop"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:shapeAppearanceOverlay="@style/CircularShapeAppearance"
                 tools:src="@drawable/ic_org_dashboard" />
 
             <TextView
@@ -38,7 +37,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/image_org_profile_logo"
                 app:layout_constraintTop_toTopOf="@id/image_org_profile_logo"
-                tools:text="Green Earth Foundation" />
+                tools:text="Organization Name" />
+
+            <TextView
+                android:id="@+id/text_org_profile_email"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?android:attr/textColorSecondary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/text_org_profile_name"
+                app:layout_constraintTop_toBottomOf="@id/text_org_profile_name"
+                tools:text="organization@email.com" />
 
             <TextView
                 android:id="@+id/text_org_profile_field"
@@ -49,8 +60,8 @@
                 android:textColor="?android:attr/textColorSecondary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@id/text_org_profile_name"
-                app:layout_constraintTop_toBottomOf="@id/text_org_profile_name"
-                tools:text="Environmental Conservation" />
+                app:layout_constraintTop_toBottomOf="@id/text_org_profile_email"
+                tools:text="Environment" />
 
             <TextView
                 android:id="@+id/label_org_profile_desc"
@@ -72,11 +83,12 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/label_org_profile_desc"
-                tools:text="We are a non-profit dedicated to planting trees and cleaning up our local parks. Our mission is to build a greener, healthier community." />
+                tools:text="Organization description goes here..." />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- 添加 FAB 编辑按钮 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_org_edit_profile"
         android:layout_width="wrap_content"

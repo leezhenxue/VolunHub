@@ -64,17 +64,61 @@ public class StudentProfileFragment extends Fragment {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // Populate the views
-                        binding.textStudentProfileName.setText(documentSnapshot.getString("studentName"));
-                        binding.textStudentProfileEmail.setText(documentSnapshot.getString("email"));
-                        binding.textStudentProfileIntro.setText(documentSnapshot.getString("studentIntroduction"));
+                        String studentName = documentSnapshot.getString("studentName");
+                        String email = documentSnapshot.getString("email");
+                        String intro = documentSnapshot.getString("studentIntroduction");
+
+                        if (studentName != null) {
+                            binding.textStudentProfileName.setText(studentName);
+                        }
+
+                        if (email != null) {
+                            binding.textStudentProfileEmail.setText(email);
+                        }
+
+                        if (intro != null) {
+                            binding.textStudentProfileIntro.setText(intro);
+                        }
+
+                        // Load age and gender
+                        Object ageObj = documentSnapshot.get("studentAge");
+                        String gender = documentSnapshot.getString("gender");
+
+                        if (ageObj != null) {
+                            String ageText = "Age: " + ageObj.toString();
+                            binding.textStudentProfileAge.setText(ageText);
+                        } else {
+                            binding.textStudentProfileAge.setText("Age: Not specified");
+                        }
+
+                        if (gender != null && !gender.trim().isEmpty()) {
+                            String genderText = "Gender: " + gender;
+                            binding.textStudentProfileGender.setText(genderText);
+                        } else {
+                            binding.textStudentProfileGender.setText("Gender: Not specified");
+                        }
+
+                        // Load volunteer experience
+                        String experience = documentSnapshot.getString("volunteerExperience");
+                        if (experience != null && !experience.trim().isEmpty()) {
+                            binding.textStudentProfileExperience.setText(experience);
+                        } else {
+                            binding.textStudentProfileExperience.setText("No volunteer experience yet.");
+                        }
 
                         // Load profile image
                         if (getContext() != null) {
-                            Glide.with(getContext())
-                                    .load(documentSnapshot.getString("profileImageUrl"))
-                                    .placeholder(R.drawable.ic_profile)
-                                    .circleCrop()
-                                    .into(binding.imageStudentProfilePicture);
+                            String imageUrl = documentSnapshot.getString("profileImageUrl");
+                            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                                Glide.with(getContext())
+                                        .load(imageUrl)
+                                        .placeholder(R.drawable.ic_profile)
+                                        .circleCrop()
+                                        .into(binding.imageStudentProfilePicture);
+                            } else {
+                                // Set default image if no profile image
+                                binding.imageStudentProfilePicture.setImageResource(R.drawable.ic_profile);
+                            }
                         }
                     } else {
                         Log.w(TAG, "Student document not found.");

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.example.volunhub.Constants;
+import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgEditProfileBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -45,58 +46,99 @@ public class OrgEditProfileFragment extends Fragment {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() == null) {
-            // No user, something is wrong
             return;
         }
 
-        // Get a reference to this org's document
         orgDocRef = db.collection("users").document(mAuth.getCurrentUser().getUid());
 
-        setupOrgFieldSpinner();
+        setupOrgFieldDropdown();
         loadCurrentProfileData();
 
         binding.buttonSaveOrgProfile.setOnClickListener(v -> saveProfileChanges());
     }
 
-    private void setupOrgFieldSpinner() {
-        // Use the same adapter from your SignUpActivity
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
+    private void setupOrgFieldDropdown() {
+        String[] orgFields = getResources().getStringArray(R.array.org_field_options);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                orgFields
+        );
         binding.autoCompleteEditOrgField.setAdapter(adapter);
+        binding.autoCompleteEditOrgField.setKeyListener(null);
+        binding.autoCompleteEditOrgField.setOnClickListener(v -> binding.autoCompleteEditOrgField.showDropDown());
     }
 
     private void loadCurrentProfileData() {
         orgDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                // Pre-fill the form with existing data
-                binding.editTextEditOrgName.setText(documentSnapshot.getString("orgCompanyName"));
-                binding.editTextEditOrgDesc.setText(documentSnapshot.getString("orgDescription"));
-                binding.autoCompleteEditOrgField.setText(documentSnapshot.getString("orgField"), false);
-                // TODO: Load the profile image
+                String orgName = documentSnapshot.getString("orgCompanyName");
+                String email = documentSnapshot.getString("email");
+                String orgField = documentSnapshot.getString("orgField");
+                String orgDesc = documentSnapshot.getString("orgDescription");
+
+                if (orgName != null) {
+                    binding.editTextEditOrgName.setText(orgName);
+                }
+                if (email != null) {
+                    binding.editTextEditOrgEmail.setText(email);
+                }
+                if (orgField != null) {
+                    binding.autoCompleteEditOrgField.setText(orgField, false);
+                }
+                if (orgDesc != null) {
+                    binding.editTextEditOrgDesc.setText(orgDesc);
+                }
             }
         });
     }
 
     private void saveProfileChanges() {
-        String orgName = getSafeText(binding.editTextEditOrgName.getText());
-        String orgField = getSafeText(binding.autoCompleteEditOrgField.getText());
-        String orgDesc = getSafeText(binding.editTextEditOrgDesc.getText());
+        String orgName = binding.editTextEditOrgName.getText().toString().trim();
+        String email = binding.editTextEditOrgEmail.getText().toString().trim();
+        String orgField = binding.autoCompleteEditOrgField.getText().toString().trim();
+        String orgDesc = binding.editTextEditOrgDesc.getText().toString().trim();
 
-        if (orgName.isEmpty() || orgField.isEmpty() || orgDesc.isEmpty()) {
-            Toast.makeText(getContext(), "All fields are required", Toast.LENGTH_SHORT).show();
+        if (orgName.isEmpty()) {
+            binding.inputLayoutEditOrgName.setError("Organization name is required");
             return;
+        } else {
+            binding.inputLayoutEditOrgName.setError(null);
         }
 
-        // Create a map of *only* the fields we want to update
+        if (email.isEmpty()) {
+            binding.inputLayoutEditOrgEmail.setError("Email is required");
+            return;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.inputLayoutEditOrgEmail.setError("Please enter a valid email");
+            return;
+        } else {
+            binding.inputLayoutEditOrgEmail.setError(null);
+        }
+
+        if (orgField.isEmpty()) {
+            binding.inputLayoutEditOrgField.setError("Industry field is required");
+            return;
+        } else {
+            binding.inputLayoutEditOrgField.setError(null);
+        }
+
+        if (orgDesc.isEmpty()) {
+            binding.inputLayoutEditOrgDesc.setError("Organization description is required");
+            return;
+        } else {
+            binding.inputLayoutEditOrgDesc.setError(null);
+        }
+
         Map<String, Object> updates = new HashMap<>();
         updates.put("orgCompanyName", orgName);
+        updates.put("email", email);
         updates.put("orgField", orgField);
         updates.put("orgDescription", orgDesc);
 
         orgDocRef.update(updates)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Profile updated!", Toast.LENGTH_SHORT).show();
-                    // Navigate back to the profile page
                     NavController navController = Navigation.findNavController(requireView());
                     navController.popBackStack();
                 })
@@ -104,15 +146,6 @@ public class OrgEditProfileFragment extends Fragment {
                     Toast.makeText(getContext(), "Error updating profile.", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Error updating document", e);
                 });
-    }
-
-    /**
-     * Safely gets text from an EditText, trims it, and handles nulls.
-     * @param editable The Editable text from binding.editText.getText()
-     * @return A trimmed String, or an empty String ("") if it was null.
-     */
-    private String getSafeText(android.text.Editable editable) {
-        return (editable == null) ? "" : editable.toString().trim();
     }
 
     @Override
