@@ -11,11 +11,21 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgDashboardBinding;
+import com.example.volunhub.org.adapters.RecentActivityAdapter;
+import com.example.volunhub.org.models.RecentActivity;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class OrgDashboardFragment extends Fragment {
 
@@ -24,7 +34,10 @@ public class OrgDashboardFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
-    public OrgDashboardFragment() {} // constructor
+    private ArrayList<RecentActivity> activityList;
+    private RecentActivityAdapter activityAdapter;
+
+    public OrgDashboardFragment() {}
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -39,40 +52,142 @@ public class OrgDashboardFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // 1. Fetch the stats
-        loadPendingApplicantStats();
+        // Setup Recent Activity Recycler
+        activityList = new ArrayList<>();
+        activityAdapter = new RecentActivityAdapter(activityList);
+        binding.recyclerRecentActivity.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.recyclerRecentActivity.setAdapter(activityAdapter);
 
-        // 2. Set click listener for the FAB
+        // Load all dashboard sections
+        loadQuickStats();
+        loadUpcomingEvent();
+        loadRecentActivity();
+
         binding.fabOrgPostService.setOnClickListener(v -> {
-            // Navigate to the "Post Service" screen
             NavController navController = Navigation.findNavController(v);
-
-            // This action must be added to your org_nav_graph.xml
             navController.navigate(R.id.action_org_dashboard_to_post_service);
         });
     }
 
-    private void loadPendingApplicantStats() {
+        private void loadQuickStats() {
         if (mAuth.getCurrentUser() == null) return;
         String orgId = mAuth.getCurrentUser().getUid();
 
+        // Pending applications
         db.collection("applications")
                 .whereEqualTo("orgId", orgId)
                 .whereEqualTo("status", "Pending")
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int pendingCount = querySnapshot.size();
-                    if (pendingCount == 0) {
-                        binding.textOrgDashboardStatValue.setText("You have no pending applicants.");
-                    } else if (pendingCount == 1) {
-                        binding.textOrgDashboardStatValue.setText("You have 1 new applicant waiting.");
-                    } else {
-                        binding.textOrgDashboardStatValue.setText("You have " + pendingCount + " new applicants waiting.");
+                .addOnSuccessListener(snap -> binding.textStatsPending.setText(String.valueOf(snap.size())));
+
+        // Total active services
+        db.collection("services")
+                .whereEqualTo("orgId", orgId)
+                .whereEqualTo("status", "Active")
+                .get()
+                .addOnSuccessListener(snap -> binding.textStatsJobs.setText(String.valueOf(snap.size())));
+
+        // Total volunteers applied
+        db.collection("applications")
+                .whereEqualTo("orgId", orgId)
+                .get()
+                .addOnSuccessListener(snap -> binding.textStatsVolunteers.setText(String.valueOf(snap.size())));
+    }
+
+    private void loadUpcomingEvent() {
+        if (mAuth.getCurrentUser() == null) return;
+        String orgId = mAuth.getCurrentUser().getUid();
+
+        db.collection("services")
+                .whereEqualTo("orgId", orgId)
+                .whereEqualTo("status", "Active")
+                .whereGreaterThan("serviceDate", Timestamp.now())  // FIX
+                .orderBy("serviceDate", Query.Direction.ASCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap.isEmpty()) {
+                        binding.textUpcomingEvents.setText("No upcoming events");
+                        return;
                     }
+
+                    var doc = snap.getDocuments().get(0);
+                    Timestamp date = doc.getTimestamp("serviceDate");
+                    String title = doc.getString("title");
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy (hh:mm a)");
+                    String formatted = sdf.format(date.toDate());
+
+                    binding.textUpcomingEvents.setText(title + " – " + formatted);
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching stats", e);
-                    binding.textOrgDashboardStatValue.setText("Could not load stats.");
+                    binding.textUpcomingEvents.setText("Unable to load events");
+                    Log.e(TAG, "Upcoming event error", e);
+                });
+    }
+
+
+    private void loadRecentActivity() {
+        if (mAuth.getCurrentUser() == null) return;
+        String orgId = mAuth.getCurrentUser().getUid();
+
+        activityList.clear();
+
+        db.collection("applications")
+                .whereEqualTo("orgId", orgId)
+                .orderBy("appliedAt", Query.Direction.DESCENDING)
+                .limit(10)
+                .addSnapshotListener((snap, error) -> {
+                    if (error != null || snap == null) {
+                        Log.e(TAG, "Error loading recent activity", error);
+                        return;
+                    }
+
+                    activityList.clear();
+
+                    for (var doc : snap.getDocuments()) {
+                        Timestamp ts = doc.getTimestamp("appliedAt");
+                        if (ts == null) ts = Timestamp.now();
+
+                        String title = doc.getString("serviceTitle");
+                        String status = doc.getString("status");
+
+                        activityList.add(new RecentActivity(
+                                "Application: " + title + " (" + status + ")",
+                                ts
+                        ));
+                    }
+
+                    // Load service activity next
+                    loadServiceActivity(orgId);
+                });
+    }
+
+
+    private void loadServiceActivity(String orgId) {
+        db.collection("services")
+                .whereEqualTo("orgId", orgId)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(10)
+                .get()
+                .addOnSuccessListener(serviceSnap -> {
+
+                    for (var doc : serviceSnap.getDocuments()) {
+                        Timestamp ts = doc.getTimestamp("createdAt");
+                        if (ts == null) ts = Timestamp.now();
+
+                        activityList.add(new RecentActivity(
+                                "New Service Posted: " + doc.getString("title"),
+                                ts
+                        ));
+                    }
+
+                    // Sort newest → oldest
+                    Collections.sort(activityList,
+                            Comparator.comparing(RecentActivity::getTimestamp).reversed()
+                    );
+
+                    activityAdapter.notifyDataSetChanged();
                 });
     }
 

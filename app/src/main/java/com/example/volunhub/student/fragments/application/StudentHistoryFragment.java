@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.volunhub.databinding.FragmentStudentHistoryBinding;
@@ -19,7 +20,6 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class StudentHistoryFragment extends Fragment {
@@ -55,6 +55,21 @@ public class StudentHistoryFragment extends Fragment {
         adapter = new StudentApplicationAdapter(getContext(), historyList);
         binding.recyclerStudentHistory.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerStudentHistory.setAdapter(adapter);
+
+        adapter.setOnItemClickListener(application -> {
+            // 1. Use the DIRECTIONS from the HOST fragment
+            // (Make sure you import this specific class)
+            StudentApplicationsFragmentDirections.ActionAppsHostToServiceDetail action =
+                    StudentApplicationsFragmentDirections.actionAppsHostToServiceDetail(
+                            application.getServiceId()
+                    );
+
+            // 2. Find the NavController
+            // Since we are inside a ViewPager, standard findNavController(view) works fine
+            // because the ViewPager is part of the nav host.
+            Navigation.findNavController(requireView()).navigate(action);
+        });
+
     }
 
     private void loadHistory() {
@@ -71,7 +86,7 @@ public class StudentHistoryFragment extends Fragment {
         // Create a real-time Firestore listener
         historyListener = db.collection("applications")
                 .whereEqualTo("studentId", myId)              // Only this student's applications
-                .whereIn("status", Arrays.asList("Accepted", "Rejected", "Pending"))          // Only accepted applications
+                .whereEqualTo("status", "Accepted")          // Only accepted applications
                 .whereLessThan("serviceDate", Timestamp.now())// Service date is in the past → completed
                 .orderBy("serviceDate", Query.Direction.DESCENDING)
                 .addSnapshotListener((querySnapshot, e) -> {

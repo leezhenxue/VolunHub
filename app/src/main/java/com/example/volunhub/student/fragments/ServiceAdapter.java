@@ -6,7 +6,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.volunhub.databinding.ItemServicePostingBinding;
 import com.example.volunhub.models.Service;
+
+// --- ADD THESE IMPORTS ---
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder> {
 
@@ -21,8 +25,6 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
         this.listener = listener;
     }
 
-    // The ViewHolder is now just a simple "holder"
-    // It no longer knows about the click listener
     public static class ServiceViewHolder extends RecyclerView.ViewHolder {
         private final ItemServicePostingBinding binding;
 
@@ -34,7 +36,16 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
         public void bind(Service service) {
             binding.textItemServiceTitle.setText(service.getTitle());
             binding.textItemServiceOrgName.setText(service.getOrgName());
-            // TODO: Format and set the date
+
+            // --- THIS IS THE DATE FORMATTING LOGIC ---
+            if (service.getServiceDate() != null) {
+                // Format: "Nov 15, 2025 • 2:30 PM"
+                SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+                String dateString = sdf.format(service.getServiceDate());
+                binding.textItemServiceDate.setText(dateString);
+            } else {
+                binding.textItemServiceDate.setText("Date TBD");
+            }
         }
     }
 
@@ -50,8 +61,6 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
         return new ServiceViewHolder(binding);
     }
 
-    // --- THIS IS THE FIX ---
-    // The click listener logic is moved here.
     @Override
     public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
         Service currentService = serviceList.get(position);

@@ -20,7 +20,11 @@
         android:id="@+id/student_nav_application"
         android:name="com.example.volunhub.student.fragments.application.StudentApplicationsFragment"
         android:label="My Applications"
-        tools:layout="@layout/fragment_student_applications" />
+        tools:layout="@layout/fragment_student_applications">
+        <action
+            android:id="@+id/action_apps_host_to_service_detail"
+            app:destination="@id/student_service_detail" />
+    </fragment>
 
     <fragment
         android:id="@+id/student_nav_profile"
@@ -48,6 +52,10 @@
         <argument
             android:name="serviceId"
             app:argType="string" />
+        <argument
+            android:name="initialStatus"
+            app:argType="string"
+            android:defaultValue="NOT_APPLIED" />
         <action
             android:id="@+id/action_service_detail_to_view_org_profile"
             app:destination="@id/student_view_org_profile" />
