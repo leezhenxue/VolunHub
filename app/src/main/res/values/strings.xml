@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">VolunHub</string>
+    <string name="app_name_capital">VOLUNHUB</string>
 
     <!-- Main Activity -->
     <string name="checking_account_credentials">Checking account credentials...</string>
@@ -51,5 +52,7 @@
     <string name="remove_application">Remove Application</string>
     <string name="application_removed_success">Application removed successfully</string>
     <string name="application_removed_error">Error removing application</string>
+
+    <!-- Sign Up Fragment -->
 
 </resources>
