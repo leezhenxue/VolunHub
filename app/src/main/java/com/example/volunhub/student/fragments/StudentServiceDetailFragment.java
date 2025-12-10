@@ -175,6 +175,17 @@ public class StudentServiceDetailFragment extends Fragment {
                         loadOrgLogo(currentService.getOrgId());
                         binding.textDetailDescription.setText("Description\n" + currentService.getDescription());
                         binding.textDetailRequirements.setText("Requirements\n" + currentService.getRequirements());
+                        // --- Set Contact Number ---
+                        String contactNumber = currentService.getContactNumber(); // make sure Service model has this getter
+
+                        if (contactNumber != null && !contactNumber.isEmpty()) {
+                            binding.textDetailContactNumber.setText(contactNumber);
+                            binding.textDetailContactNumber.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.textDetailContactNumber.setText("Not Available");
+                            binding.textDetailContactNumber.setVisibility(View.VISIBLE);
+                        }
+
                         checkAndSetButtonState();
                     }
                 } else {

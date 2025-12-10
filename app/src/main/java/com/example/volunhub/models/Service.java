@@ -23,6 +23,7 @@ public class Service {
     @Exclude
     private String documentId;
     private String searchTitle;
+    private String contactNumber;
 
     // Empty constructor for Firestore
     public Service() {}
@@ -30,6 +31,7 @@ public class Service {
     @Exclude
     public String getDocumentId() { return documentId; }
     public void setDocumentId(String documentId) { this.documentId = documentId; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
 
     // --- Getters ---
     public String getOrgId() { return orgId; }
@@ -42,4 +44,5 @@ public class Service {
     public Date getServiceDate() { return serviceDate; }
     public Date getCreatedAt() { return createdAt; }
     public String getStatus() { return status; }
+    public String getContactNumber() { return contactNumber; }
 }

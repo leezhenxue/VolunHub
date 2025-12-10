@@ -27,6 +27,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class StudentMyApplicationsFragment extends Fragment {
 
@@ -78,13 +81,22 @@ public class StudentMyApplicationsFragment extends Fragment {
         });
     }
 
+    // Loads all applications for the current student.
+// 1) Deduplicates by serviceId
+// 2) Filters out past services (serviceDate before "now")
+// 3) Sorts remaining services by serviceDate ASC (upcoming service at top)
     private void loadMyApplications() {
         if (mAuth.getCurrentUser() == null) return;
         String myId = mAuth.getCurrentUser().getUid();
 
-        // Real-time listener version - Get ALL applications for this student (no status filter)
+        // Optional: remove old listener to avoid multiple active listeners
+        if (applicationsListener != null) {
+            applicationsListener.remove();
+        }
+
         applicationsListener = db.collection("applications")
                 .whereEqualTo("studentId", myId)
+                // Initial order by appliedAt; final order will be done on the client side.
                 .orderBy("appliedAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((querySnapshot, error) -> {
 
@@ -95,46 +107,83 @@ public class StudentMyApplicationsFragment extends Fragment {
 
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         Log.d(TAG, "No applications found.");
-
                         binding.textEmptyApplications.setVisibility(View.VISIBLE);
                         applicationList.clear();
                         adapter.notifyDataSetChanged();
                         return;
                     }
 
-                    // If have data
+                    // We have data – hide empty-state message.
                     binding.textEmptyApplications.setVisibility(View.GONE);
-                    
-                    // Step 1: Convert all documents to Application objects
+
+                    // Step 1: Convert all documents to Application objects.
                     List<Application> allApplications = new ArrayList<>();
                     for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         Application application = doc.toObject(Application.class);
                         if (application != null) {
                             application.setDocumentId(doc.getId());
                             allApplications.add(application);
-                            Log.d("DebugApp", "Loaded application: docId=" + doc.getId() + 
-                                  ", serviceId=" + application.getServiceId() + 
-                                  ", status=" + application.getStatus() + 
-                                  ", serviceTitle=" + application.getServiceTitle());
-                        } else {
-                            Log.w("DebugApp", "Failed to convert document to Application: " + doc.getId());
                         }
                     }
 
-                    Log.d("DebugApp", "Found " + allApplications.size() + " raw applications from Firestore");
-
-                    // Step 2: Deduplicate by serviceId (remove duplicates caused by previous bug)
+                    // Step 2: Deduplicate by serviceId (keep the best application per service).
                     List<Application> deduplicatedApplications = deduplicateApplications(allApplications);
-                    Log.d("DebugApp", "After deduplication: " + deduplicatedApplications.size() + " applications");
-                    
-                    // Step 3: Clear current list and process deduplicated applications
+
+                    // Step 3: Filter out past services and sort future services by serviceDate ASC.
+                    List<Application> futureSortedApplications =
+                            filterAndSortApplications(deduplicatedApplications);
+
+                    // Step 4: Replace current list with filtered + sorted list.
                     applicationList.clear();
-                    
-                    // Step 4: Check if services exist for each application (but always display them)
-                    for (Application application : deduplicatedApplications) {
-                        checkServiceExists(application);
+                    applicationList.addAll(futureSortedApplications);
+                    adapter.notifyDataSetChanged();
+
+                    // Show empty-state if everything was filtered out (only past services).
+                    if (applicationList.isEmpty()) {
+                        binding.textEmptyApplications.setVisibility(View.VISIBLE);
+                    }
+
+                    // Step 5: For each visible application, check service status asynchronously.
+                    for (int i = 0; i < applicationList.size(); i++) {
+                        Application app = applicationList.get(i);
+                        checkServiceStatusForExistingApp(app, i);
                     }
                 });
+    }
+
+    // Filters out past services and sorts remaining services by serviceDate ASC.
+// Requirement:
+//  - Only show services whose serviceDate is after current time.
+//  - Upcoming services appear at the top of the list.
+    private List<Application> filterAndSortApplications(List<Application> applications) {
+        List<Application> filteredList = new ArrayList<>();
+        Date now = new Date(); // Current time
+
+        // 1. Filter: keep only applications whose serviceDate is after "now".
+        for (Application app : applications) {
+            Date serviceDate = app.getServiceDate();   // Make sure Application has this getter
+            if (serviceDate != null && serviceDate.after(now)) {
+                filteredList.add(app);
+            }
+        }
+
+        // 2. Sort: ascending by serviceDate (upcoming first).
+        Collections.sort(filteredList, new Comparator<Application>() {
+            @Override
+            public int compare(Application app1, Application app2) {
+                Date d1 = app1.getServiceDate();
+                Date d2 = app2.getServiceDate();
+
+                if (d1 == null && d2 == null) return 0;
+                if (d1 == null) return 1;   // null goes to the end
+                if (d2 == null) return -1;
+
+                // Ascending order
+                return d1.compareTo(d2);
+            }
+        });
+
+        return filteredList;
     }
 
     /**
@@ -142,7 +191,7 @@ public class StudentMyApplicationsFragment extends Fragment {
      * If multiple applications exist for the same serviceId:
      * - Prefer non-Pending status over Pending
      * - If both are non-Pending or both are Pending, keep the one with the latest appliedAt timestamp
-     * 
+     *
      * @param allApplications List of all applications (may contain duplicates)
      * @return Deduplicated list with one application per serviceId
      */
@@ -152,7 +201,7 @@ public class StudentMyApplicationsFragment extends Fragment {
 
         for (Application app : allApplications) {
             String serviceId = app.getServiceId();
-            
+
             // Skip if serviceId is null
             if (serviceId == null || serviceId.isEmpty()) {
                 Log.w(TAG, "Application with null serviceId found, skipping: " + app.getDocumentId());
@@ -169,10 +218,10 @@ public class StudentMyApplicationsFragment extends Fragment {
                 // Duplicate found - decide which one to keep
                 Application appToKeep = chooseBestApplication(existingApp, app);
                 serviceIdToApplication.put(serviceId, appToKeep);
-                
-                Log.d(TAG, "Duplicate application found for serviceId: " + serviceId + 
-                      ". Keeping: " + appToKeep.getStatus() + " (docId: " + appToKeep.getDocumentId() + 
-                      "), Discarding: " + (appToKeep == existingApp ? app.getStatus() : existingApp.getStatus()) + 
+
+                Log.d(TAG, "Duplicate application found for serviceId: " + serviceId +
+                      ". Keeping: " + appToKeep.getStatus() + " (docId: " + appToKeep.getDocumentId() +
+                      "), Discarding: " + (appToKeep == existingApp ? app.getStatus() : existingApp.getStatus()) +
                       " (docId: " + (appToKeep == existingApp ? app.getDocumentId() : existingApp.getDocumentId()) + ")");
             }
         }
@@ -186,7 +235,7 @@ public class StudentMyApplicationsFragment extends Fragment {
      * Priority:
      * 1. Non-Pending status over Pending
      * 2. If both have same status priority, keep the one with latest appliedAt timestamp
-     * 
+     *
      * @param app1 First application
      * @param app2 Second application
      * @return The application to keep
@@ -228,74 +277,62 @@ public class StudentMyApplicationsFragment extends Fragment {
     }
 
     /**
-     * Checks if the service associated with an application still exists in Firestore.
-     * ALWAYS displays the application, even if service check fails or service doesn't exist.
-     * This ensures users can see their applications immediately, even if service data is temporarily unavailable.
+     * Asynchronously checks the service status for an application ALREADY displayed in the list.
+     * Updates only the specific item row if its status changes.
+     * (Replaces the old checkServiceExists method)
      */
-    private void checkServiceExists(Application application) {
+    private void checkServiceStatusForExistingApp(Application application, int position) {
         String serviceId = application.getServiceId();
         String docId = application.getDocumentId();
-        String status = application.getStatus();
-        
-        Log.d("DebugApp", "Checking service for application: docId=" + docId + 
-              ", serviceId=" + serviceId + ", status=" + status);
 
-        // If serviceId is null, mark as removed but still display
+        // Boundary check: Ensure position is valid
+        if (position < 0 || position >= applicationList.size()) return;
+
+        // Handle null serviceId case
         if (serviceId == null || serviceId.isEmpty()) {
-            Log.d("DebugApp", "Skipping service check for app " + docId + " because serviceId is null");
-            application.setServiceRemoved(true);
-            // Ensure serviceTitle is set for display
-            if (application.getServiceTitle() == null || application.getServiceTitle().isEmpty()) {
-                // This shouldn't happen, but set a placeholder if it does
-                Log.w("DebugApp", "Application has no serviceTitle, setting placeholder");
+            if (!application.isServiceRemoved()) {
+                application.setServiceRemoved(true);
+                // Only update this specific item
+                adapter.notifyItemChanged(position);
             }
-            applicationList.add(application);
-            adapter.notifyDataSetChanged();
-            Log.d("DebugApp", "Added application with null serviceId to list. Total items: " + applicationList.size());
             return;
         }
 
-        // Always add the application immediately, then update service status asynchronously
-        // This ensures the application appears in the list even if service check is slow
-        applicationList.add(application);
-        adapter.notifyDataSetChanged();
-        Log.d("DebugApp", "Added application to list immediately. Total items: " + applicationList.size() + 
-              ". Now checking service existence...");
-
-        // Check service existence asynchronously (non-blocking)
+        // Asynchronously check if service exists
         db.collection("services").document(serviceId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    // Re-check position validity as list might have changed during async call
+                    if (position >= applicationList.size()) return;
+                    // Ensure we are updating the correct object
+                    Application currentAppAtIndex = applicationList.get(position);
+                    if (!currentAppAtIndex.getDocumentId().equals(docId)) return;
+
+                    boolean statusChanged = false;
                     if (!documentSnapshot.exists()) {
-                        // Service has been deleted
-                        Log.d("DebugApp", "Service not found for app " + docId + 
-                              ". ServiceId: " + serviceId + ". Marking as removed.");
-                        application.setServiceRemoved(true);
-                        // Update the UI to reflect the change
-                        int position = applicationList.indexOf(application);
-                        if (position != -1) {
-                            adapter.notifyItemChanged(position);
+                        // Service deleted
+                        if (!application.isServiceRemoved()) {
+                            Log.d("DebugApp", "Marking service as removed for app: " + docId);
+                            application.setServiceRemoved(true);
+                            statusChanged = true;
                         }
                     } else {
-                        Log.d("DebugApp", "Service found for app " + docId + ". ServiceId: " + serviceId);
-                        // Service exists, ensure it's not marked as removed
+                        // Service exists
                         if (application.isServiceRemoved()) {
+                            Log.d("DebugApp", "Marking service as existing for app: " + docId);
                             application.setServiceRemoved(false);
-                            int position = applicationList.indexOf(application);
-                            if (position != -1) {
-                                adapter.notifyItemChanged(position);
-                            }
+                            statusChanged = true;
                         }
+                    }
+
+                    // Only notify if status actually changed
+                    if (statusChanged) {
+                        adapter.notifyItemChanged(position);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    // On error, don't mark as removed - assume service exists but is temporarily unavailable
-                    // This prevents hiding valid applications due to network issues
-                    Log.w("DebugApp", "Error checking service existence for app " + docId + 
-                          ". ServiceId: " + serviceId + ". Error: " + e.getMessage() + 
-                          ". Keeping application visible (assuming service exists).");
-                    // Don't mark as removed on error - keep it visible
-                    // The application is already in the list, so no need to add it again
+                    Log.w("DebugApp", "Error checking service existence: " + e.getMessage());
+                    // Do not mark as removed on error, assume it exists.
                 });
     }
 
@@ -343,14 +380,14 @@ public class StudentMyApplicationsFragment extends Fragment {
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "Application removed successfully: " + documentId);
                     Toast.makeText(getContext(), R.string.application_removed_success, Toast.LENGTH_SHORT).show();
-                    
+
                     // Immediately update UI by removing the item from the list
                     if (position != -1) {
                         // Item found in list, remove it
                         applicationList.remove(position);
                         adapter.notifyItemRemoved(position);
                         adapter.notifyItemRangeChanged(position, applicationList.size()); // Update remaining items
-                        
+
                         // Show empty state if list is now empty
                         if (applicationList.isEmpty()) {
                             binding.textEmptyApplications.setVisibility(View.VISIBLE);
@@ -361,7 +398,7 @@ public class StudentMyApplicationsFragment extends Fragment {
                         // Fallback: reload the entire list
                         loadMyApplications();
                     }
-                    
+
                     // Note: Real-time listener will also update the list, but immediate UI update
                     // provides better user experience
                 })

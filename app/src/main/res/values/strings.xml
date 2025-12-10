@@ -52,6 +52,31 @@
     <string name="remove_application">Remove Application</string>
     <string name="application_removed_success">Application removed successfully</string>
     <string name="application_removed_error">Error removing application</string>
+    <string name="title_service_details">Service Details</string>
+    <string name="label_date_time">Date &amp; Time</string>
+    <string name="label_volunteers">Volunteers</string>
+    <string name="label_description">Description</string>
+    <string name="label_requirements">Requirements</string>
+
+    <string name="btn_apply_now">Apply Now</string>
+    <string name="btn_cancel_application">Cancel Application</string>
+    <string name="btn_saved">Saved</string>
+    <string name="btn_save_for_later">Save for Later</string>
+
+    <string name="status_pending">Pending</string>
+    <string name="status_accepted">Application Accepted</string>
+    <string name="status_rejected">Application Rejected</string>
+
+    <string name="toast_application_submitted">Application submitted!</string>
+    <string name="toast_application_submit_error">Error submitting application</string>
+    <string name="toast_application_cancelled">Application cancelled</string>
+    <string name="toast_application_cancel_failed">Failed to cancel application.</string>
+    <string name="toast_saved_added">Added to Saved List</string>
+    <string name="toast_saved_removed">Removed from Saved List</string>
+
+    <!-- Contact Number -->
+    <string name="label_contact_number">Contact Number</string>
+    <string name="text_not_available">Not Available</string>
 
     <!-- View Org Profile Fragment -->
 
