@@ -1,4 +1,5 @@
 <resources>
+    <!-- App -->
     <string name="app_name">VolunHub</string>
     <string name="app_name_capital">VOLUNHUB</string>
 
@@ -37,14 +38,12 @@
     <string name="action_complete_signup">Complete registration</string>
     <string name="link_go_to_login">Already have an account? Login</string>
 
-    <!-- Manage Service Fragment -->
-    <string name="delete_service">Delete Service</string>
-    <string name="delete_confirm_title">Delete Service</string>
-    <string name="delete_confirm_message">Are you sure you want to delete this service? This action cannot be undone.</string>
-    <string name="delete">Delete</string>
-    <string name="cancel">Cancel</string>
-    <string name="delete_success">Service deleted successfully</string>
-    <string name="delete_error">Error deleting service</string>
+
+
+    <!-- Student -->
+    <!-- Student Home Activity -->
+
+    <!-- Student Home Fragment -->
 
     <!-- Student Service Detail Fragment -->
     <string name="service_unavailable_title">Service Unavailable</string>
@@ -53,6 +52,52 @@
     <string name="application_removed_success">Application removed successfully</string>
     <string name="application_removed_error">Error removing application</string>
 
-    <!-- Sign Up Fragment -->
+    <!-- View Org Profile Fragment -->
+
+    <!-- Student Applications Fragment -->
+
+    <!-- Student My Applications Fragment -->
+
+    <!-- Student Saved List Fragment -->
+
+    <!-- Student History Fragment -->
+
+    <!-- Student Profile Fragment -->
+
+    <!-- Student Edit Profile Fragment -->
+
+
+
+
+    <!-- Org -->
+    <!-- Org Home Activity -->
+
+    <!-- Org Dashboard Fragment -->
+
+    <!-- Org Post Service Fragment -->
+
+    <!-- Org Manage Service Fragment -->
+    <string name="delete_service">Delete Service</string>
+    <string name="delete_confirm_title">Delete Service</string>
+    <string name="delete_confirm_message">Are you sure you want to delete this service? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_success">Service deleted successfully</string>
+    <string name="delete_error">Error deleting service</string>
+
+    <!-- Org Service Fragment -->
+
+    <!-- Org Pending Applicants Fragment -->
+
+    <!-- Org Accepted Applicants Fragment -->
+
+    <!-- Org Rejected Applicants Fragment -->
+
+    <!-- View Student Profile Fragment -->
+
+    <!-- Org Profile Fragment -->
+
+    <!-- Org Edit Profile Fragment -->
+
 
 </resources>
