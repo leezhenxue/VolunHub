@@ -21,6 +21,7 @@
     <string name="title_sign_up">Sign Up</string>
     <string name="btn_upload_image">Upload Image</string>
     <string name="hint_retype_password">Retype Password</string>
+    <string name="hint_contact">Contact</string>
     <string name="label_i_am_a">I am a:</string>
     <string name="radio_student">Student</string>
     <string name="radio_organization">Organization</string>

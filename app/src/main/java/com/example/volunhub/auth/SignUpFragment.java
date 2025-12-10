@@ -76,6 +76,7 @@ public class SignUpFragment extends Fragment {
         clearErrorOnType(binding.textInputLayoutOrgCompanyName);
         clearErrorOnType(binding.textInputLayoutOrgField);
         clearErrorOnType(binding.textInputLayoutOrgDescription);
+        clearErrorOnType(binding.textInputLayoutContact);
 
         binding.editTextStudentName.setFilters(new InputFilter[] {
             new InputFilter.AllCaps()
@@ -235,6 +236,18 @@ public class SignUpFragment extends Fragment {
             }
         }
 
+        String contactInput = getSafeText(binding.editTextSignUpContact.getText());
+
+        if (TextUtils.isEmpty(contactInput)) {
+            binding.textInputLayoutContact.setError("Contact number is required");
+            isValid = false;
+        } else {
+            if (contactInput.length() < 8 || contactInput.length() > 10) {
+                binding.textInputLayoutContact.setError("Please enter 8 to 10 digits");
+                isValid = false;
+            }
+        }
+
         if (!password.equals(retypePassword)) {
             binding.textInputLayoutRetypePassword.setError("Passwords do not match");
             isValid = false;
@@ -254,8 +267,8 @@ public class SignUpFragment extends Fragment {
                 isValid = false;
             } else {
                 int age = Integer.parseInt(ageText);
-                if (age < 1 || age > 200) {
-                    binding.textInputLayoutStudentAge.setError("Age must be between 1 and 200");
+                if (age < 13 || age > 100) {
+                    binding.textInputLayoutStudentAge.setError("Age must be between 13 and 100");
                     isValid = false;
                 }
             }
@@ -299,6 +312,7 @@ public class SignUpFragment extends Fragment {
         Map<String, Object> userData = new HashMap<>();
         userData.put("email", email);
         userData.put("role", role);
+        userData.put("contact", "+60" + getSafeText(binding.editTextSignUpContact.getText()));
 
         if (role.equals("Student")) {
             userData.put("studentName", getSafeText(binding.editTextStudentName.getText()));
