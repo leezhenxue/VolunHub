@@ -53,6 +53,8 @@ public class OrgPostServiceFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        //added Shao Yee
+        setupClearErrors();
         setupDatePicker();
         binding.buttonPostService.setOnClickListener(v -> postService());
     }
@@ -116,6 +118,12 @@ public class OrgPostServiceFragment extends Fragment {
             // 5. Update the UI text
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
             binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+
+            //Shao Yee edited
+            // Clear error after selecting a date
+            binding.inputLayoutServiceDate.setError(null);
+            binding.inputLayoutServiceDate.setErrorEnabled(false);
+
         });
 
         timePicker.show(getParentFragmentManager(), "TIME_PICKER");
@@ -135,6 +143,13 @@ public class OrgPostServiceFragment extends Fragment {
             binding.inputLayoutDescription.setError("Description is required");
             return;
         }
+
+        // Shao Yee added
+        if (TextUtils.isEmpty(requirements)) {
+            binding.inputLayoutRequirements.setError("Requirements is required");
+            return;
+        }
+        
         if (TextUtils.isEmpty(volunteersNeededStr)) {
             binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
             return;
@@ -222,5 +237,36 @@ public class OrgPostServiceFragment extends Fragment {
      */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
+    }
+
+
+    // SHAO YEE edited
+
+    private void setupClearErrors() {
+        clearErrorOnType(binding.inputLayoutTitle, binding.editTextTitle);
+        clearErrorOnType(binding.inputLayoutDescription, binding.editTextDescription);
+        clearErrorOnType(binding.inputLayoutRequirements, binding.editTextRequirements);
+        clearErrorOnType(binding.inputLayoutVolunteersNeeded, binding.editTextVolunteersNeeded);
+    }
+
+    private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout layout,
+                                  com.google.android.material.textfield.TextInputEditText editText) {
+
+        editText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Clear error as soon as user types valid text
+                if (!s.toString().trim().isEmpty()) {
+                    layout.setError(null);
+                    layout.setErrorEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
     }
 }
