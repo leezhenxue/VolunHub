@@ -74,8 +74,30 @@
     <!-- Org Home Activity -->
 
     <!-- Org Dashboard Fragment -->
+    <string name="dashboard_quick_stats">Quick Stats</string>
+    <string name="dashboard_volunteers">Volunteers</string>
+    <string name="dashboard_jobs">Jobs</string>
+    <string name="dashboard_pending">Pending</string>
+
+    <string name="dashboard_upcoming_events">Upcoming Events</string>
+    <string name="dashboard_no_upcoming_events">No upcoming events</string>
+
+    <string name="dashboard_recent_activity">Recent Activity</string>
+
+    <string name="dashboard_add_service">Add Service</string>
+    <string name="dashboard_manage_services">Manage Services</string>
+
+
+    <string name="preview_number"> 0 </string>
 
     <!-- Org Post Service Fragment -->
+    <string name="post_service_header">Post a New Service</string>
+    <string name="hint_service_title">Service Title</string>
+    <string name="hint_requirements">Requirements (e.g., \'Bring gloves\')</string>
+    <string name="hint_volunteers_needed">Volunteers Needed</string>
+    <string name="hint_service_date">Service Date</string>
+    <string name="btn_post_service">Post Service</string>
+
 
     <!-- Org Manage Service Fragment -->
     <string name="delete_service">Delete Service</string>
