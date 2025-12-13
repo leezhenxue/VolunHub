@@ -47,7 +47,6 @@ public class StudentEditProfileFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() == null) {
-            Log.e(TAG, "No user logged in.");
             return;
         }
 
@@ -76,34 +75,28 @@ public class StudentEditProfileFragment extends Fragment {
         studentDocRef.get().addOnSuccessListener(doc -> {
             if (doc.exists()) {
                 String name = doc.getString("studentName");
-                if (name != null) {
-                    binding.editTextEditStudentName.setText(name);
-                }
+                if (name != null) binding.editTextEditStudentName.setText(name);
 
                 Object ageObj = doc.get("studentAge");
-                if (ageObj != null) {
-                    binding.editTextEditStudentAge.setText(ageObj.toString());
-                }
+                if (ageObj != null) binding.editTextEditStudentAge.setText(ageObj.toString());
 
                 String gender = doc.getString("gender");
-                if (gender != null) {
-                    binding.autoCompleteEditStudentGender.setText(gender, false);
-                }
+                if (gender != null) binding.autoCompleteEditStudentGender.setText(gender, false);
 
                 String contact = doc.getString("contactNumber");
                 if (contact != null) {
-                    binding.editTextEditStudentContact.setText(contact);
+                    if (contact.startsWith("+60")) {
+                        binding.editTextEditStudentContact.setText(contact.substring(3));
+                    } else {
+                        binding.editTextEditStudentContact.setText(contact);
+                    }
                 }
 
                 String intro = doc.getString("studentIntroduction");
-                if (intro != null) {
-                    binding.editTextEditStudentIntro.setText(intro);
-                }
+                if (intro != null) binding.editTextEditStudentIntro.setText(intro);
 
                 String experience = doc.getString("volunteerExperience");
-                if (experience != null) {
-                    binding.editTextEditStudentExperience.setText(experience);
-                }
+                if (experience != null) binding.editTextEditStudentExperience.setText(experience);
             }
         }).addOnFailureListener(e -> {
             Log.e(TAG, "Error loading profile data", e);
@@ -115,7 +108,7 @@ public class StudentEditProfileFragment extends Fragment {
         String name = binding.editTextEditStudentName.getText().toString().trim();
         String ageStr = binding.editTextEditStudentAge.getText().toString().trim();
         String gender = binding.autoCompleteEditStudentGender.getText().toString().trim();
-        String contact = binding.editTextEditStudentContact.getText().toString().trim();
+        String rawContact = binding.editTextEditStudentContact.getText().toString().trim();
         String intro = binding.editTextEditStudentIntro.getText().toString().trim();
         String experience = binding.editTextEditStudentExperience.getText().toString().trim();
 
@@ -151,7 +144,7 @@ public class StudentEditProfileFragment extends Fragment {
             binding.inputLayoutEditStudentGender.setError(null);
         }
 
-        if (contact.isEmpty()) {
+        if (rawContact.isEmpty()) {
             binding.inputLayoutEditStudentContact.setError("Contact number is required");
             return;
         } else {
@@ -172,11 +165,18 @@ public class StudentEditProfileFragment extends Fragment {
             binding.inputLayoutEditStudentExperience.setError(null);
         }
 
+        String finalContact;
+        if (rawContact.startsWith("0")) {
+            finalContact = "+60" + rawContact.substring(1);
+        } else {
+            finalContact = "+60" + rawContact;
+        }
+
         Map<String, Object> updates = new HashMap<>();
         updates.put("studentName", name);
         updates.put("studentAge", age);
         updates.put("gender", gender);
-        updates.put("contactNumber", contact);
+        updates.put("contactNumber", finalContact);
         updates.put("studentIntroduction", intro);
         updates.put("volunteerExperience", experience);
 

@@ -58,6 +58,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
+                android:enabled="false"
                 android:maxLines="1" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -68,7 +69,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Contact Number">
+            android:hint="Contact Number"
+            app:prefixText="+60">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_text_edit_org_contact"
