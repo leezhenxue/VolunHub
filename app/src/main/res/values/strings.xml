@@ -45,6 +45,8 @@
     <!-- Student Home Activity -->
 
     <!-- Student Home Fragment -->
+    <string name="hint_search_services">Search for services...</string>
+    <string name="text_no_services_found">No services found.</string>
 
     <!-- Student Service Detail Fragment -->
     <string name="service_unavailable_title">Service Unavailable</string>
@@ -74,23 +76,35 @@
     <string name="toast_saved_added">Added to Saved List</string>
     <string name="toast_saved_removed">Removed from Saved List</string>
 
+    <string name="action_apply_now">Apply Now</string>
+    <string name="tooltip_save_for_later">Save for later</string>
+
     <!-- Contact Number -->
     <string name="label_contact_number">Contact Number</string>
     <string name="text_not_available">Not Available</string>
 
     <!-- View Org Profile Fragment -->
+    <string name="label_about_me">About Me</string>
+    <string name="label_about_us">About Us</string>
 
     <!-- Student Applications Fragment -->
 
     <!-- Student My Applications Fragment -->
+    <string name="text_empty_applications">You have no active applications.</string>
 
     <!-- Student Saved List Fragment -->
+    <string name="text_empty_saved">Your saved list is empty.</string>
 
     <!-- Student History Fragment -->
+    <string name="text_empty_history">You have no completed services.</string>
 
     <!-- Student Profile Fragment -->
 
     <!-- Student Edit Profile Fragment -->
+    <string name="title_edit_profile">Edit Profile</string>
+    <string name="hint_introduction">Introduction</string>
+    <string name="action_save_changes">Save Changes</string>
+
 
 
 
