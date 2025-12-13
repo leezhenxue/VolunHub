@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -80,18 +79,27 @@ public class StudentEditProfileFragment extends Fragment {
                 if (name != null) {
                     binding.editTextEditStudentName.setText(name);
                 }
+
                 Object ageObj = doc.get("studentAge");
                 if (ageObj != null) {
                     binding.editTextEditStudentAge.setText(ageObj.toString());
                 }
+
                 String gender = doc.getString("gender");
                 if (gender != null) {
                     binding.autoCompleteEditStudentGender.setText(gender, false);
                 }
+
+                String contact = doc.getString("contactNumber");
+                if (contact != null) {
+                    binding.editTextEditStudentContact.setText(contact);
+                }
+
                 String intro = doc.getString("studentIntroduction");
                 if (intro != null) {
                     binding.editTextEditStudentIntro.setText(intro);
                 }
+
                 String experience = doc.getString("volunteerExperience");
                 if (experience != null) {
                     binding.editTextEditStudentExperience.setText(experience);
@@ -107,6 +115,7 @@ public class StudentEditProfileFragment extends Fragment {
         String name = binding.editTextEditStudentName.getText().toString().trim();
         String ageStr = binding.editTextEditStudentAge.getText().toString().trim();
         String gender = binding.autoCompleteEditStudentGender.getText().toString().trim();
+        String contact = binding.editTextEditStudentContact.getText().toString().trim();
         String intro = binding.editTextEditStudentIntro.getText().toString().trim();
         String experience = binding.editTextEditStudentExperience.getText().toString().trim();
 
@@ -142,6 +151,13 @@ public class StudentEditProfileFragment extends Fragment {
             binding.inputLayoutEditStudentGender.setError(null);
         }
 
+        if (contact.isEmpty()) {
+            binding.inputLayoutEditStudentContact.setError("Contact number is required");
+            return;
+        } else {
+            binding.inputLayoutEditStudentContact.setError(null);
+        }
+
         if (intro.isEmpty()) {
             binding.inputLayoutEditStudentIntro.setError("Introduction is required");
             return;
@@ -160,6 +176,7 @@ public class StudentEditProfileFragment extends Fragment {
         updates.put("studentName", name);
         updates.put("studentAge", age);
         updates.put("gender", gender);
+        updates.put("contactNumber", contact);
         updates.put("studentIntroduction", intro);
         updates.put("volunteerExperience", experience);
 

@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Profile Picture (Optional: Add image upload later) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,7 +29,6 @@
             android:src="@drawable/ic_profile"
             android:contentDescription="Profile picture" />
 
-        <!-- Full Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_edit_student_name"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -47,7 +45,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Age -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_edit_student_age"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -65,7 +62,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Gender Dropdown Menu -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_edit_student_gender"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -82,7 +78,23 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Self Introduction -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_layout_edit_student_contact"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Contact Number">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text_edit_student_contact"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_edit_student_intro"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -100,7 +112,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Volunteer Experience -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_edit_student_experience"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -118,7 +129,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Save Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_save_student_profile"
             android:layout_width="match_parent"

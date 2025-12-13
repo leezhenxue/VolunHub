@@ -48,8 +48,6 @@ public class OrgProfileFragment extends Fragment {
         setupLogoutMenu();
         loadProfileData();
 
-        // 修复：在 layout 文件中添加 FAB 后，这里就可以访问了
-        // 确保在 fragment_org_profile.xml 中有 fab_org_edit_profile
         if (binding.fabOrgEditProfile != null) {
             binding.fabOrgEditProfile.setOnClickListener(v -> {
                 NavController navController = Navigation.findNavController(v);
@@ -81,6 +79,14 @@ public class OrgProfileFragment extends Fragment {
                         }
                         if (orgDesc != null) {
                             binding.textOrgProfileDesc.setText(orgDesc);
+                        }
+
+                        String contact = documentSnapshot.getString("contactNumber");
+                        if (contact != null && !contact.trim().isEmpty()) {
+                            binding.textOrgProfileContact.setText("Contact: " + contact);
+                            binding.textOrgProfileContact.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.textOrgProfileContact.setVisibility(View.GONE);
                         }
 
                         if (getContext() != null) {

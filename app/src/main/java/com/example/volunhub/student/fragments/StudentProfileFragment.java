@@ -45,13 +45,11 @@ public class StudentProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        setupLogoutMenu(); // Setup the logout button
-        loadProfileData(); // Load the student's info
+        setupLogoutMenu();
+        loadProfileData();
 
-        // Set the click listener for the "Edit" FAB
         binding.fabStudentEditProfile.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
-            // This action must be added to your student_nav_graph.xml
             navController.navigate(R.id.action_student_profile_to_edit_profile);
         });
     }
@@ -63,7 +61,6 @@ public class StudentProfileFragment extends Fragment {
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Populate the views
                         String studentName = documentSnapshot.getString("studentName");
                         String email = documentSnapshot.getString("email");
                         String intro = documentSnapshot.getString("studentIntroduction");
@@ -80,7 +77,6 @@ public class StudentProfileFragment extends Fragment {
                             binding.textStudentProfileIntro.setText(intro);
                         }
 
-                        // Load age and gender
                         Object ageObj = documentSnapshot.get("studentAge");
                         String gender = documentSnapshot.getString("gender");
 
@@ -98,7 +94,14 @@ public class StudentProfileFragment extends Fragment {
                             binding.textStudentProfileGender.setText("Gender: Not specified");
                         }
 
-                        // Load volunteer experience
+                        String contact = documentSnapshot.getString("contactNumber");
+                        if (contact != null && !contact.trim().isEmpty()) {
+                            binding.textStudentProfileContact.setText("Contact: " + contact);
+                            binding.textStudentProfileContact.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.textStudentProfileContact.setVisibility(View.GONE);
+                        }
+
                         String experience = documentSnapshot.getString("volunteerExperience");
                         if (experience != null && !experience.trim().isEmpty()) {
                             binding.textStudentProfileExperience.setText(experience);
@@ -106,7 +109,6 @@ public class StudentProfileFragment extends Fragment {
                             binding.textStudentProfileExperience.setText("No volunteer experience yet.");
                         }
 
-                        // Load profile image
                         if (getContext() != null) {
                             String imageUrl = documentSnapshot.getString("profileImageUrl");
                             if (imageUrl != null && !imageUrl.trim().isEmpty()) {
@@ -116,7 +118,6 @@ public class StudentProfileFragment extends Fragment {
                                         .circleCrop()
                                         .into(binding.imageStudentProfilePicture);
                             } else {
-                                // Set default image if no profile image
                                 binding.imageStudentProfilePicture.setImageResource(R.drawable.ic_profile);
                             }
                         }

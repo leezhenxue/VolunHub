@@ -19,7 +19,6 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <!-- Profile Picture -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/image_student_profile_picture"
                 android:layout_width="120dp"
@@ -30,7 +29,6 @@
                 app:shapeAppearanceOverlay="@style/CircularShapeAppearance"
                 tools:src="@drawable/ic_profile" />
 
-            <!-- Student Name -->
             <TextView
                 android:id="@+id/text_student_profile_name"
                 android:layout_width="0dp"
@@ -42,7 +40,6 @@
                 app:layout_constraintTop_toTopOf="@id/image_student_profile_picture"
                 tools:text="Student Full Name" />
 
-            <!-- Email -->
             <TextView
                 android:id="@+id/text_student_profile_email"
                 android:layout_width="0dp"
@@ -55,7 +52,6 @@
                 app:layout_constraintTop_toBottomOf="@id/text_student_profile_name"
                 tools:text="student@email.com" />
 
-            <!-- Age and Gender Container -->
             <LinearLayout
                 android:id="@+id/container_age_gender"
                 android:layout_width="0dp"
@@ -66,7 +62,6 @@
                 app:layout_constraintStart_toStartOf="@id/text_student_profile_name"
                 app:layout_constraintTop_toBottomOf="@id/text_student_profile_email">
 
-                <!-- Age -->
                 <TextView
                     android:id="@+id/text_student_profile_age"
                     android:layout_width="wrap_content"
@@ -76,7 +71,6 @@
                     android:layout_marginEnd="16dp"
                     tools:text="Age: 21" />
 
-                <!-- Gender -->
                 <TextView
                     android:id="@+id/text_student_profile_gender"
                     android:layout_width="wrap_content"
@@ -86,7 +80,18 @@
                     tools:text="Gender: Male" />
             </LinearLayout>
 
-            <!-- About Me Section -->
+            <TextView
+                android:id="@+id/text_student_profile_contact"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?android:attr/textColorSecondary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/text_student_profile_name"
+                app:layout_constraintTop_toBottomOf="@id/container_age_gender"
+                tools:text="012-3456789" />
+
             <TextView
                 android:id="@+id/label_student_profile_intro"
                 android:layout_width="wrap_content"
@@ -98,7 +103,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/image_student_profile_picture" />
 
-            <!-- Self Introduction -->
             <TextView
                 android:id="@+id/text_student_profile_intro"
                 android:layout_width="0dp"
@@ -110,7 +114,6 @@
                 app:layout_constraintTop_toBottomOf="@id/label_student_profile_intro"
                 tools:text="This is my self-introduction. I am very passionate about this cause and want to help out." />
 
-            <!-- Volunteer Experience Section -->
             <TextView
                 android:id="@+id/label_student_profile_experience"
                 android:layout_width="wrap_content"
@@ -122,7 +125,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text_student_profile_intro" />
 
-            <!-- Volunteer Experience Content -->
             <TextView
                 android:id="@+id/text_student_profile_experience"
                 android:layout_width="0dp"
@@ -137,7 +139,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-    <!-- Edit Profile Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_student_edit_profile"
         android:layout_width="wrap_content"

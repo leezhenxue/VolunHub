@@ -64,6 +64,18 @@
                 tools:text="Environment" />
 
             <TextView
+                android:id="@+id/text_org_profile_contact"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?android:attr/textColorSecondary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/text_org_profile_name"
+                app:layout_constraintTop_toBottomOf="@id/text_org_profile_field"
+                tools:text="03-12345678" />
+
+            <TextView
                 android:id="@+id/label_org_profile_desc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -88,7 +100,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-    <!-- 添加 FAB 编辑按钮 -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_org_edit_profile"
         android:layout_width="wrap_content"
