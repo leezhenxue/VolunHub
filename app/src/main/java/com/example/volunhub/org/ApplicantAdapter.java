@@ -1,16 +1,19 @@
 package com.example.volunhub.org;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide; // You'll need to add this dependency
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.ItemApplicantBinding;
 import com.example.volunhub.models.Applicant;
+import com.example.volunhub.org.fragments.service.ViewStudentProfileFragment;
 import java.util.List;
 
 public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.ApplicantViewHolder> {
@@ -59,7 +62,30 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
             binding.buttonReject.setOnClickListener(v -> listener.onRejectClick(applicant));
 
             // Allow clicking the main card (not the buttons) to view the profile
-            itemView.setOnClickListener(v -> listener.onProfileClick(applicant));
+            itemView.setOnClickListener(v -> {
+                String studentId = applicant.getStudentId();
+                Log.d("Qimin_Nav", "Clicked student: " + studentId);
+
+                if (studentId == null || studentId.trim().isEmpty()) {
+                    // Qimin: I am avoiding navigation when studentId is missing
+                    android.widget.Toast.makeText(context,
+                            "Student profile not available", android.widget.Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Qimin: Now navigating to profile with a FragmentTransaction
+                ViewStudentProfileFragment fragment = new ViewStudentProfileFragment();
+                Bundle args = new Bundle();
+                args.putString("studentId", studentId);
+                fragment.setArguments(args);
+
+                AppCompatActivity activity = (AppCompatActivity) v.getContext();
+                activity.getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.org_nav_host_fragment, fragment) // Qimin: Please check this ID matches your XML
+                        .addToBackStack(null)
+                        .commit();
+            });
         }
     }
 

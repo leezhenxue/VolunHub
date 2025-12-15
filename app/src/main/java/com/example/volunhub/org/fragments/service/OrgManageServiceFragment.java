@@ -25,6 +25,8 @@ import com.example.volunhub.org.OrgManageViewPagerAdapter;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 public class OrgManageServiceFragment extends Fragment {
 
     private static final String TAG = "OrgManageService";
@@ -107,6 +109,29 @@ public class OrgManageServiceFragment extends Fragment {
 
                             String stats = "Applicants: " + service.getVolunteersApplied() + " / " + service.getVolunteersNeeded();
                             binding.textManageStats.setText(stats);
+
+                            // Qimin: showing the date/time the same way students see it
+                            if (service.getServiceDate() != null) {
+                                SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+                                String dateText = formatter.format(service.getServiceDate());
+                                binding.textManageDate.setText(dateText);
+                                Log.d("Qimin_Debug", "Loaded service date: " + dateText);
+                            } else {
+                                binding.textManageDate.setText("Date not set");
+                                Log.d("Qimin_Debug", "Service date missing, showing fallback text");
+                            }
+
+                            // Qimin: I am showing contact number and hiding if missing
+                            String contactNum = service.getContactNum();
+                            if (contactNum != null && !contactNum.trim().isEmpty()) {
+                                binding.textManageContact.setVisibility(View.VISIBLE);
+                                binding.textManageContact.setText("Contact: " + contactNum);
+                                Log.d("Qimin_Debug", "Contact number is: " + contactNum);
+                            } else {
+                                binding.textManageContact.setText("No contact info");
+                                binding.textManageContact.setVisibility(View.GONE);
+                                Log.d("Qimin_Debug", "Contact number missing, hiding view");
+                            }
                         }
                     } else {
                         Log.w(TAG, "Service document not found.");
@@ -231,6 +256,7 @@ public class OrgManageServiceFragment extends Fragment {
         intent.putExtra("description", service.getDescription()); // Alternative key
         intent.putExtra("requirements", service.getRequirements());
         intent.putExtra("volunteersNeeded", String.valueOf(service.getVolunteersNeeded()));
+        intent.putExtra("contactNum", service.getContactNum());
         
         // Put service date as timestamp
         if (service.getServiceDate() != null) {
