@@ -68,9 +68,9 @@ public class OrgManageServiceFragment extends Fragment {
         new TabLayoutMediator(binding.tabLayoutOrg, binding.viewPagerOrg,
                 (tab, position) -> {
                     switch (position) {
-                        case 0: tab.setText("Pending"); break;
-                        case 1: tab.setText("Accepted"); break;
-                        case 2: tab.setText("Rejected"); break;
+                        case 0: tab.setText(getString(R.string.tab_pending)); break;
+                        case 1: tab.setText(getString(R.string.tab_accepted)); break;
+                        case 2: tab.setText(getString(R.string.tab_rejected)); break;
                     }
                 }
         ).attach();
@@ -102,20 +102,20 @@ public class OrgManageServiceFragment extends Fragment {
                             binding.textManageTitle.setText(service.getTitle());
                             binding.textManageDescription.setText(service.getDescription());
 
-                            String reqText = "Requirements: " + service.getRequirements();
+                            String reqText = getString(R.string.label_requirements, service.getRequirements());
                             binding.textManageRequirements.setText(reqText);
 
-                            String stats = "Applicants: " + service.getVolunteersApplied() + " / " + service.getVolunteersNeeded();
+                            String stats = getString(R.string.label_applicants, service.getVolunteersApplied(), service.getVolunteersNeeded());
                             binding.textManageStats.setText(stats);
                         }
                     } else {
                         Log.w(TAG, "Service document not found.");
-                        binding.textManageTitle.setText("Error: Service not found");
+                        binding.textManageTitle.setText(getString(R.string.error_service_not_found));
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading service details", e);
-                    binding.textManageTitle.setText("Error loading data");
+                    binding.textManageTitle.setText(getString(R.string.error_loading_data));
                 });
     }
 
@@ -130,7 +130,7 @@ public class OrgManageServiceFragment extends Fragment {
                 .count()
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snapshot -> {
-                    updateTabTitle(0, "Pending", snapshot.getCount());
+                    updateTabTitle(0, getString(R.string.tab_pending), snapshot.getCount());
                 });
 
         // Count Accepted
@@ -140,7 +140,7 @@ public class OrgManageServiceFragment extends Fragment {
                 .count()
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snapshot -> {
-                    updateTabTitle(1, "Accepted", snapshot.getCount());
+                    updateTabTitle(1, getString(R.string.tab_accepted), snapshot.getCount());
                 });
 
         // Count Rejected
@@ -150,7 +150,7 @@ public class OrgManageServiceFragment extends Fragment {
                 .count()
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snapshot -> {
-                    updateTabTitle(2, "Rejected", snapshot.getCount());
+                    updateTabTitle(2, getString(R.string.tab_rejected), snapshot.getCount());
                 });
     }
 
@@ -172,7 +172,7 @@ public class OrgManageServiceFragment extends Fragment {
      */
     private void showDeleteConfirmationDialog() {
         if (serviceId == null) {
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.error_service_id_missing), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -189,7 +189,7 @@ public class OrgManageServiceFragment extends Fragment {
      */
     private void openEditServiceActivity() {
         if (serviceId == null) {
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.error_service_id_missing), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -203,15 +203,15 @@ public class OrgManageServiceFragment extends Fragment {
                                 currentService = service;
                                 launchEditActivity(service);
                             } else {
-                                Toast.makeText(getContext(), "Error: Could not load service data", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), getString(R.string.error_could_not_load_service), Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(getContext(), "Error: Service not found", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), getString(R.string.error_service_not_found), Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Error loading service for edit", e);
-                        Toast.makeText(getContext(), "Error loading service data", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), getString(R.string.error_loading_service_data), Toast.LENGTH_SHORT).show();
                     });
         } else {
             launchEditActivity(currentService);
@@ -247,7 +247,7 @@ public class OrgManageServiceFragment extends Fragment {
      */
     private void deleteService() {
         if (serviceId == null) {
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.error_service_id_missing), Toast.LENGTH_SHORT).show();
             return;
         }
 

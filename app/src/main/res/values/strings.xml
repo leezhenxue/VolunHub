@@ -110,14 +110,33 @@
     <string name="edit_service">Edit Service</string>
 
     <!-- Org Service Fragment -->
+    <string name="msg_no_active_services">No Active Services</string>
 
     <!-- Org Pending Applicants Fragment -->
+    <string name="tab_pending">Pending</string>
+    <string name="tab_accepted">Accepted</string>
+    <string name="tab_rejected">Rejected</string>
+    <string name="error_student_profile_not_available">Student profile not available</string>
+    <string name="error_nav_profile">Error opening profile</string>
+    <string name="label_requirements">Requirements: %1$s</string>
+    <string name="label_applicants">Applicants: %1$d / %2$d</string>
+    <string name="error_service_not_found">Error: Service not found</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="error_service_id_missing">Error: Service ID is missing</string>
+    <string name="error_could_not_load_service">Error: Could not load service data</string>
+    <string name="error_loading_service_data">Error loading service data</string>
 
     <!-- Org Accepted Applicants Fragment -->
 
     <!-- Org Rejected Applicants Fragment -->
 
     <!-- View Student Profile Fragment -->
+    <string name="label_introduction">Introduction</string>
+    <string name="label_experience">Experience</string>
+    <string name="error_profile_not_found">Error: Profile not found</string>
+    <string name="error_student_profile_not_found">Student profile not found.</string>
+    <string name="error_loading_profile">Error loading profile.</string>
+    <string name="not_available">N/A</string>
 
     <!-- Org Profile Fragment -->
 
