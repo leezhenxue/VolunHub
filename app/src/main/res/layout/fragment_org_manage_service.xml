@@ -17,8 +17,21 @@
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/button_delete_service"
+        app:layout_constraintEnd_toStartOf="@id/button_edit_service"
         tools:text="Community Park Cleanup" />
+
+    <ImageButton
+        android:id="@+id/button_edit_service"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/edit_service"
+        android:src="@drawable/ic_edit"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_delete_service"
+        app:tint="?attr/colorPrimary" />
 
     <ImageButton
         android:id="@+id/button_delete_service"
