@@ -92,19 +92,33 @@ public class OrgPendingApplicantsFragment extends Fragment {
             // --- 2. THIS IS THE IMPLEMENTATION ---
             @Override
             public void onProfileClick(Applicant applicant) {
-                Log.d(TAG, "Profile clicked: " + applicant.getStudentName());
+                // Qimin: Clicking here should open the student profile
+                String studentId = applicant.getStudentId();
+                Log.d("Qimin_Nav", "Clicked student: " + studentId);
 
-                // Find the NavController from the parent fragment
-                NavController navController = Navigation.findNavController(requireParentFragment().requireView());
+                if (studentId == null || studentId.trim().isEmpty()) {
+                    // Qimin: I am avoiding navigation when studentId is missing
+                    Log.d("Qimin_Nav", "Student ID is null or empty, skipping navigation");
+                    Toast.makeText(getContext(),
+                            "Student profile not available", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-                // Create the action using the parent's generated Directions class
-                OrgManageServiceFragmentDirections.ActionManageServiceToViewStudent action =
-                        OrgManageServiceFragmentDirections.actionManageServiceToViewStudent(
-                                applicant.getStudentId()
-                        );
+                try {
+                    NavController navController =
+                            Navigation.findNavController(requireParentFragment().requireView());
 
-                // Navigate
-                navController.navigate(action);
+                    OrgManageServiceFragmentDirections.ActionManageServiceToViewStudent action =
+                            OrgManageServiceFragmentDirections
+                                    .actionManageServiceToViewStudent(studentId);
+
+                    navController.navigate(action);
+                } catch (Exception e) {
+                    // Qimin: If navigation fails (graph or destination missing), I show a friendly message
+                    Log.e("Qimin_Nav", "Navigation to student profile failed", e);
+                    Toast.makeText(getContext(),
+                            "Student Profile feature coming soon (Waiting for Edmond)", Toast.LENGTH_SHORT).show();
+                }
             }
         };
 
