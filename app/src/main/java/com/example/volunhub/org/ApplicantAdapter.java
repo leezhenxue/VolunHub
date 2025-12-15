@@ -2,9 +2,13 @@ package com.example.volunhub.org;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -64,27 +68,41 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
             // Allow clicking the main card (not the buttons) to view the profile
             itemView.setOnClickListener(v -> {
                 String studentId = applicant.getStudentId();
-                Log.d("Qimin_Nav", "Clicked student: " + studentId);
+                try {
+                    // Qimin: Logging the click
+                    Log.d("Qimin_Nav", "Clicked student: " + studentId);
 
-                if (studentId == null || studentId.trim().isEmpty()) {
-                    // Qimin: I am avoiding navigation when studentId is missing
-                    android.widget.Toast.makeText(context,
-                            "Student profile not available", android.widget.Toast.LENGTH_SHORT).show();
-                    return;
+                    if (studentId == null || studentId.trim().isEmpty()) {
+                        // Qimin: I am avoiding navigation when studentId is missing
+                        Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_student_profile_not_available), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Qimin: Preparing the fragment with the studentId
+                    ViewStudentProfileFragment fragment = new ViewStudentProfileFragment();
+                    Bundle args = new Bundle();
+                    args.putString("studentId", studentId); // Qimin: passing studentId for profile
+                    fragment.setArguments(args);
+
+                    // Qimin: Getting FragmentManager safely
+                    AppCompatActivity activity = (AppCompatActivity) v.getContext();
+
+                    // Qimin: Using R.id.org_nav_host_fragment; please verify this ID matches your XML
+                    int containerId = R.id.org_nav_host_fragment;
+
+                    activity.getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(containerId, fragment)
+                            .addToBackStack(null)
+                            .commit();
+
+                    // Qimin: Now navigating to profile with fragment transaction
+                } catch (Exception e) {
+                    // Qimin: Catch crash and print error
+                    Log.e("Qimin_Error", "Navigation failed: " + e.getMessage());
+                    e.printStackTrace();
+                    Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_nav_profile), Toast.LENGTH_SHORT).show();
                 }
-
-                // Qimin: Now navigating to profile with a FragmentTransaction
-                ViewStudentProfileFragment fragment = new ViewStudentProfileFragment();
-                Bundle args = new Bundle();
-                args.putString("studentId", studentId);
-                fragment.setArguments(args);
-
-                AppCompatActivity activity = (AppCompatActivity) v.getContext();
-                activity.getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.org_nav_host_fragment, fragment) // Qimin: Please check this ID matches your XML
-                        .addToBackStack(null)
-                        .commit();
             });
         }
     }
