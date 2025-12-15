@@ -112,6 +112,13 @@ public class EditJobActivity extends AppCompatActivity {
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
             binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
         }
+
+        // Qimin: I am pre-filling the contact number so I don't lose it
+        String contactNum = extras.getString("contactNum");
+        if (contactNum != null) {
+            binding.editTextContactNum.setText(contactNum);
+            Log.d("Qimin_Debug", "Loaded contactNum for editing: " + contactNum);
+        }
     }
 
     private void setupDatePicker() {
@@ -175,6 +182,7 @@ public class EditJobActivity extends AppCompatActivity {
         String description = getSafeText(binding.editTextDescription.getText());
         String requirements = getSafeText(binding.editTextRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
+        String contactNum = getSafeText(binding.editTextContactNum.getText());
 
         // Validation
         if (TextUtils.isEmpty(title)) {
@@ -191,6 +199,10 @@ public class EditJobActivity extends AppCompatActivity {
         }
         if (TextUtils.isEmpty(volunteersNeededStr)) {
             binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
+            return;
+        }
+        if (TextUtils.isEmpty(contactNum)) {
+            binding.inputLayoutContactNum.setError("Contact number is required");
             return;
         }
         if (selectedServiceDate == null) {
@@ -218,6 +230,8 @@ public class EditJobActivity extends AppCompatActivity {
         updates.put("volunteersNeeded", volunteersNeeded);
         updates.put("serviceDate", selectedServiceDate);
         updates.put("searchTitle", title.toLowerCase());
+        updates.put("contactNum", contactNum);
+        Log.d("Qimin_Debug", "Saving contactNum update: " + contactNum);
 
         db.collection("services").document(serviceId)
                 .update(updates)

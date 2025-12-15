@@ -134,6 +134,7 @@ public class OrgPostServiceFragment extends Fragment {
         String description = getSafeText(binding.editTextDescription.getText());
         String requirements = getSafeText(binding.editTextRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
+        String contactNum = getSafeText(binding.editTextContactNum.getText());
 
         if (TextUtils.isEmpty(title)) {
             binding.inputLayoutTitle.setError("Title is required");
@@ -152,6 +153,10 @@ public class OrgPostServiceFragment extends Fragment {
         
         if (TextUtils.isEmpty(volunteersNeededStr)) {
             binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
+            return;
+        }
+        if (TextUtils.isEmpty(contactNum)) {
+            binding.inputLayoutContactNum.setError("Contact number is required");
             return;
         }
         if (selectedServiceDate == null) {
@@ -186,14 +191,14 @@ public class OrgPostServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         String orgName = documentSnapshot.getString("orgCompanyName");
                         if (orgName == null) orgName = "Unknown Organization";
-                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded);
+                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNum);
                     } else {
                         Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
                     }
                 });
 
     }
-    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded) {
+    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contactNum) {
         // Create a new service document in the)
         Map<String, Object> serviceData = new HashMap<>();
         serviceData.put("orgId", orgId);
@@ -207,6 +212,9 @@ public class OrgPostServiceFragment extends Fragment {
         serviceData.put("createdAt", FieldValue.serverTimestamp()); // Firestore will set this
         serviceData.put("status", "Active");
         serviceData.put("searchTitle", title.toLowerCase());
+        // Qimin: I am saving the contact number so students can reach us
+        serviceData.put("contactNum", contactNum);
+        Log.d("Qimin_Debug", "Saving contactNum: " + contactNum);
 
         db.collection("services")
                 .add(serviceData)
@@ -247,6 +255,7 @@ public class OrgPostServiceFragment extends Fragment {
         clearErrorOnType(binding.inputLayoutDescription, binding.editTextDescription);
         clearErrorOnType(binding.inputLayoutRequirements, binding.editTextRequirements);
         clearErrorOnType(binding.inputLayoutVolunteersNeeded, binding.editTextVolunteersNeeded);
+        clearErrorOnType(binding.inputLayoutContactNum, binding.editTextContactNum);
     }
 
     private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout layout,
