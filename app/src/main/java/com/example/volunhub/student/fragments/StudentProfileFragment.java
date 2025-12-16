@@ -45,13 +45,11 @@ public class StudentProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        setupLogoutMenu(); // Setup the logout button
-        loadProfileData(); // Load the student's info
+        setupLogoutMenu();
+        loadProfileData();
 
-        // Set the click listener for the "Edit" FAB
         binding.fabStudentEditProfile.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
-            // This action must be added to your student_nav_graph.xml
             navController.navigate(R.id.action_student_profile_to_edit_profile);
         });
     }
@@ -63,18 +61,65 @@ public class StudentProfileFragment extends Fragment {
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Populate the views
-                        binding.textStudentProfileName.setText(documentSnapshot.getString("studentName"));
-                        binding.textStudentProfileEmail.setText(documentSnapshot.getString("email"));
-                        binding.textStudentProfileIntro.setText(documentSnapshot.getString("studentIntroduction"));
+                        String studentName = documentSnapshot.getString("studentName");
+                        String email = documentSnapshot.getString("email");
+                        String intro = documentSnapshot.getString("studentIntroduction");
 
-                        // Load profile image
+                        if (studentName != null) {
+                            binding.textStudentProfileName.setText(studentName);
+                        }
+
+                        if (email != null) {
+                            binding.textStudentProfileEmail.setText(email);
+                        }
+
+                        if (intro != null) {
+                            binding.textStudentProfileIntro.setText(intro);
+                        }
+
+                        Object ageObj = documentSnapshot.get("studentAge");
+                        String gender = documentSnapshot.getString("gender");
+
+                        if (ageObj != null) {
+                            String ageText = "Age: " + ageObj.toString();
+                            binding.textStudentProfileAge.setText(ageText);
+                        } else {
+                            binding.textStudentProfileAge.setText("Age: Not specified");
+                        }
+
+                        if (gender != null && !gender.trim().isEmpty()) {
+                            String genderText = "Gender: " + gender;
+                            binding.textStudentProfileGender.setText(genderText);
+                        } else {
+                            binding.textStudentProfileGender.setText("Gender: Not specified");
+                        }
+
+                        String contact = documentSnapshot.getString("contactNumber");
+                        if (contact != null && !contact.trim().isEmpty()) {
+                            binding.textStudentProfileContact.setText("Contact: " + contact);
+                            binding.textStudentProfileContact.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.textStudentProfileContact.setVisibility(View.GONE);
+                        }
+
+                        String experience = documentSnapshot.getString("volunteerExperience");
+                        if (experience != null && !experience.trim().isEmpty()) {
+                            binding.textStudentProfileExperience.setText(experience);
+                        } else {
+                            binding.textStudentProfileExperience.setText("No volunteer experience yet.");
+                        }
+
                         if (getContext() != null) {
-                            Glide.with(getContext())
-                                    .load(documentSnapshot.getString("profileImageUrl"))
-                                    .placeholder(R.drawable.ic_profile)
-                                    .circleCrop()
-                                    .into(binding.imageStudentProfilePicture);
+                            String imageUrl = documentSnapshot.getString("profileImageUrl");
+                            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                                Glide.with(getContext())
+                                        .load(imageUrl)
+                                        .placeholder(R.drawable.ic_profile)
+                                        .circleCrop()
+                                        .into(binding.imageStudentProfilePicture);
+                            } else {
+                                binding.imageStudentProfilePicture.setImageResource(R.drawable.ic_profile);
+                            }
                         }
                     } else {
                         Log.w(TAG, "Student document not found.");
