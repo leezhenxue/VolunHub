@@ -166,6 +166,7 @@ public class StudentServiceDetailFragment extends Fragment {
                         if (currentService.getServiceDate() != null) {
                             // Import SimpleDateFormat and Locale
                             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM d, yyyy • h:mm a", java.util.Locale.getDefault());
+                            sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
                             binding.textDetailDate.setText(sdf.format(currentService.getServiceDate()));
                         } else {
                             binding.textDetailDate.setText("Date TBD");
