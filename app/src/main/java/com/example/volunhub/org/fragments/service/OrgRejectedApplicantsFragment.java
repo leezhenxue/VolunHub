@@ -78,8 +78,33 @@ public class OrgRejectedApplicantsFragment extends Fragment {
             }
             @Override
             public void onProfileClick(Applicant applicant) {
-                Log.d(TAG, "Profile clicked: " + applicant.getStudentName());
-                // TODO: Navigate to ViewStudentProfileFragment
+                // Qimin: Clicking here should open the student profile
+                String studentId = applicant.getStudentId();
+                Log.d("Qimin_Nav", "Clicked student: " + studentId);
+
+                if (studentId == null || studentId.trim().isEmpty()) {
+                    // Qimin: I am avoiding navigation when studentId is missing
+                    Log.d("Qimin_Nav", "Student ID is null or empty, skipping navigation");
+                    android.widget.Toast.makeText(getContext(),
+                            "Student profile not available", android.widget.Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                try {
+                    androidx.navigation.NavController navController =
+                            androidx.navigation.Navigation.findNavController(requireParentFragment().requireView());
+
+                    com.example.volunhub.org.fragments.service.OrgManageServiceFragmentDirections.ActionManageServiceToViewStudent action =
+                            com.example.volunhub.org.fragments.service.OrgManageServiceFragmentDirections
+                                    .actionManageServiceToViewStudent(studentId);
+
+                    navController.navigate(action);
+                } catch (Exception e) {
+                    // Qimin: If navigation fails (graph or destination missing), I show a friendly message
+                    Log.e("Qimin_Nav", "Navigation to student profile failed", e);
+                    android.widget.Toast.makeText(getContext(),
+                            "Student Profile feature coming soon (Waiting for Edmond)", android.widget.Toast.LENGTH_SHORT).show();
+                }
             }
         };
 

@@ -170,6 +170,17 @@ public class StudentServiceDetailFragment extends Fragment {
                         } else {
                             binding.textDetailDate.setText("Date TBD");
                         }
+                        // Qimin: I am showing the contact number when it exists
+                        String contactNum = currentService.getContactNum();
+                        if (contactNum != null && !contactNum.trim().isEmpty()) {
+                            binding.textDetailContact.setVisibility(View.VISIBLE);
+                            binding.textDetailContact.setText("Contact: " + contactNum);
+                            Log.d("Qimin_Debug", "Contact number is: " + contactNum);
+                        } else {
+                            binding.textDetailContact.setText("No contact info");
+                            binding.textDetailContact.setVisibility(View.GONE);
+                            Log.d("Qimin_Debug", "Contact number missing for this service");
+                        }
                         String stats = currentService.getVolunteersApplied() + " / " + currentService.getVolunteersNeeded();
                         binding.textDetailVolunteers.setText(stats);
                         loadOrgLogo(currentService.getOrgId());

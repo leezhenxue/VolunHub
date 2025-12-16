@@ -15,7 +15,7 @@
             android:id="@+id/text_post_service_header"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Post a New Service"
+            android:text="@string/post_service_header"
             android:textAppearance="?attr/textAppearanceHeadlineSmall"
             android:textStyle="bold"
             android:layout_marginBottom="16dp"
@@ -29,10 +29,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:hint="@string/hint_service_title"
             app:layout_constraintTop_toBottomOf="@id/text_post_service_header"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:hint="Service Title">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_text_title"
@@ -48,10 +48,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:hint="@string/hint_description"
             app:layout_constraintTop_toBottomOf="@id/input_layout_title"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:hint="Description">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_text_description"
@@ -68,16 +68,16 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:hint="@string/hint_requirements"
             app:layout_constraintTop_toBottomOf="@id/input_layout_description"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:hint="Requirements (e.g., 'Bring gloves')">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_text_requirements"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapSentences" />
+                android:inputType="textMultiLine" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -86,10 +86,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_requirements"
+            android:hint="@string/hint_volunteers_needed"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_contact_num"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:hint="Volunteers Needed">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_text_volunteers_needed"
@@ -105,14 +105,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:hint="@string/hint_service_date"
             app:layout_constraintTop_toBottomOf="@id/input_layout_volunteers_needed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:endIconDrawable="@drawable/ic_calendar"
             app:endIconMode="custom"
             android:focusable="false"
-            android:clickable="true"
-            android:hint="Service Date">
+            android:clickable="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_text_service_date"
@@ -123,12 +123,31 @@
                 android:clickable="true"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_layout_contact_num"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Contact Number"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_requirements"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_text_contact_num"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <Button
             android:id="@+id/button_post_service"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:text="Post Service"
+            android:text="@string/btn_post_service"
             app:layout_constraintTop_toBottomOf="@id/input_layout_service_date"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

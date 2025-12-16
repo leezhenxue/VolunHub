@@ -1,6 +1,7 @@
 package com.example.volunhub.org.fragments.service;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,16 +20,20 @@ import com.google.firebase.firestore.AggregateSource;
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgManageServiceBinding;
 import com.example.volunhub.models.Service;
+import com.example.volunhub.org.EditJobActivity;
 import com.example.volunhub.org.OrgManageViewPagerAdapter;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 public class OrgManageServiceFragment extends Fragment {
 
     private static final String TAG = "OrgManageService";
     private FirebaseFirestore db;
     private FragmentOrgManageServiceBinding binding;
     private String serviceId;
+    private Service currentService; // Store the loaded service for edit functionality
 
     public OrgManageServiceFragment() {}
 
@@ -65,9 +70,9 @@ public class OrgManageServiceFragment extends Fragment {
         new TabLayoutMediator(binding.tabLayoutOrg, binding.viewPagerOrg,
                 (tab, position) -> {
                     switch (position) {
-                        case 0: tab.setText("Pending"); break;
-                        case 1: tab.setText("Accepted"); break;
-                        case 2: tab.setText("Rejected"); break;
+                        case 0: tab.setText(getString(R.string.tab_pending)); break;
+                        case 1: tab.setText(getString(R.string.tab_accepted)); break;
+                        case 2: tab.setText(getString(R.string.tab_rejected)); break;
                     }
                 }
         ).attach();
@@ -77,6 +82,9 @@ public class OrgManageServiceFragment extends Fragment {
 
         // 5. Set up delete button click listener
         binding.buttonDeleteService.setOnClickListener(v -> showDeleteConfirmationDialog());
+
+        // 6. Set up edit button click listener
+        binding.buttonEditService.setOnClickListener(v -> openEditServiceActivity());
     }
 
     private void loadServiceDetails() {
@@ -90,23 +98,49 @@ public class OrgManageServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         Service service = documentSnapshot.toObject(Service.class);
                         if (service != null) {
+                            // Store service for edit functionality
+                            currentService = service;
+                            
                             binding.textManageTitle.setText(service.getTitle());
                             binding.textManageDescription.setText(service.getDescription());
 
-                            String reqText = "Requirements: " + service.getRequirements();
+                            String reqText = getString(R.string.label_requirements, service.getRequirements());
                             binding.textManageRequirements.setText(reqText);
 
-                            String stats = "Applicants: " + service.getVolunteersApplied() + " / " + service.getVolunteersNeeded();
+                            String stats = getString(R.string.label_applicants, service.getVolunteersApplied(), service.getVolunteersNeeded());
                             binding.textManageStats.setText(stats);
+
+                            // Qimin: showing the date/time the same way students see it
+                            if (service.getServiceDate() != null) {
+                                SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+                                String dateText = formatter.format(service.getServiceDate());
+                                binding.textManageDate.setText(dateText);
+                                Log.d("Qimin_Debug", "Loaded service date: " + dateText);
+                            } else {
+                                binding.textManageDate.setText("Date not set");
+                                Log.d("Qimin_Debug", "Service date missing, showing fallback text");
+                            }
+
+                            // Qimin: I am showing contact number and hiding if missing
+                            String contactNum = service.getContactNum();
+                            if (contactNum != null && !contactNum.trim().isEmpty()) {
+                                binding.textManageContact.setVisibility(View.VISIBLE);
+                                binding.textManageContact.setText("Contact: " + contactNum);
+                                Log.d("Qimin_Debug", "Contact number is: " + contactNum);
+                            } else {
+                                binding.textManageContact.setText("No contact info");
+                                binding.textManageContact.setVisibility(View.GONE);
+                                Log.d("Qimin_Debug", "Contact number missing, hiding view");
+                            }
                         }
                     } else {
                         Log.w(TAG, "Service document not found.");
-                        binding.textManageTitle.setText("Error: Service not found");
+                        binding.textManageTitle.setText(getString(R.string.error_service_not_found));
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading service details", e);
-                    binding.textManageTitle.setText("Error loading data");
+                    binding.textManageTitle.setText(getString(R.string.error_loading_data));
                 });
     }
 
@@ -121,7 +155,7 @@ public class OrgManageServiceFragment extends Fragment {
                 .count()
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snapshot -> {
-                    updateTabTitle(0, "Pending", snapshot.getCount());
+                    updateTabTitle(0, getString(R.string.tab_pending), snapshot.getCount());
                 });
 
         // Count Accepted
@@ -131,7 +165,7 @@ public class OrgManageServiceFragment extends Fragment {
                 .count()
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snapshot -> {
-                    updateTabTitle(1, "Accepted", snapshot.getCount());
+                    updateTabTitle(1, getString(R.string.tab_accepted), snapshot.getCount());
                 });
 
         // Count Rejected
@@ -141,7 +175,7 @@ public class OrgManageServiceFragment extends Fragment {
                 .count()
                 .get(AggregateSource.SERVER)
                 .addOnSuccessListener(snapshot -> {
-                    updateTabTitle(2, "Rejected", snapshot.getCount());
+                    updateTabTitle(2, getString(R.string.tab_rejected), snapshot.getCount());
                 });
     }
 
@@ -163,7 +197,7 @@ public class OrgManageServiceFragment extends Fragment {
      */
     private void showDeleteConfirmationDialog() {
         if (serviceId == null) {
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.error_service_id_missing), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -176,13 +210,70 @@ public class OrgManageServiceFragment extends Fragment {
     }
 
     /**
+     * Opens the EditJobActivity with current service details.
+     */
+    private void openEditServiceActivity() {
+        if (serviceId == null) {
+            Toast.makeText(getContext(), getString(R.string.error_service_id_missing), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // If service is not loaded yet, load it first
+        if (currentService == null) {
+            db.collection("services").document(serviceId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Service service = documentSnapshot.toObject(Service.class);
+                            if (service != null) {
+                                currentService = service;
+                                launchEditActivity(service);
+                            } else {
+                                Toast.makeText(getContext(), getString(R.string.error_could_not_load_service), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(getContext(), getString(R.string.error_service_not_found), Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error loading service for edit", e);
+                        Toast.makeText(getContext(), getString(R.string.error_loading_service_data), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            launchEditActivity(currentService);
+        }
+    }
+
+    /**
+     * Launches EditJobActivity with service data.
+     */
+    private void launchEditActivity(Service service) {
+        Intent intent = new Intent(getContext(), EditJobActivity.class);
+        
+        // Put all service details into Intent
+        intent.putExtra("serviceId", serviceId);
+        intent.putExtra("title", service.getTitle());
+        intent.putExtra("desc", service.getDescription());
+        intent.putExtra("description", service.getDescription()); // Alternative key
+        intent.putExtra("requirements", service.getRequirements());
+        intent.putExtra("volunteersNeeded", String.valueOf(service.getVolunteersNeeded()));
+        intent.putExtra("contactNum", service.getContactNum());
+        
+        // Put service date as timestamp
+        if (service.getServiceDate() != null) {
+            intent.putExtra("serviceDate", service.getServiceDate().getTime());
+        }
+        
+        startActivity(intent);
+    }
+
+    /**
      * Deletes the service from Firestore.
      * On success: Shows a success toast and navigates back to the previous screen.
      * On failure: Shows an error toast.
      */
     private void deleteService() {
         if (serviceId == null) {
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.error_service_id_missing), Toast.LENGTH_SHORT).show();
             return;
         }
 

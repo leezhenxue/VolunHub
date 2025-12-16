@@ -1,5 +1,7 @@
 <resources>
+    <!-- App -->
     <string name="app_name">VolunHub</string>
+    <string name="app_name_capital">VOLUNHUB</string>
 
     <!-- Main Activity -->
     <string name="checking_account_credentials">Checking account credentials...</string>
@@ -19,6 +21,7 @@
     <string name="title_sign_up">Sign Up</string>
     <string name="btn_upload_image">Upload Image</string>
     <string name="hint_retype_password">Retype Password</string>
+    <string name="hint_contact">Contact Number</string>
     <string name="label_i_am_a">I am a:</string>
     <string name="radio_student">Student</string>
     <string name="radio_organization">Organization</string>
@@ -36,14 +39,12 @@
     <string name="action_complete_signup">Complete registration</string>
     <string name="link_go_to_login">Already have an account? Login</string>
 
-    <!-- Manage Service Fragment -->
-    <string name="delete_service">Delete Service</string>
-    <string name="delete_confirm_title">Delete Service</string>
-    <string name="delete_confirm_message">Are you sure you want to delete this service? This action cannot be undone.</string>
-    <string name="delete">Delete</string>
-    <string name="cancel">Cancel</string>
-    <string name="delete_success">Service deleted successfully</string>
-    <string name="delete_error">Error deleting service</string>
+
+
+    <!-- Student -->
+    <!-- Student Home Activity -->
+
+    <!-- Student Home Fragment -->
 
     <!-- Student Service Detail Fragment -->
     <string name="service_unavailable_title">Service Unavailable</string>
@@ -51,5 +52,95 @@
     <string name="remove_application">Remove Application</string>
     <string name="application_removed_success">Application removed successfully</string>
     <string name="application_removed_error">Error removing application</string>
+
+    <!-- View Org Profile Fragment -->
+
+    <!-- Student Applications Fragment -->
+
+    <!-- Student My Applications Fragment -->
+
+    <!-- Student Saved List Fragment -->
+
+    <!-- Student History Fragment -->
+
+    <!-- Student Profile Fragment -->
+
+    <!-- Student Edit Profile Fragment -->
+
+
+
+
+    <!-- Org -->
+    <!-- Org Home Activity -->
+
+    <!-- Org Dashboard Fragment -->
+    <string name="dashboard_quick_stats">Quick Stats</string>
+    <string name="dashboard_volunteers">Volunteers</string>
+    <string name="dashboard_jobs">Jobs</string>
+    <string name="dashboard_pending">Pending</string>
+
+    <string name="dashboard_upcoming_events">Upcoming Events</string>
+    <string name="dashboard_no_upcoming_events">No upcoming events</string>
+
+    <string name="dashboard_recent_activity">Recent Activity</string>
+
+    <string name="dashboard_add_service">Add Service</string>
+    <string name="dashboard_manage_services">Manage Services</string>
+
+
+    <string name="preview_number"> 0 </string>
+
+    <!-- Org Post Service Fragment -->
+    <string name="post_service_header">Post a New Service</string>
+    <string name="hint_service_title">Service Title</string>
+    <string name="hint_requirements">Requirements (e.g., \'Bring gloves\')</string>
+    <string name="hint_volunteers_needed">Volunteers Needed</string>
+    <string name="hint_service_date">Service Date</string>
+    <string name="btn_post_service">Post Service</string>
+
+
+    <!-- Org Manage Service Fragment -->
+    <string name="delete_service">Delete Service</string>
+    <string name="delete_confirm_title">Delete Service</string>
+    <string name="delete_confirm_message">Are you sure you want to delete this service? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_success">Service deleted successfully</string>
+    <string name="delete_error">Error deleting service</string>
+    <string name="edit_service">Edit Service</string>
+
+    <!-- Org Service Fragment -->
+    <string name="msg_no_active_services">No Active Services</string>
+
+    <!-- Org Pending Applicants Fragment -->
+    <string name="tab_pending">Pending</string>
+    <string name="tab_accepted">Accepted</string>
+    <string name="tab_rejected">Rejected</string>
+    <string name="error_student_profile_not_available">Student profile not available</string>
+    <string name="error_nav_profile">Error opening profile</string>
+    <string name="label_requirements">Requirements: %1$s</string>
+    <string name="label_applicants">Applicants: %1$d / %2$d</string>
+    <string name="error_service_not_found">Error: Service not found</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="error_service_id_missing">Error: Service ID is missing</string>
+    <string name="error_could_not_load_service">Error: Could not load service data</string>
+    <string name="error_loading_service_data">Error loading service data</string>
+
+    <!-- Org Accepted Applicants Fragment -->
+
+    <!-- Org Rejected Applicants Fragment -->
+
+    <!-- View Student Profile Fragment -->
+    <string name="label_introduction">Introduction</string>
+    <string name="label_experience">Experience</string>
+    <string name="error_profile_not_found">Error: Profile not found</string>
+    <string name="error_student_profile_not_found">Student profile not found.</string>
+    <string name="error_loading_profile">Error loading profile.</string>
+    <string name="not_available">N/A</string>
+
+    <!-- Org Profile Fragment -->
+
+    <!-- Org Edit Profile Fragment -->
+
 
 </resources>
