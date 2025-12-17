@@ -17,8 +17,21 @@
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/button_delete_service"
+        app:layout_constraintEnd_toStartOf="@id/button_edit_service"
         tools:text="Community Park Cleanup" />
+
+    <ImageButton
+        android:id="@+id/button_edit_service"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/edit_service"
+        android:src="@drawable/ic_edit"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_delete_service"
+        app:tint="?attr/colorPrimary" />
 
     <ImageButton
         android:id="@+id/button_delete_service"
@@ -58,13 +71,56 @@
         tools:text="Requirements: Bring gloves." />
 
     <TextView
+        android:id="@+id/label_manage_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Date &amp; Time"
+        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:textColor="?android:attr/textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/text_manage_requirements"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginHorizontal="16dp" />
+
+    <TextView
+        android:id="@+id/text_manage_date"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textStyle="bold"
+        app:drawableStartCompat="@drawable/ic_calendar"
+        app:layout_constraintTop_toBottomOf="@id/label_manage_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginHorizontal="16dp"
+        tools:text="Nov 22, 2025 • 2:00 PM" />
+
+    <TextView
+        android:id="@+id/text_manage_contact"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="16dp"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        app:layout_constraintTop_toBottomOf="@id/text_manage_date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Contact: 012-3456789" />
+
+    <TextView
         android:id="@+id/text_manage_stats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:textAppearance="?attr/textAppearanceLabelLarge"
         android:textColor="?attr/colorPrimary"
-        app:layout_constraintTop_toBottomOf="@id/text_manage_requirements"
+        app:layout_constraintTop_toBottomOf="@id/text_manage_contact"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginHorizontal="16dp"

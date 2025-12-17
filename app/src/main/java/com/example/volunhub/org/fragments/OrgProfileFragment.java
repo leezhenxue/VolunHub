@@ -13,6 +13,8 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.example.volunhub.R;
@@ -43,16 +45,15 @@ public class OrgProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        setupLogoutMenu(); // Setup the logout button
-        loadProfileData(); // Load the org's info
+        setupLogoutMenu();
+        loadProfileData();
 
-        // --- This is the navigation to your "Manage Profile" page ---
-        binding.fabOrgEditProfile.setOnClickListener(v -> {
-            // TODO: You must add "OrgEditProfileFragment" and this action to your org_nav_graph.xml
-            // NavController navController = Navigation.findNavController(v);
-            // navController.navigate(R.id.action_org_profile_to_edit_profile);
-            Log.d(TAG, "Edit profile clicked!"); // Placeholder for now
-        });
+        if (binding.fabOrgEditProfile != null) {
+            binding.fabOrgEditProfile.setOnClickListener(v -> {
+                NavController navController = Navigation.findNavController(v);
+                navController.navigate(R.id.action_org_profile_to_edit_profile);
+            });
+        }
     }
 
     private void loadProfileData() {
@@ -62,15 +63,42 @@ public class OrgProfileFragment extends Fragment {
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        binding.textOrgProfileName.setText(documentSnapshot.getString("orgCompanyName"));
-                        binding.textOrgProfileField.setText(documentSnapshot.getString("orgField"));
-                        binding.textOrgProfileDesc.setText(documentSnapshot.getString("orgDescription"));
+                        String orgName = documentSnapshot.getString("orgCompanyName");
+                        String email = documentSnapshot.getString("email");
+                        String orgField = documentSnapshot.getString("orgField");
+                        String orgDesc = documentSnapshot.getString("orgDescription");
+
+                        if (orgName != null) {
+                            binding.textOrgProfileName.setText(orgName);
+                        }
+                        if (email != null) {
+                            binding.textOrgProfileEmail.setText(email);
+                        }
+                        if (orgField != null) {
+                            binding.textOrgProfileField.setText(orgField);
+                        }
+                        if (orgDesc != null) {
+                            binding.textOrgProfileDesc.setText(orgDesc);
+                        }
+
+                        String contact = documentSnapshot.getString("contactNumber");
+                        if (contact != null && !contact.trim().isEmpty()) {
+                            binding.textOrgProfileContact.setText("Contact: " + contact);
+                            binding.textOrgProfileContact.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.textOrgProfileContact.setVisibility(View.GONE);
+                        }
 
                         if (getContext() != null) {
-                            Glide.with(getContext())
-                                    .load(documentSnapshot.getString("profileImageUrl"))
-                                    .placeholder(R.drawable.ic_org_dashboard)
-                                    .into(binding.imageOrgProfileLogo);
+                            String imageUrl = documentSnapshot.getString("profileImageUrl");
+                            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                                Glide.with(getContext())
+                                        .load(imageUrl)
+                                        .placeholder(R.drawable.ic_org_dashboard)
+                                        .into(binding.imageOrgProfileLogo);
+                            } else {
+                                binding.imageOrgProfileLogo.setImageResource(R.drawable.ic_org_dashboard);
+                            }
                         }
                     } else {
                         Log.w(TAG, "Org document not found.");
@@ -101,7 +129,6 @@ public class OrgProfileFragment extends Fragment {
             }
         }, lifecycleOwner, Lifecycle.State.RESUMED);
     }
-
 
     @Override
     public void onDestroyView() {

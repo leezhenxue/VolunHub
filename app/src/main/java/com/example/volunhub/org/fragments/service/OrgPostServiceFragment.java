@@ -53,6 +53,8 @@ public class OrgPostServiceFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        //added Shao Yee
+        setupClearErrors();
         setupDatePicker();
         binding.buttonPostService.setOnClickListener(v -> postService());
     }
@@ -116,6 +118,12 @@ public class OrgPostServiceFragment extends Fragment {
             // 5. Update the UI text
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
             binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+
+            //Shao Yee edited
+            // Clear error after selecting a date
+            binding.inputLayoutServiceDate.setError(null);
+            binding.inputLayoutServiceDate.setErrorEnabled(false);
+
         });
 
         timePicker.show(getParentFragmentManager(), "TIME_PICKER");
@@ -126,6 +134,7 @@ public class OrgPostServiceFragment extends Fragment {
         String description = getSafeText(binding.editTextDescription.getText());
         String requirements = getSafeText(binding.editTextRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
+        String contactNum = getSafeText(binding.editTextContactNum.getText());
 
         if (TextUtils.isEmpty(title)) {
             binding.inputLayoutTitle.setError("Title is required");
@@ -135,8 +144,19 @@ public class OrgPostServiceFragment extends Fragment {
             binding.inputLayoutDescription.setError("Description is required");
             return;
         }
+
+        // Shao Yee added
+        if (TextUtils.isEmpty(requirements)) {
+            binding.inputLayoutRequirements.setError("Requirements is required");
+            return;
+        }
+        
         if (TextUtils.isEmpty(volunteersNeededStr)) {
             binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
+            return;
+        }
+        if (TextUtils.isEmpty(contactNum)) {
+            binding.inputLayoutContactNum.setError("Contact number is required");
             return;
         }
         if (selectedServiceDate == null) {
@@ -171,14 +191,14 @@ public class OrgPostServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         String orgName = documentSnapshot.getString("orgCompanyName");
                         if (orgName == null) orgName = "Unknown Organization";
-                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded);
+                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNum);
                     } else {
                         Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
                     }
                 });
 
     }
-    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded) {
+    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contactNum) {
         // Create a new service document in the)
         Map<String, Object> serviceData = new HashMap<>();
         serviceData.put("orgId", orgId);
@@ -192,6 +212,9 @@ public class OrgPostServiceFragment extends Fragment {
         serviceData.put("createdAt", FieldValue.serverTimestamp()); // Firestore will set this
         serviceData.put("status", "Active");
         serviceData.put("searchTitle", title.toLowerCase());
+        // Qimin: I am saving the contact number so students can reach us
+        serviceData.put("contactNum", contactNum);
+        Log.d("Qimin_Debug", "Saving contactNum: " + contactNum);
 
         db.collection("services")
                 .add(serviceData)
@@ -222,5 +245,37 @@ public class OrgPostServiceFragment extends Fragment {
      */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
+    }
+
+
+    // SHAO YEE edited
+
+    private void setupClearErrors() {
+        clearErrorOnType(binding.inputLayoutTitle, binding.editTextTitle);
+        clearErrorOnType(binding.inputLayoutDescription, binding.editTextDescription);
+        clearErrorOnType(binding.inputLayoutRequirements, binding.editTextRequirements);
+        clearErrorOnType(binding.inputLayoutVolunteersNeeded, binding.editTextVolunteersNeeded);
+        clearErrorOnType(binding.inputLayoutContactNum, binding.editTextContactNum);
+    }
+
+    private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout layout,
+                                  com.google.android.material.textfield.TextInputEditText editText) {
+
+        editText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Clear error as soon as user types valid text
+                if (!s.toString().trim().isEmpty()) {
+                    layout.setError(null);
+                    layout.setErrorEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
     }
 }

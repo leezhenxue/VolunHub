@@ -28,6 +28,29 @@ public class Service {
     // Empty constructor for Firestore
     public Service() {}
 
+    public Service(String orgId, String orgName, String title, String description, String requirements,
+                   long volunteersNeeded, long volunteersApplied, Date serviceDate, Date createdAt,
+                   String status, String searchTitle, String contactNum) {
+        this.orgId = orgId;
+        this.orgName = orgName;
+        this.title = title;
+        this.description = description;
+        this.requirements = requirements;
+        this.volunteersNeeded = volunteersNeeded;
+        this.volunteersApplied = volunteersApplied;
+        this.serviceDate = serviceDate;
+        this.createdAt = createdAt;
+        this.status = status;
+        this.searchTitle = searchTitle;
+        this.contactNum = contactNum;
+    }
+
+    public Service(String title, String description, String contactNum) {
+        this.title = title;
+        this.description = description;
+        this.contactNum = contactNum;
+    }
+
     @Exclude
     public String getDocumentId() { return documentId; }
     public void setDocumentId(String documentId) { this.documentId = documentId; }

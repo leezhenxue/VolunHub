@@ -45,11 +45,9 @@ public class OrgEditProfileFragment extends Fragment {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() == null) {
-            // No user, something is wrong
             return;
         }
 
-        // Get a reference to this org's document
         orgDocRef = db.collection("users").document(mAuth.getCurrentUser().getUid());
 
         setupOrgFieldSpinner();
@@ -59,7 +57,6 @@ public class OrgEditProfileFragment extends Fragment {
     }
 
     private void setupOrgFieldSpinner() {
-        // Use the same adapter from your SignUpActivity
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
         binding.autoCompleteEditOrgField.setAdapter(adapter);
@@ -68,11 +65,19 @@ public class OrgEditProfileFragment extends Fragment {
     private void loadCurrentProfileData() {
         orgDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                // Pre-fill the form with existing data
                 binding.editTextEditOrgName.setText(documentSnapshot.getString("orgCompanyName"));
                 binding.editTextEditOrgDesc.setText(documentSnapshot.getString("orgDescription"));
                 binding.autoCompleteEditOrgField.setText(documentSnapshot.getString("orgField"), false);
-                // TODO: Load the profile image
+                binding.editTextEditOrgEmail.setText(documentSnapshot.getString("email"));
+
+                String contact = documentSnapshot.getString("contactNumber");
+                if (contact != null) {
+                    if (contact.startsWith("+60")) {
+                        binding.editTextEditOrgContact.setText(contact.substring(3));
+                    } else {
+                        binding.editTextEditOrgContact.setText(contact);
+                    }
+                }
             }
         });
     }
@@ -81,22 +86,29 @@ public class OrgEditProfileFragment extends Fragment {
         String orgName = getSafeText(binding.editTextEditOrgName.getText());
         String orgField = getSafeText(binding.autoCompleteEditOrgField.getText());
         String orgDesc = getSafeText(binding.editTextEditOrgDesc.getText());
+        String rawContact = getSafeText(binding.editTextEditOrgContact.getText());
 
-        if (orgName.isEmpty() || orgField.isEmpty() || orgDesc.isEmpty()) {
-            Toast.makeText(getContext(), "All fields are required", Toast.LENGTH_SHORT).show();
+        if (orgName.isEmpty() || orgField.isEmpty() || orgDesc.isEmpty() || rawContact.isEmpty()) {
+            Toast.makeText(getContext(), "All fields including contact are required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Create a map of *only* the fields we want to update
+        String finalContact;
+        if (rawContact.startsWith("0")) {
+            finalContact = "+60" + rawContact.substring(1);
+        } else {
+            finalContact = "+60" + rawContact;
+        }
+
         Map<String, Object> updates = new HashMap<>();
         updates.put("orgCompanyName", orgName);
         updates.put("orgField", orgField);
         updates.put("orgDescription", orgDesc);
+        updates.put("contactNumber", finalContact);
 
         orgDocRef.update(updates)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Profile updated!", Toast.LENGTH_SHORT).show();
-                    // Navigate back to the profile page
                     NavController navController = Navigation.findNavController(requireView());
                     navController.popBackStack();
                 })
@@ -106,11 +118,6 @@ public class OrgEditProfileFragment extends Fragment {
                 });
     }
 
-    /**
-     * Safely gets text from an EditText, trims it, and handles nulls.
-     * @param editable The Editable text from binding.editText.getText()
-     * @return A trimmed String, or an empty String ("") if it was null.
-     */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
     }

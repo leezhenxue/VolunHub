@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +20,7 @@ import com.example.volunhub.org.OrgServiceAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.example.volunhub.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class OrgServiceFragment extends Fragment {
     private FirebaseAuth mAuth;
     private OrgServiceAdapter adapter;
     final private List<Service> serviceList = new ArrayList<>();
+    private TextView emptyStateText;
 
     // constructor
     public OrgServiceFragment() {}
@@ -47,6 +50,8 @@ public class OrgServiceFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
+        emptyStateText = binding.getRoot().findViewById(R.id.tv_empty_state);
 
         setupRecyclerView();
         loadPostedServices();
@@ -99,6 +104,17 @@ public class OrgServiceFragment extends Fragment {
                     }
 
                     adapter.notifyDataSetChanged();
+
+                    if (emptyStateText != null) {
+                        if (serviceList.isEmpty()) {
+                            // Qimin: list is empty, showing text
+                            emptyStateText.setVisibility(View.VISIBLE);
+                            binding.recyclerOrgService.setVisibility(View.GONE);
+                        } else {
+                            emptyStateText.setVisibility(View.GONE);
+                            binding.recyclerOrgService.setVisibility(View.VISIBLE);
+                        }
+                    }
                 })
                 .addOnFailureListener(e ->
                     Log.e(TAG, "Error loading services", e)
