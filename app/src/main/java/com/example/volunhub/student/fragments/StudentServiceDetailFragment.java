@@ -171,32 +171,21 @@ public class StudentServiceDetailFragment extends Fragment {
                         } else {
                             binding.textDetailDate.setText("Date TBD");
                         }
-                        // Qimin: I am showing the contact number when it exists
-                        String contact = currentService.getContactNumber();
-                        if (contact != null && !contact.trim().isEmpty()) {
-                            binding.textDetailContact.setVisibility(View.VISIBLE);
-                            binding.textDetailContact.setText("Contact: " + contact);
-                            Log.d("Qimin_Debug", "Contact number is: " + contact);
+
+                        String contactNumber = currentService.getContactNumber();
+                        if (contactNumber != null && !contactNumber.trim().isEmpty()) {
+                            binding.textDetailContactNumber.setText(contactNumber);
+                            Log.d(TAG, "Contact number is: " + contactNumber);
                         } else {
-                            binding.textDetailContact.setText("No contact info");
-                            binding.textDetailContact.setVisibility(View.GONE);
-                            Log.d("Qimin_Debug", "Contact number missing for this service");
+                            binding.textDetailContactNumber.setText("No contact number info");
+                            Log.d(TAG, "Contact number missing for this service");
                         }
                         String stats = currentService.getVolunteersApplied() + " / " + currentService.getVolunteersNeeded();
                         binding.textDetailVolunteers.setText(stats);
                         loadOrgLogo(currentService.getOrgId());
-                        binding.textDetailDescription.setText("Description\n" + currentService.getDescription());
-                        binding.textDetailRequirements.setText("Requirements\n" + currentService.getRequirements());
-                        // --- Set Contact Number ---
-                        contact = currentService.getContactNumber(); // make sure Service model has this getter
+                        binding.textDetailDescription.setText(currentService.getDescription());
+                        binding.textDetailRequirements.setText(currentService.getRequirements());
 
-                        if (contact != null && !contact.isEmpty()) {
-                            binding.textDetailContactNumber.setText(contact);
-                            binding.textDetailContactNumber.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.textDetailContactNumber.setText("Not Available");
-                            binding.textDetailContactNumber.setVisibility(View.VISIBLE);
-                        }
 
                         checkAndSetButtonState();
                     }
@@ -339,6 +328,10 @@ public class StudentServiceDetailFragment extends Fragment {
     }
 
     private void updateApplyButtonUI(String status) {
+        if (binding == null) {
+            Log.w(TAG, "Binding is null, fragment destroyed. Skipping UI update.");
+            return;
+        }
         binding.progressBarButtonLoading.setVisibility(View.GONE);
         binding.buttonApplyService.setVisibility(View.VISIBLE);
         binding.buttonApplyService.setEnabled(true);
