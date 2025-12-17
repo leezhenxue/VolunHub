@@ -166,6 +166,7 @@ public class StudentServiceDetailFragment extends Fragment {
                         if (currentService.getServiceDate() != null) {
                             // Import SimpleDateFormat and Locale
                             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM d, yyyy • h:mm a", java.util.Locale.getDefault());
+                            sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
                             binding.textDetailDate.setText(sdf.format(currentService.getServiceDate()));
                         } else {
                             binding.textDetailDate.setText("Date TBD");
@@ -186,6 +187,17 @@ public class StudentServiceDetailFragment extends Fragment {
                         loadOrgLogo(currentService.getOrgId());
                         binding.textDetailDescription.setText("Description\n" + currentService.getDescription());
                         binding.textDetailRequirements.setText("Requirements\n" + currentService.getRequirements());
+                        // --- Set Contact Number ---
+                        String contactNumber = currentService.getContactNumber(); // make sure Service model has this getter
+
+                        if (contactNumber != null && !contactNumber.isEmpty()) {
+                            binding.textDetailContactNumber.setText(contactNumber);
+                            binding.textDetailContactNumber.setVisibility(View.VISIBLE);
+                        } else {
+                            binding.textDetailContactNumber.setText("Not Available");
+                            binding.textDetailContactNumber.setVisibility(View.VISIBLE);
+                        }
+
                         checkAndSetButtonState();
                     }
                 } else {

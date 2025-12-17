@@ -21,6 +21,10 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+
 
 public class StudentHistoryFragment extends Fragment {
 
@@ -110,6 +114,22 @@ public class StudentHistoryFragment extends Fragment {
                         binding.textEmptyHistory.setVisibility(View.GONE);
                         historyList.clear();
                         historyList.addAll(querySnapshot.toObjects(Application.class));
+
+                        // Sort by serviceDate DESC (most recent past service on top)
+                        Collections.sort(historyList, new Comparator<Application>() {
+                            @Override
+                            public int compare(Application a1, Application a2) {
+                                Date d1 = a1.getServiceDate(); // make sure Application has this getter
+                                Date d2 = a2.getServiceDate();
+
+                                if (d1 == null && d2 == null) return 0;
+                                if (d1 == null) return 1;   // null = older → put at bottom
+                                if (d2 == null) return -1;
+
+                                // d2.compareTo(d1) = DESC (latest date first)
+                                return d2.compareTo(d1);
+                            }
+                        });
 
                         // Notify adapter to refresh RecyclerView
                         adapter.notifyDataSetChanged();

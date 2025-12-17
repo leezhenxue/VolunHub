@@ -15,6 +15,7 @@ public class Application {
     private String serviceTitle;
     private String status;
     private String studentId;
+    private Date serviceDate;
     @ServerTimestamp
     private Date appliedAt;
     @Exclude
@@ -32,6 +33,7 @@ public class Application {
     public String getServiceTitle() { return serviceTitle; }
     public String getStatus() { return status; }
     public String getStudentId() { return studentId; }
+    public Date getServiceDate() { return serviceDate; }
     public Date getAppliedAt() { return appliedAt; }
     @Exclude
     public String getDocumentId() { return documentId; }
