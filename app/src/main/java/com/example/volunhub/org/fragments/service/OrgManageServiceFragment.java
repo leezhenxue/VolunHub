@@ -26,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.TimeZone;
+
 public class OrgManageServiceFragment extends Fragment {
 
     private static final String TAG = "OrgManageService";
@@ -110,8 +112,9 @@ public class OrgManageServiceFragment extends Fragment {
                             binding.textManageStats.setText(stats);
 
                             if (service.getServiceDate() != null) {
-                                SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
-                                String dateText = formatter.format(service.getServiceDate());
+                                SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+                                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
+                                String dateText = sdf.format(service.getServiceDate());
                                 binding.textManageDate.setText(dateText);
                                 Log.d(TAG, "Loaded service date: " + dateText);
                             } else {

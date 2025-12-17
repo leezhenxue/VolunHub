@@ -107,6 +107,7 @@ public class OrgDashboardFragment extends Fragment {
                 .limit(1)
                 .get()
                 .addOnSuccessListener(snap -> {
+                    if (binding == null) return;
                     if (snap.isEmpty()) {
                         binding.textUpcomingEvent.setText("No upcoming events");
                         return;
