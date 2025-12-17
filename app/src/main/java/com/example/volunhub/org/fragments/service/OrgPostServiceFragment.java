@@ -134,7 +134,7 @@ public class OrgPostServiceFragment extends Fragment {
         String description = getSafeText(binding.editTextDescription.getText());
         String requirements = getSafeText(binding.editTextRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
-        String contactNum = getSafeText(binding.editTextContactNum.getText());
+        String contact = getSafeText(binding.editTextContactNum.getText());
 
         if (TextUtils.isEmpty(title)) {
             binding.inputLayoutTitle.setError("Title is required");
@@ -155,7 +155,7 @@ public class OrgPostServiceFragment extends Fragment {
             binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
             return;
         }
-        if (TextUtils.isEmpty(contactNum)) {
+        if (TextUtils.isEmpty(contact)) {
             binding.inputLayoutContactNum.setError("Contact number is required");
             return;
         }
@@ -191,14 +191,14 @@ public class OrgPostServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         String orgName = documentSnapshot.getString("orgCompanyName");
                         if (orgName == null) orgName = "Unknown Organization";
-                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNum);
+                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contact);
                     } else {
                         Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
                     }
                 });
 
     }
-    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contactNum) {
+    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contact) {
         // Create a new service document in the)
         Map<String, Object> serviceData = new HashMap<>();
         serviceData.put("orgId", orgId);
@@ -213,8 +213,8 @@ public class OrgPostServiceFragment extends Fragment {
         serviceData.put("status", "Active");
         serviceData.put("searchTitle", title.toLowerCase());
         // Qimin: I am saving the contact number so students can reach us
-        serviceData.put("contactNum", contactNum);
-        Log.d("Qimin_Debug", "Saving contactNum: " + contactNum);
+        serviceData.put("contact", contact);
+        Log.d("Qimin_Debug", "Saving contact: " + contact);
 
         db.collection("services")
                 .add(serviceData)

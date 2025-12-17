@@ -83,7 +83,7 @@ public class StudentEditProfileFragment extends Fragment {
                 String gender = doc.getString("gender");
                 if (gender != null) binding.autoCompleteEditStudentGender.setText(gender, false);
 
-                String contact = doc.getString("contactNumber");
+                String contact = doc.getString("contact");
                 if (contact != null) {
                     if (contact.startsWith("+60")) {
                         binding.editTextEditStudentContact.setText(contact.substring(3));
@@ -176,7 +176,7 @@ public class StudentEditProfileFragment extends Fragment {
         updates.put("studentName", name);
         updates.put("studentAge", age);
         updates.put("gender", gender);
-        updates.put("contactNumber", finalContact);
+        updates.put("contact", finalContact);
         updates.put("studentIntroduction", intro);
         updates.put("volunteerExperience", experience);
 

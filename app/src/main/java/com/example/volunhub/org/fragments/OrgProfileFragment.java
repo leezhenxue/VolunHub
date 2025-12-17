@@ -81,7 +81,7 @@ public class OrgProfileFragment extends Fragment {
                             binding.textOrgProfileDesc.setText(orgDesc);
                         }
 
-                        String contact = documentSnapshot.getString("contactNumber");
+                        String contact = documentSnapshot.getString("contact");
                         if (contact != null && !contact.trim().isEmpty()) {
                             binding.textOrgProfileContact.setText("Contact: " + contact);
                             binding.textOrgProfileContact.setVisibility(View.VISIBLE);

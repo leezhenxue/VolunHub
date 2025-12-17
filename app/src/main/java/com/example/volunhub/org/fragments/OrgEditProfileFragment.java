@@ -70,7 +70,7 @@ public class OrgEditProfileFragment extends Fragment {
                 binding.autoCompleteEditOrgField.setText(documentSnapshot.getString("orgField"), false);
                 binding.editTextEditOrgEmail.setText(documentSnapshot.getString("email"));
 
-                String contact = documentSnapshot.getString("contactNumber");
+                String contact = documentSnapshot.getString("contact");
                 if (contact != null) {
                     if (contact.startsWith("+60")) {
                         binding.editTextEditOrgContact.setText(contact.substring(3));
@@ -104,7 +104,7 @@ public class OrgEditProfileFragment extends Fragment {
         updates.put("orgCompanyName", orgName);
         updates.put("orgField", orgField);
         updates.put("orgDescription", orgDesc);
-        updates.put("contactNumber", finalContact);
+        updates.put("contact", finalContact);
 
         orgDocRef.update(updates)
                 .addOnSuccessListener(aVoid -> {

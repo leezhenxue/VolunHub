@@ -122,11 +122,11 @@ public class OrgManageServiceFragment extends Fragment {
                             }
 
                             // Qimin: I am showing contact number and hiding if missing
-                            String contactNum = service.getContactNum();
-                            if (contactNum != null && !contactNum.trim().isEmpty()) {
+                            String contact = service.getContact();
+                            if (contact != null && !contact.trim().isEmpty()) {
                                 binding.textManageContact.setVisibility(View.VISIBLE);
-                                binding.textManageContact.setText("Contact: " + contactNum);
-                                Log.d("Qimin_Debug", "Contact number is: " + contactNum);
+                                binding.textManageContact.setText("Contact: " + contact);
+                                Log.d("Qimin_Debug", "Contact number is: " + contact);
                             } else {
                                 binding.textManageContact.setText("No contact info");
                                 binding.textManageContact.setVisibility(View.GONE);
@@ -256,7 +256,7 @@ public class OrgManageServiceFragment extends Fragment {
         intent.putExtra("description", service.getDescription()); // Alternative key
         intent.putExtra("requirements", service.getRequirements());
         intent.putExtra("volunteersNeeded", String.valueOf(service.getVolunteersNeeded()));
-        intent.putExtra("contactNum", service.getContactNum());
+        intent.putExtra("contact", service.getContact());
         
         // Put service date as timestamp
         if (service.getServiceDate() != null) {

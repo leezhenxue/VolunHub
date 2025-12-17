@@ -114,10 +114,10 @@ public class EditJobActivity extends AppCompatActivity {
         }
 
         // Qimin: I am pre-filling the contact number so I don't lose it
-        String contactNum = extras.getString("contactNum");
-        if (contactNum != null) {
-            binding.editTextContactNum.setText(contactNum);
-            Log.d("Qimin_Debug", "Loaded contactNum for editing: " + contactNum);
+        String contact = extras.getString("contact");
+        if (contact != null) {
+            binding.editTextContactNum.setText(contact);
+            Log.d("Qimin_Debug", "Loaded contact for editing: " + contact);
         }
     }
 
@@ -182,7 +182,7 @@ public class EditJobActivity extends AppCompatActivity {
         String description = getSafeText(binding.editTextDescription.getText());
         String requirements = getSafeText(binding.editTextRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
-        String contactNum = getSafeText(binding.editTextContactNum.getText());
+        String contact = getSafeText(binding.editTextContactNum.getText());
 
         // Validation
         if (TextUtils.isEmpty(title)) {
@@ -201,7 +201,7 @@ public class EditJobActivity extends AppCompatActivity {
             binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
             return;
         }
-        if (TextUtils.isEmpty(contactNum)) {
+        if (TextUtils.isEmpty(contact)) {
             binding.inputLayoutContactNum.setError("Contact number is required");
             return;
         }
@@ -230,8 +230,8 @@ public class EditJobActivity extends AppCompatActivity {
         updates.put("volunteersNeeded", volunteersNeeded);
         updates.put("serviceDate", selectedServiceDate);
         updates.put("searchTitle", title.toLowerCase());
-        updates.put("contactNum", contactNum);
-        Log.d("Qimin_Debug", "Saving contactNum update: " + contactNum);
+        updates.put("contact", contact);
+        Log.d("Qimin_Debug", "Saving contact update: " + contact);
 
         db.collection("services").document(serviceId)
                 .update(updates)

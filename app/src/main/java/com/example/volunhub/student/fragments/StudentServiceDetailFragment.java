@@ -172,11 +172,11 @@ public class StudentServiceDetailFragment extends Fragment {
                             binding.textDetailDate.setText("Date TBD");
                         }
                         // Qimin: I am showing the contact number when it exists
-                        String contactNum = currentService.getContactNum();
-                        if (contactNum != null && !contactNum.trim().isEmpty()) {
+                        String contact = currentService.getContact();
+                        if (contact != null && !contact.trim().isEmpty()) {
                             binding.textDetailContact.setVisibility(View.VISIBLE);
-                            binding.textDetailContact.setText("Contact: " + contactNum);
-                            Log.d("Qimin_Debug", "Contact number is: " + contactNum);
+                            binding.textDetailContact.setText("Contact: " + contact);
+                            Log.d("Qimin_Debug", "Contact number is: " + contact);
                         } else {
                             binding.textDetailContact.setText("No contact info");
                             binding.textDetailContact.setVisibility(View.GONE);
@@ -188,10 +188,10 @@ public class StudentServiceDetailFragment extends Fragment {
                         binding.textDetailDescription.setText("Description\n" + currentService.getDescription());
                         binding.textDetailRequirements.setText("Requirements\n" + currentService.getRequirements());
                         // --- Set Contact Number ---
-                        String contactNumber = currentService.getContactNumber(); // make sure Service model has this getter
+                        contact = currentService.getContact(); // make sure Service model has this getter
 
-                        if (contactNumber != null && !contactNumber.isEmpty()) {
-                            binding.textDetailContactNumber.setText(contactNumber);
+                        if (contact != null && !contact.isEmpty()) {
+                            binding.textDetailContactNumber.setText(contact);
                             binding.textDetailContactNumber.setVisibility(View.VISIBLE);
                         } else {
                             binding.textDetailContactNumber.setText("Not Available");

@@ -94,7 +94,7 @@ public class StudentProfileFragment extends Fragment {
                             binding.textStudentProfileGender.setText("Gender: Not specified");
                         }
 
-                        String contact = documentSnapshot.getString("contactNumber");
+                        String contact = documentSnapshot.getString("contact");
                         if (contact != null && !contact.trim().isEmpty()) {
                             binding.textStudentProfileContact.setText("Contact: " + contact);
                             binding.textStudentProfileContact.setVisibility(View.VISIBLE);
