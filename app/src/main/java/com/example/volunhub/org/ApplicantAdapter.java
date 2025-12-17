@@ -22,6 +22,7 @@ import java.util.List;
 
 public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.ApplicantViewHolder> {
 
+    private final String TAG = "ApplicantAdapter";
     private final List<Applicant> applicantList;
     private final String tabMode;
     private final ApplicantClickListener listener;
@@ -69,25 +70,25 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
             itemView.setOnClickListener(v -> {
                 String studentId = applicant.getStudentId();
                 try {
-                    // Qimin: Logging the click
+                    // Logging the click
                     Log.d("Qimin_Nav", "Clicked student: " + studentId);
 
                     if (studentId == null || studentId.trim().isEmpty()) {
-                        // Qimin: I am avoiding navigation when studentId is missing
+                        // I am avoiding navigation when studentId is missing
                         Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_student_profile_not_available), Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    // Qimin: Preparing the fragment with the studentId
+                    // Preparing the fragment with the studentId
                     ViewStudentProfileFragment fragment = new ViewStudentProfileFragment();
                     Bundle args = new Bundle();
-                    args.putString("studentId", studentId); // Qimin: passing studentId for profile
+                    args.putString("studentId", studentId); // passing studentId for profile
                     fragment.setArguments(args);
 
-                    // Qimin: Getting FragmentManager safely
+                    // Getting FragmentManager safely
                     AppCompatActivity activity = (AppCompatActivity) v.getContext();
 
-                    // Qimin: Using R.id.org_nav_host_fragment; please verify this ID matches your XML
+                    // Using R.id.org_nav_host_fragment; please verify this ID matches your XML
                     int containerId = R.id.org_nav_host_fragment;
 
                     activity.getSupportFragmentManager()
@@ -96,10 +97,10 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
                             .addToBackStack(null)
                             .commit();
 
-                    // Qimin: Now navigating to profile with fragment transaction
+                    // Now navigating to profile with fragment transaction
                 } catch (Exception e) {
-                    // Qimin: Catch crash and print error
-                    Log.e("Qimin_Error", "Navigation failed: " + e.getMessage());
+                    // Catch crash and print error
+                    Log.e(TAG, "Navigation failed: " + e.getMessage());
                     e.printStackTrace();
                     Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_nav_profile), Toast.LENGTH_SHORT).show();
                 }

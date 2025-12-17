@@ -47,10 +47,7 @@ public class StudentHomeFragment extends Fragment {
     private FirebaseFirestore db;
     private NavController navController;
     private boolean isLoading = false;
-    private static final String FIELD_STATUS = "status";
     private static final String FIELD_START_TIME = "startDateTime";
-    private static final String FIELD_SEARCH_TITLE = "searchTitle";
-    private static final String FIELD_SERVICE_DATE = "serviceDate";
     private ListenerRegistration servicesListener;
 
 
@@ -147,12 +144,12 @@ public class StudentHomeFragment extends Fragment {
         lastVisibleDocument = null;
         binding.progressBar.setVisibility(View.VISIBLE);
 
-        Date now = new Date();
+        Timestamp now = Timestamp.now();
 
         db.collection("services")
-                .whereEqualTo(FIELD_STATUS, "Active")
-                .whereGreaterThanOrEqualTo(FIELD_SERVICE_DATE, now)
-                .orderBy(FIELD_SERVICE_DATE, Query.Direction.ASCENDING)
+                .whereEqualTo("status", "Active")
+                .whereGreaterThanOrEqualTo("serviceDate", now)
+                .orderBy("serviceDate", Query.Direction.ASCENDING)
                 .limit(PAGE_SIZE)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
@@ -201,7 +198,7 @@ public class StudentHomeFragment extends Fragment {
         isLoading = true;
         binding.progressBar.setVisibility(View.VISIBLE);
 
-        Date now = new Date();
+        Timestamp now = Timestamp.now();
 
         db.collection("services")
                 .whereEqualTo("status", "Active")
@@ -254,11 +251,12 @@ public class StudentHomeFragment extends Fragment {
         binding.progressBar.setVisibility(View.VISIBLE);
 
         String queryText = searchText.toLowerCase();
+
         Timestamp now = Timestamp.now();
 
         db.collection("services")
-                .whereEqualTo(FIELD_STATUS, "Active")
-                .orderBy(FIELD_SEARCH_TITLE)
+                .whereEqualTo("status", "Active")
+                .orderBy("searchTitle") // Ensure this field exists in your DB!
                 .startAt(queryText)
                 .endAt(queryText + "\uf8ff")
                 .get()
@@ -274,25 +272,33 @@ public class StudentHomeFragment extends Fragment {
                     }
 
                     List<DocumentSnapshot> docs = new ArrayList<>(querySnapshot.getDocuments());
-
                     List<DocumentSnapshot> filtered = new ArrayList<>();
+
+                    // --- FIX 1: Use "serviceDate" instead of "startDateTime" ---
                     for (DocumentSnapshot d : docs) {
-                        Timestamp start = d.getTimestamp(FIELD_START_TIME);
-                        if (start != null && start.compareTo(now) >= 0) {
+                        // Try to get the date as a Date object first (standard Firestore mapping)
+                        Timestamp serviceTimestamp = d.getTimestamp("serviceDate");
+
+                        // Filter: Keep only future events
+                        if (serviceTimestamp != null && serviceTimestamp.compareTo(now) >= 0) {
                             filtered.add(d);
                         }
                     }
 
-                    // 按开始时间升序排序
+                    // --- FIX 2: Sort using "serviceDate" ---
                     Collections.sort(filtered, (d1, d2) -> {
-                        Timestamp t1 = d1.getTimestamp(FIELD_START_TIME);
-                        Timestamp t2 = d2.getTimestamp(FIELD_START_TIME);
+                        Timestamp t1 = d1.getTimestamp("serviceDate");
+                        Timestamp t2 = d2.getTimestamp("serviceDate");
+
                         if (t1 == null && t2 == null) return 0;
                         if (t1 == null) return 1;
                         if (t2 == null) return -1;
+
+                        // Ascending order (Earliest first)
                         return t1.compareTo(t2);
                     });
 
+                    // Convert filtered snapshots to Service objects
                     for (DocumentSnapshot doc : filtered) {
                         Service service = doc.toObject(Service.class);
                         if (service != null) {
@@ -301,6 +307,7 @@ public class StudentHomeFragment extends Fragment {
                         }
                     }
 
+                    // Update UI based on results
                     if (serviceList.isEmpty()) {
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);
@@ -324,8 +331,7 @@ public class StudentHomeFragment extends Fragment {
         Log.d(TAG, "Listening initial services (realtime)...");
         binding.progressBar.setVisibility(View.VISIBLE);
 
-        // "now" is used to hide past services (only show services with serviceDate >= now)
-        Date now = new Date();
+        Timestamp now = Timestamp.now();
 
         // IMPORTANT: Remove old listener before creating a new one
         // Otherwise you may have multiple listeners running at the same time

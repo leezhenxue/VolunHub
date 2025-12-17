@@ -11,6 +11,7 @@ import com.example.volunhub.models.Service;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder> {
 
@@ -41,6 +42,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             if (service.getServiceDate() != null) {
                 // Format: "Nov 15, 2025 • 2:30 PM"
                 SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
+                sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
                 String dateString = sdf.format(service.getServiceDate());
                 binding.textItemServiceDate.setText(dateString);
             } else {
