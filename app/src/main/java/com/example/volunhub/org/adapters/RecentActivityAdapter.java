@@ -13,6 +13,7 @@ import com.example.volunhub.org.models.RecentActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 public class RecentActivityAdapter extends RecyclerView.Adapter<RecentActivityAdapter.ViewHolder> {
 
@@ -36,6 +37,7 @@ public class RecentActivityAdapter extends RecyclerView.Adapter<RecentActivityAd
         holder.message.setText(item.getMessage());
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy (hh:mm a)");
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
         holder.time.setText(sdf.format(item.getTimestamp().toDate()));
     }
 

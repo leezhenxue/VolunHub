@@ -115,11 +115,11 @@
     <!-- Org Dashboard Fragment -->
     <string name="dashboard_quick_stats">Quick Stats</string>
     <string name="dashboard_volunteers">Volunteers</string>
-    <string name="dashboard_jobs">Jobs</string>
+    <string name="dashboard_services">Services</string>
     <string name="dashboard_pending">Pending</string>
 
-    <string name="dashboard_upcoming_events">Upcoming Events</string>
-    <string name="dashboard_no_upcoming_events">No upcoming events</string>
+    <string name="dashboard_upcoming_event">Upcoming Event</string>
+    <string name="dashboard_no_upcoming_event">No upcoming event</string>
 
     <string name="dashboard_recent_activity">Recent Activity</string>
 

@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.TimeZone;
 
 public class OrgDashboardFragment extends Fragment {
 
@@ -107,7 +108,7 @@ public class OrgDashboardFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(snap -> {
                     if (snap.isEmpty()) {
-                        binding.textUpcomingEvents.setText("No upcoming events");
+                        binding.textUpcomingEvent.setText("No upcoming events");
                         return;
                     }
 
@@ -116,12 +117,13 @@ public class OrgDashboardFragment extends Fragment {
                     String title = doc.getString("title");
 
                     SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy (hh:mm a)");
+                    sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
                     String formatted = sdf.format(date.toDate());
 
-                    binding.textUpcomingEvents.setText(title + " – " + formatted);
+                    binding.textUpcomingEvent.setText(title + " – " + formatted);
                 })
                 .addOnFailureListener(e -> {
-                    binding.textUpcomingEvents.setText("Unable to load events");
+                    binding.textUpcomingEvent.setText("Unable to load events");
                     Log.e(TAG, "Upcoming event error", e);
                 });
     }
