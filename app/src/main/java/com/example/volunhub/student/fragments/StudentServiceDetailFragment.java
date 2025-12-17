@@ -172,7 +172,7 @@ public class StudentServiceDetailFragment extends Fragment {
                             binding.textDetailDate.setText("Date TBD");
                         }
                         // Qimin: I am showing the contact number when it exists
-                        String contact = currentService.getContact();
+                        String contact = currentService.getContactNumber();
                         if (contact != null && !contact.trim().isEmpty()) {
                             binding.textDetailContact.setVisibility(View.VISIBLE);
                             binding.textDetailContact.setText("Contact: " + contact);
@@ -188,7 +188,7 @@ public class StudentServiceDetailFragment extends Fragment {
                         binding.textDetailDescription.setText("Description\n" + currentService.getDescription());
                         binding.textDetailRequirements.setText("Requirements\n" + currentService.getRequirements());
                         // --- Set Contact Number ---
-                        contact = currentService.getContact(); // make sure Service model has this getter
+                        contact = currentService.getContactNumber(); // make sure Service model has this getter
 
                         if (contact != null && !contact.isEmpty()) {
                             binding.textDetailContactNumber.setText(contact);

@@ -136,7 +136,7 @@ public class OrgPostServiceFragment extends Fragment {
         String description = getSafeText(binding.editTextPostServiceDescription.getText());
         String requirements = getSafeText(binding.editTextPostServiceRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextPostServiceVolunteersNeeded.getText());
-        String contactNumber = getSafeText(binding.editTextPostServiceContactNumber.getText());
+        String contactNumberNumber = getSafeText(binding.editTextPostServiceContactNumber.getText());
 
         if (TextUtils.isEmpty(title)) {
             binding.inputLayoutPostServiceTitle.setError("Title is required");
@@ -151,10 +151,10 @@ public class OrgPostServiceFragment extends Fragment {
             binding.inputLayoutPostServiceRequirements.setError("Requirements is required");
             return;
         }
-        if (TextUtils.isEmpty(contactNumber)) {
-            binding.inputLayoutPostServiceContactNumber.setError("Contact number is required");
+        if (TextUtils.isEmpty(contactNumberNumber)) {
+            binding.inputLayoutPostServiceContactNumber.setError("contactNumber number is required");
             return;
-        } else if (contactNumber.length() < 8 || contactNumber.length() > 10) {
+        } else if (contactNumberNumber.length() < 8 || contactNumberNumber.length() > 10) {
             binding.inputLayoutPostServiceContactNumber.setError("Please enter 8 to 10 digits");
             return;
         }
@@ -197,14 +197,14 @@ public class OrgPostServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         String orgName = documentSnapshot.getString("orgCompanyName");
                         if (orgName == null) orgName = "Unknown Organization";
-                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNumber);
+                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNumberNumber);
                     } else {
                         Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
                     }
                 });
 
     }
-    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contact) {
+    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contactNumber) {
         // Create a new service document in the)
         Map<String, Object> serviceData = new HashMap<>();
         serviceData.put("orgId", orgId);
@@ -218,7 +218,7 @@ public class OrgPostServiceFragment extends Fragment {
         serviceData.put("createdAt", FieldValue.serverTimestamp()); // Firestore will set this
         serviceData.put("status", "Active");
         serviceData.put("searchTitle", title.toLowerCase());
-        serviceData.put("contact", "+60" + contact);
+        serviceData.put("contactNumber", "+60" + contactNumber);
 
         db.collection("services")
                 .add(serviceData)

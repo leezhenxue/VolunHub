@@ -58,7 +58,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
-                android:minLines="2" />
+                android:minLines="2"
+                android:maxLength="120"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -77,6 +78,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minLines="2"
+                android:maxLength="120"
                 android:inputType="textMultiLine" />
         </com.google.android.material.textfield.TextInputLayout>
 
