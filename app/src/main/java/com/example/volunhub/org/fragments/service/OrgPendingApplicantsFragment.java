@@ -202,6 +202,7 @@ public class OrgPendingApplicantsFragment extends Fragment {
                 if (applicantList.isEmpty()) {
                     binding.textEmptyPending.setVisibility(View.VISIBLE);
                 }
+                notifyParentToUpdateCounts();
             } else {
                 Log.w(TAG, "Applicant not found in list, refreshing entire list");
                 // Fallback: reload the entire list if item not found
@@ -365,6 +366,8 @@ public class OrgPendingApplicantsFragment extends Fragment {
                                 
                                 // Step 4: Refresh the list
                                 loadPendingApplicants();
+
+                                notifyParentToUpdateCounts();
                             })
                             .addOnFailureListener(e -> {
                                 Log.e(TAG, "Batch update failed", e);
@@ -377,6 +380,14 @@ public class OrgPendingApplicantsFragment extends Fragment {
                     Log.e(TAG, "Error fetching service information", e);
                     Toast.makeText(getContext(), "Error loading service information", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    // Helper method to notify the parent (OrgManageServiceFragment)
+    private void notifyParentToUpdateCounts() {
+        Bundle result = new Bundle();
+        result.putBoolean("refresh", true); // The value doesn't matter, just the signal
+        // We use getParentFragmentManager() because this fragment is inside the ViewPager
+        getParentFragmentManager().setFragmentResult("KEY_REFRESH_COUNTS", result);
     }
 
     @Override

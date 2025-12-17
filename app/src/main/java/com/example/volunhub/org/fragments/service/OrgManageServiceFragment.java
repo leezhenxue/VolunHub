@@ -64,7 +64,7 @@ public class OrgManageServiceFragment extends Fragment {
         loadServiceDetails();
 
         // 2. Setup Adapter
-        OrgManageViewPagerAdapter viewPagerAdapter = new OrgManageViewPagerAdapter(requireActivity(), serviceId);
+        OrgManageViewPagerAdapter viewPagerAdapter = new OrgManageViewPagerAdapter(this, serviceId);
         binding.viewPagerOrg.setAdapter(viewPagerAdapter);
 
         // 3. Link Tabs (Set initial titles)
@@ -77,6 +77,12 @@ public class OrgManageServiceFragment extends Fragment {
                     }
                 }
         ).attach();
+
+        getChildFragmentManager().setFragmentResultListener("KEY_REFRESH_COUNTS", this,
+                (requestKey, result) -> {
+                    Log.d(TAG, "Received refresh signal from child fragment. Updating tabs...");
+                    updateTabCounts();
+                });
 
         // 4. --- NEW: Fetch and update the counts on the tabs ---
         updateTabCounts();

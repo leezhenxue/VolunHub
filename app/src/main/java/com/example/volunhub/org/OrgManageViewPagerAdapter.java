@@ -15,8 +15,8 @@ public class OrgManageViewPagerAdapter extends FragmentStateAdapter {
     private final String serviceId;
 
     // --- 2. Modify the constructor to accept the serviceId ---
-    public OrgManageViewPagerAdapter(@NonNull FragmentActivity fragmentActivity, String serviceId) {
-        super(fragmentActivity);
+    public OrgManageViewPagerAdapter(@NonNull Fragment fragment, String serviceId) {
+        super(fragment);
         this.serviceId = serviceId;
     }
 

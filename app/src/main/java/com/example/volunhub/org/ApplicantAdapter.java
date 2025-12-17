@@ -71,7 +71,7 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
                 String studentId = applicant.getStudentId();
                 try {
                     // Logging the click
-                    Log.d("Qimin_Nav", "Clicked student: " + studentId);
+                    Log.d(TAG, "Clicked student: " + studentId);
 
                     if (studentId == null || studentId.trim().isEmpty()) {
                         // I am avoiding navigation when studentId is missing
