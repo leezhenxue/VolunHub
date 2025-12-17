@@ -74,7 +74,7 @@ public class EditJobActivity extends AppCompatActivity {
         // Pre-fill title
         String title = extras.getString("title");
         if (title != null) {
-            binding.editTextTitle.setText(title);
+            binding.editTextPostServiceTitle.setText(title);
         }
 
         // Pre-fill description
@@ -83,13 +83,13 @@ public class EditJobActivity extends AppCompatActivity {
             desc = extras.getString("description"); // Try alternative key
         }
         if (desc != null) {
-            binding.editTextDescription.setText(desc);
+            binding.editTextPostServiceDescription.setText(desc);
         }
 
         // Pre-fill requirements
         String requirements = extras.getString("requirements");
         if (requirements != null) {
-            binding.editTextRequirements.setText(requirements);
+            binding.editTextPostServiceRequirements.setText(requirements);
         }
 
         // Pre-fill volunteers needed
@@ -102,7 +102,7 @@ public class EditJobActivity extends AppCompatActivity {
             }
         }
         if (volunteersNeeded != null) {
-            binding.editTextVolunteersNeeded.setText(volunteersNeeded);
+            binding.editTextPostServiceVolunteersNeeded.setText(volunteersNeeded);
         }
 
         // Pre-fill service date
@@ -110,20 +110,20 @@ public class EditJobActivity extends AppCompatActivity {
         if (serviceDateMillis > 0) {
             selectedServiceDate = new Date(serviceDateMillis);
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
-            binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+            binding.editTextPostServiceServiceDate.setText(formatter.format(selectedServiceDate));
         }
 
         // Qimin: I am pre-filling the contact number so I don't lose it
         String contact = extras.getString("contact");
         if (contact != null) {
-            binding.editTextContactNum.setText(contact);
+            binding.editTextPostServiceContactNumber.setText(contact);
             Log.d("Qimin_Debug", "Loaded contact for editing: " + contact);
         }
     }
 
     private void setupDatePicker() {
-        binding.editTextServiceDate.setOnClickListener(v -> showDatePicker());
-        binding.inputLayoutServiceDate.setEndIconOnClickListener(v -> showDatePicker());
+        binding.editTextPostServiceServiceDate.setOnClickListener(v -> showDatePicker());
+        binding.inputLayoutPostServiceServiceDate.setEndIconOnClickListener(v -> showDatePicker());
     }
 
     private void showDatePicker() {
@@ -165,10 +165,10 @@ public class EditJobActivity extends AppCompatActivity {
             selectedServiceDate = finalCalendar.getTime();
 
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
-            binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+            binding.editTextPostServiceServiceDate.setText(formatter.format(selectedServiceDate));
 
-            binding.inputLayoutServiceDate.setError(null);
-            binding.inputLayoutServiceDate.setErrorEnabled(false);
+            binding.inputLayoutPostServiceServiceDate.setError(null);
+            binding.inputLayoutPostServiceServiceDate.setErrorEnabled(false);
         });
 
         timePicker.show(getSupportFragmentManager(), "TIME_PICKER");
@@ -178,35 +178,35 @@ public class EditJobActivity extends AppCompatActivity {
      * Validates inputs and saves changes to Firestore.
      */
     private void saveChanges() {
-        String title = getSafeText(binding.editTextTitle.getText());
-        String description = getSafeText(binding.editTextDescription.getText());
-        String requirements = getSafeText(binding.editTextRequirements.getText());
-        String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
-        String contact = getSafeText(binding.editTextContactNum.getText());
+        String title = getSafeText(binding.editTextPostServiceTitle.getText());
+        String description = getSafeText(binding.editTextPostServiceDescription.getText());
+        String requirements = getSafeText(binding.editTextPostServiceRequirements.getText());
+        String volunteersNeededStr = getSafeText(binding.editTextPostServiceVolunteersNeeded.getText());
+        String contact = getSafeText(binding.editTextPostServiceContactNumber.getText());
 
         // Validation
         if (TextUtils.isEmpty(title)) {
-            binding.inputLayoutTitle.setError("Title is required");
+            binding.inputLayoutPostServiceTitle.setError("Title is required");
             return;
         }
         if (TextUtils.isEmpty(description)) {
-            binding.inputLayoutDescription.setError("Description is required");
+            binding.inputLayoutPostServiceDescription.setError("Description is required");
             return;
         }
         if (TextUtils.isEmpty(requirements)) {
-            binding.inputLayoutRequirements.setError("Requirements is required");
+            binding.inputLayoutPostServiceRequirements.setError("Requirements is required");
             return;
         }
         if (TextUtils.isEmpty(volunteersNeededStr)) {
-            binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
+            binding.inputLayoutPostServiceVolunteersNeeded.setError("Volunteers needed is required");
             return;
         }
         if (TextUtils.isEmpty(contact)) {
-            binding.inputLayoutContactNum.setError("Contact number is required");
+            binding.inputLayoutPostServiceContactNumber.setError("Contact number is required");
             return;
         }
         if (selectedServiceDate == null) {
-            binding.inputLayoutServiceDate.setError("Service date is required");
+            binding.inputLayoutPostServiceServiceDate.setError("Service date is required");
             return;
         }
 
@@ -214,11 +214,11 @@ public class EditJobActivity extends AppCompatActivity {
         try {
             volunteersNeeded = Integer.parseInt(volunteersNeededStr);
             if (volunteersNeeded <= 0) {
-                binding.inputLayoutVolunteersNeeded.setError("Must be at least 1");
+                binding.inputLayoutPostServiceVolunteersNeeded.setError("Must be at least 1");
                 return;
             }
         } catch (NumberFormatException e) {
-            binding.inputLayoutVolunteersNeeded.setError("Invalid number");
+            binding.inputLayoutPostServiceVolunteersNeeded.setError("Invalid number");
             return;
         }
 

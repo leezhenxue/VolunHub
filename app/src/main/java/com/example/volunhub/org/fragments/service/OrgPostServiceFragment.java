@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -60,8 +61,8 @@ public class OrgPostServiceFragment extends Fragment {
     }
 
     private void setupDatePicker() {
-        binding.editTextServiceDate.setOnClickListener(v -> showDatePicker());
-        binding.inputLayoutServiceDate.setEndIconOnClickListener(v -> showDatePicker());
+        binding.editTextPostServiceServiceDate.setOnClickListener(v -> showDatePicker());
+        binding.inputLayoutPostServiceServiceDate.setEndIconOnClickListener(v -> showDatePicker());
     }
 
     // Replace your old showDatePicker with this updated logic
@@ -99,30 +100,31 @@ public class OrgPostServiceFragment extends Fragment {
 
             // 3. Combine Date + Time
             // We use a "Local" calendar to build the final object
-            Calendar finalCalendar = Calendar.getInstance();
+            Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
 
             // Copy Year/Month/Day from the Date Picker (UTC)
-            finalCalendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
-            finalCalendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
-            finalCalendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH));
+            calendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
+            calendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
+            calendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH));
 
             // Set Hour/Minute from the Time Picker
-            finalCalendar.set(Calendar.HOUR_OF_DAY, hour);
-            finalCalendar.set(Calendar.MINUTE, minute);
-            finalCalendar.set(Calendar.SECOND, 0);
-            finalCalendar.set(Calendar.MILLISECOND, 0);
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
 
             // 4. Save the final result
-            selectedServiceDate = finalCalendar.getTime();
+            selectedServiceDate = calendar.getTime();
 
             // 5. Update the UI text
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
-            binding.editTextServiceDate.setText(formatter.format(selectedServiceDate));
+            formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
+            binding.editTextPostServiceServiceDate.setText(formatter.format(selectedServiceDate));
 
             //Shao Yee edited
             // Clear error after selecting a date
-            binding.inputLayoutServiceDate.setError(null);
-            binding.inputLayoutServiceDate.setErrorEnabled(false);
+            binding.inputLayoutPostServiceServiceDate.setError(null);
+            binding.inputLayoutPostServiceServiceDate.setErrorEnabled(false);
 
         });
 
@@ -130,51 +132,55 @@ public class OrgPostServiceFragment extends Fragment {
     }
 
     private void postService() {
-        String title = getSafeText(binding.editTextTitle.getText());
-        String description = getSafeText(binding.editTextDescription.getText());
-        String requirements = getSafeText(binding.editTextRequirements.getText());
-        String volunteersNeededStr = getSafeText(binding.editTextVolunteersNeeded.getText());
-        String contact = getSafeText(binding.editTextContactNum.getText());
+        String title = getSafeText(binding.editTextPostServiceTitle.getText());
+        String description = getSafeText(binding.editTextPostServiceDescription.getText());
+        String requirements = getSafeText(binding.editTextPostServiceRequirements.getText());
+        String volunteersNeededStr = getSafeText(binding.editTextPostServiceVolunteersNeeded.getText());
+        String contactNumber = getSafeText(binding.editTextPostServiceContactNumber.getText());
 
         if (TextUtils.isEmpty(title)) {
-            binding.inputLayoutTitle.setError("Title is required");
+            binding.inputLayoutPostServiceTitle.setError("Title is required");
             return;
         }
         if (TextUtils.isEmpty(description)) {
-            binding.inputLayoutDescription.setError("Description is required");
+            binding.inputLayoutPostServiceDescription.setError("Description is required");
             return;
         }
 
-        // Shao Yee added
         if (TextUtils.isEmpty(requirements)) {
-            binding.inputLayoutRequirements.setError("Requirements is required");
+            binding.inputLayoutPostServiceRequirements.setError("Requirements is required");
             return;
         }
-        
-        if (TextUtils.isEmpty(volunteersNeededStr)) {
-            binding.inputLayoutVolunteersNeeded.setError("Volunteers needed is required");
+        if (TextUtils.isEmpty(contactNumber)) {
+            binding.inputLayoutPostServiceContactNumber.setError("Contact number is required");
             return;
-        }
-        if (TextUtils.isEmpty(contact)) {
-            binding.inputLayoutContactNum.setError("Contact number is required");
-            return;
-        }
-        if (selectedServiceDate == null) {
-            binding.inputLayoutServiceDate.setError("Service date is required");
+        } else if (contactNumber.length() < 8 || contactNumber.length() > 10) {
+            binding.inputLayoutPostServiceContactNumber.setError("Please enter 8 to 10 digits");
             return;
         }
 
+        if (TextUtils.isEmpty(volunteersNeededStr)) {
+            binding.inputLayoutPostServiceVolunteersNeeded.setError("Volunteers needed is required");
+            return;
+        }
         int volunteersNeeded;
         try {
             volunteersNeeded = Integer.parseInt(volunteersNeededStr);
             if (volunteersNeeded <= 0) {
-                binding.inputLayoutVolunteersNeeded.setError("Must be at least 1");
+                binding.inputLayoutPostServiceVolunteersNeeded.setError("Must be at least 1");
                 return;
             }
         } catch (NumberFormatException e) {
-            binding.inputLayoutVolunteersNeeded.setError("Invalid number");
+            binding.inputLayoutPostServiceVolunteersNeeded.setError("Invalid number");
             return;
         }
+
+        if (selectedServiceDate == null) {
+            binding.inputLayoutPostServiceServiceDate.setError("Service date is required");
+            return;
+        }
+
+
 
         // Get current user's orgId and orgName
         String orgId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
@@ -191,7 +197,7 @@ public class OrgPostServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         String orgName = documentSnapshot.getString("orgCompanyName");
                         if (orgName == null) orgName = "Unknown Organization";
-                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contact);
+                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNumber);
                     } else {
                         Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
                     }
@@ -212,9 +218,7 @@ public class OrgPostServiceFragment extends Fragment {
         serviceData.put("createdAt", FieldValue.serverTimestamp()); // Firestore will set this
         serviceData.put("status", "Active");
         serviceData.put("searchTitle", title.toLowerCase());
-        // Qimin: I am saving the contact number so students can reach us
-        serviceData.put("contact", contact);
-        Log.d("Qimin_Debug", "Saving contact: " + contact);
+        serviceData.put("contact", "+60" + contact);
 
         db.collection("services")
                 .add(serviceData)
@@ -251,11 +255,11 @@ public class OrgPostServiceFragment extends Fragment {
     // SHAO YEE edited
 
     private void setupClearErrors() {
-        clearErrorOnType(binding.inputLayoutTitle, binding.editTextTitle);
-        clearErrorOnType(binding.inputLayoutDescription, binding.editTextDescription);
-        clearErrorOnType(binding.inputLayoutRequirements, binding.editTextRequirements);
-        clearErrorOnType(binding.inputLayoutVolunteersNeeded, binding.editTextVolunteersNeeded);
-        clearErrorOnType(binding.inputLayoutContactNum, binding.editTextContactNum);
+        clearErrorOnType(binding.inputLayoutPostServiceTitle, binding.editTextPostServiceTitle);
+        clearErrorOnType(binding.inputLayoutPostServiceDescription, binding.editTextPostServiceDescription);
+        clearErrorOnType(binding.inputLayoutPostServiceRequirements, binding.editTextPostServiceRequirements);
+        clearErrorOnType(binding.inputLayoutPostServiceVolunteersNeeded, binding.editTextPostServiceVolunteersNeeded);
+        clearErrorOnType(binding.inputLayoutPostServiceContactNumber, binding.editTextPostServiceContactNumber);
     }
 
     private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout layout,
@@ -277,5 +281,16 @@ public class OrgPostServiceFragment extends Fragment {
             @Override
             public void afterTextChanged(android.text.Editable s) {}
         });
+    }
+
+    private boolean checkEditTextIsEmpty(com.google.android.material.textfield.TextInputLayout inputLayout, @NonNull EditText field, String errorMessage) {
+        String text = field.getText().toString().trim();
+        if (TextUtils.isEmpty(text)) {
+            inputLayout.setError(errorMessage);
+            return true;
+        } else {
+            inputLayout.setError(null);
+            return false;
+        }
     }
 }

@@ -76,7 +76,7 @@ public class SignUpFragment extends Fragment {
         clearErrorOnType(binding.textInputLayoutOrgCompanyName);
         clearErrorOnType(binding.textInputLayoutOrgField);
         clearErrorOnType(binding.textInputLayoutOrgDescription);
-        clearErrorOnType(binding.textInputLayoutContact);
+        clearErrorOnType(binding.textInputLayoutContactNumber);
 
         binding.editTextStudentName.setFilters(new InputFilter[] {
             new InputFilter.AllCaps()
@@ -236,14 +236,14 @@ public class SignUpFragment extends Fragment {
             }
         }
 
-        String contactInput = getSafeText(binding.editTextSignUpContact.getText());
+        String contactNumberInput = getSafeText(binding.editTextSignUpContactNumber.getText());
 
-        if (TextUtils.isEmpty(contactInput)) {
-            binding.textInputLayoutContact.setError("Contact number is required");
+        if (TextUtils.isEmpty(contactNumberInput)) {
+            binding.textInputLayoutContactNumber.setError("contactNumber number is required");
             isValid = false;
         } else {
-            if (contactInput.length() < 8 || contactInput.length() > 10) {
-                binding.textInputLayoutContact.setError("Please enter 8 to 10 digits");
+            if (contactNumberInput.length() < 8 || contactNumberInput.length() > 10) {
+                binding.textInputLayoutContactNumber.setError("Please enter 8 to 10 digits");
                 isValid = false;
             }
         }
@@ -312,7 +312,7 @@ public class SignUpFragment extends Fragment {
         Map<String, Object> userData = new HashMap<>();
         userData.put("email", email);
         userData.put("role", role);
-        userData.put("contact", "+60" + getSafeText(binding.editTextSignUpContact.getText()));
+        userData.put("contactNumber", "+60" + getSafeText(binding.editTextSignUpContactNumber.getText()));
 
         if (role.equals("Student")) {
             userData.put("studentName", getSafeText(binding.editTextStudentName.getText()));

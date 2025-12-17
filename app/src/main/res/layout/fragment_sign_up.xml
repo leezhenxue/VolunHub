@@ -120,7 +120,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/text_input_layout_contact"
+                        android:id="@+id/text_input_layout_contact_number"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
@@ -128,7 +128,7 @@
                         app:prefixText="+60 "
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/edit_text_sign_up_contact"
+                            android:id="@+id/edit_text_sign_up_contact_number"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="phone"

@@ -24,7 +24,7 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_title"
+            android:id="@+id/input_layout_post_service_title"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_title"
+                android:id="@+id/edit_text_post_service_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences"
@@ -43,56 +43,56 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_description"
+            android:id="@+id/input_layout_post_service_description"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/hint_description"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_title"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_post_service_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_description"
+                android:id="@+id/edit_text_post_service_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
-                android:lines="4"
-                android:gravity="top|start" />
+                android:minLines="2" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_requirements"
+            android:id="@+id/input_layout_post_service_requirements"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/hint_requirements"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_description"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_post_service_description"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_requirements"
+                android:id="@+id/edit_text_post_service_requirements"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minLines="2"
                 android:inputType="textMultiLine" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_volunteers_needed"
+            android:id="@+id/input_layout_post_service_volunteers_needed"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/hint_volunteers_needed"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_contact_num"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_post_service_contact_number"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_volunteers_needed"
+                android:id="@+id/edit_text_post_service_volunteers_needed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
@@ -100,13 +100,13 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_service_date"
+            android:id="@+id/input_layout_post_service_service_date"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/hint_service_date"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_volunteers_needed"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_post_service_volunteers_needed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:endIconDrawable="@drawable/ic_calendar"
@@ -115,7 +115,7 @@
             android:clickable="true">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_service_date"
+                android:id="@+id/edit_text_post_service_service_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none"
@@ -124,22 +124,25 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_layout_contact_num"
+            android:id="@+id/input_layout_post_service_contact_number"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Contact Number"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_requirements"
+            app:prefixText="+60 "
+            app:layout_constraintTop_toBottomOf="@id/input_layout_post_service_requirements"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_text_contact_num"
+                android:id="@+id/edit_text_post_service_contact_number"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="phone"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:digits="0123456789"
+                android:maxLength="10" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -148,7 +151,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:text="@string/btn_post_service"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_service_date"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_post_service_service_date"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
