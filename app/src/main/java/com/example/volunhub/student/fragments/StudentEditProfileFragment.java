@@ -228,7 +228,6 @@ public class StudentEditProfileFragment extends Fragment {
         updates.put("studentAge", age);
         updates.put("gender", gender);
         updates.put("studentGender", gender); // Sync both keys to be safe
-        updates.put("contact", finalContact);
         updates.put("contactNumber", finalContact);
         updates.put("studentIntroduction", getSafeText(binding.editTextEditStudentIntro.getText()));
 
@@ -248,17 +247,10 @@ public class StudentEditProfileFragment extends Fragment {
     }
 
     private void uploadImageToCloudinary(Map<String, Object> updates) {
-        String uid = mAuth.getCurrentUser().getUid();
-
-        // Using OVERWRITE strategy: profile_{uid}
-        String fixedPublicId = "profile_" + uid;
 
         MediaManager.get().upload(selectedImageUri)
                 .option("folder", "profileImages")
                 .unsigned("volunhub")
-                .option("public_id", fixedPublicId)
-                .option("overwrite", true)
-                .option("invalidate", true)
                 .callback(new UploadCallback() {
                     @Override
                     public void onStart(String requestId) {}

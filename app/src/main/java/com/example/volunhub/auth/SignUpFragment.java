@@ -312,7 +312,10 @@ public class SignUpFragment extends Fragment {
         Map<String, Object> userData = new HashMap<>();
         userData.put("email", email);
         userData.put("role", role);
-        userData.put("contactNumber", "+60" + getSafeText(binding.editTextSignUpContactNumber.getText()));
+
+        String rawContact = getSafeText(binding.editTextSignUpContactNumber.getText());
+        String finalContact = rawContact.startsWith("0") ? "+60" + rawContact.substring(1) : "+60" + rawContact;
+        userData.put("contactNumber", finalContact);
 
         if (role.equals("Student")) {
             userData.put("studentName", getSafeText(binding.editTextStudentName.getText()));
