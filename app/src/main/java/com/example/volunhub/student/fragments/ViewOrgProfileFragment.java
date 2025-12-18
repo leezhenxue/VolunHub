@@ -16,6 +16,8 @@ import com.example.volunhub.databinding.FragmentViewOrgProfileBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ViewOrgProfileFragment extends Fragment {
+
+    private static final String TAG = "ViewOrgProfile";
     private FragmentViewOrgProfileBinding binding;
     private FirebaseFirestore db;
     private String orgId;
@@ -46,26 +48,48 @@ public class ViewOrgProfileFragment extends Fragment {
         if (orgId != null && !orgId.isEmpty()) {
             loadOrgProfileData(orgId);
         } else {
-            Log.e("ViewOrgProfile", "No organization ID provided");
+            Log.e(TAG, "No organization ID provided");
+            binding.textViewOrgName.setText(R.string.error_profile_not_found);
         }
     }
 
     private void loadOrgProfileData(String orgId) {
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && "organization".equals(documentSnapshot.getString("role"))) {
-                        // Populate organization data - 使用正确的ID名称
-                        // XML中的 ID: @+id/text_view_org_name -> Java: binding.textViewOrgName
-                        binding.textViewOrgName.setText(documentSnapshot.getString("orgCompanyName"));
+                    if (documentSnapshot.exists()) {
 
-                        // XML中的 ID: @+id/text_view_org_field -> Java: binding.textViewOrgField
-                        binding.textViewOrgField.setText(documentSnapshot.getString("orgField"));
+                        // 1. Basic Info
+                        String orgName = documentSnapshot.getString("orgCompanyName");
+                        binding.textViewOrgName.setText(
+                                (orgName != null && !orgName.isEmpty()) ? orgName : "Organization Name"
+                        );
 
-                        // XML中的 ID: @+id/text_view_org_desc -> Java: binding.textViewOrgDesc
-                        binding.textViewOrgDesc.setText(documentSnapshot.getString("orgDescription"));
+                        String orgField = documentSnapshot.getString("orgField");
+                        binding.textViewOrgField.setText(
+                                (orgField != null && !orgField.isEmpty()) ? orgField : "Industry Unknown"
+                        );
 
-                        // Load organization logo
-                        // XML中的 ID: @+id/image_view_org_logo -> Java: binding.imageViewOrgLogo
+                        // 2. Contact Info
+                        String email = documentSnapshot.getString("email");
+                        binding.textViewOrgEmail.setText(
+                                (email != null && !email.isEmpty()) ? email : "No email provided"
+                        );
+
+                        // Handle potentially different field names for contact
+                        String contact = documentSnapshot.getString("contact");
+                        if (contact == null) contact = documentSnapshot.getString("contactNumber");
+
+                        binding.textViewOrgPhone.setText(
+                                (contact != null && !contact.isEmpty()) ? contact : "No contact number"
+                        );
+
+                        // 3. Description
+                        String desc = documentSnapshot.getString("orgDescription");
+                        binding.textViewOrgDesc.setText(
+                                (desc != null && !desc.isEmpty()) ? desc : "No description provided."
+                        );
+
+                        // 4. Logo
                         if (getContext() != null) {
                             Glide.with(getContext())
                                     .load(documentSnapshot.getString("profileImageUrl"))
@@ -74,10 +98,14 @@ public class ViewOrgProfileFragment extends Fragment {
                                     .into(binding.imageViewOrgLogo);
                         }
                     } else {
-                        Log.w("ViewOrgProfile", "Organization document not found or not an organization");
+                        Log.w(TAG, "Organization document not found");
+                        binding.textViewOrgName.setText("Organization not found");
                     }
                 })
-                .addOnFailureListener(e -> Log.e("ViewOrgProfile", "Error loading organization profile", e));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading organization profile", e);
+                    binding.textViewOrgName.setText("Error loading data");
+                });
     }
 
     @Override

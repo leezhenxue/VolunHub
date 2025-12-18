@@ -31,7 +31,7 @@
     <string name="radio_male">Male</string>
     <string name="radio_female">Female</string>
     <string name="hint_experience">Volunteer Experience (Optional)</string>
-    <string name="hint_about_me">About Me</string>
+    <string name="hint_self_introduction">Self Introduction</string>
     <string name="hint_company_name">Company Name</string>
     <string name="hint_field">Field</string>
     <string name="hint_description">Description</string>

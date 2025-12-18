@@ -8,11 +8,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.MenuHost;
-import androidx.core.view.MenuProvider;
+import androidx.appcompat.widget.Toolbar; // Import Toolbar
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -45,13 +42,38 @@ public class StudentProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        setupLogoutMenu();
+        // 1. Setup Manual Logout Menu
+        setupToolbarMenu();
+
         loadProfileData();
 
         binding.fabStudentEditProfile.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
             navController.navigate(R.id.action_student_profile_to_edit_profile);
         });
+    }
+
+    // --- Manual Toolbar Menu Setup ---
+    private void setupToolbarMenu() {
+        if (getActivity() == null) return;
+
+        // Find the toolbar from the StudentHomeActivity layout
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+
+        if (toolbar != null) {
+            toolbar.getMenu().clear();
+            toolbar.inflateMenu(R.menu.toolbar_menu);
+            toolbar.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.toolbar_logout) {
+                    // Call returnToMain() from StudentHomeActivity
+                    if (getActivity() instanceof StudentHomeActivity) {
+                        ((StudentHomeActivity) getActivity()).returnToMain();
+                    }
+                    return true;
+                }
+                return false;
+            });
+        }
     }
 
     private void loadProfileData() {
@@ -61,61 +83,58 @@ public class StudentProfileFragment extends Fragment {
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+
+                        // 1. Name
                         String studentName = documentSnapshot.getString("studentName");
-                        String email = documentSnapshot.getString("email");
-                        String intro = documentSnapshot.getString("studentIntroduction");
+                        binding.textStudentProfileName.setText(
+                                (studentName != null) ? studentName : "Student Name"
+                        );
 
-                        if (studentName != null) {
-                            binding.textStudentProfileName.setText(studentName);
-                        }
-
-                        if (email != null) {
-                            binding.textStudentProfileEmail.setText(email);
-                        }
-
-                        if (intro != null) {
-                            binding.textStudentProfileIntro.setText(intro);
-                        }
-
+                        // 2. Subtitle: Age & Gender
                         Object ageObj = documentSnapshot.get("studentAge");
-                        String gender = documentSnapshot.getString("gender");
+                        String ageText = (ageObj != null) ? String.valueOf(ageObj) : "N/A";
 
-                        if (ageObj != null) {
-                            String ageText = "Age: " + ageObj.toString();
-                            binding.textStudentProfileAge.setText(ageText);
-                        } else {
-                            binding.textStudentProfileAge.setText("Age: Not specified");
-                        }
+                        String gender = documentSnapshot.getString("studentGender"); // Check if DB uses "gender" or "studentGender"
+                        if (gender == null) gender = documentSnapshot.getString("gender"); // Fallback
+                        String genderText = (gender != null) ? gender : "N/A";
 
-                        if (gender != null && !gender.trim().isEmpty()) {
-                            String genderText = "Gender: " + gender;
-                            binding.textStudentProfileGender.setText(genderText);
-                        } else {
-                            binding.textStudentProfileGender.setText("Gender: Not specified");
-                        }
+                        binding.textStudentProfileSubtitle.setText(ageText + " Years Old • " + genderText);
+
+                        // 3. Contact Info
+                        String email = documentSnapshot.getString("email");
+                        binding.textStudentProfileEmail.setText(
+                                (email != null) ? email : "No email"
+                        );
 
                         String contact = documentSnapshot.getString("contact");
-                        if (contact != null && !contact.trim().isEmpty()) {
-                            binding.textStudentProfileContact.setText("Contact: " + contact);
-                            binding.textStudentProfileContact.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.textStudentProfileContact.setVisibility(View.GONE);
-                        }
+                        if (contact == null) contact = documentSnapshot.getString("contactNumber");
+                        binding.textStudentProfileContact.setText(
+                                (contact != null) ? contact : "No contact number"
+                        );
 
-                        String experience = documentSnapshot.getString("volunteerExperience");
-                        if (experience != null && !experience.trim().isEmpty()) {
-                            binding.textStudentProfileExperience.setText(experience);
-                        } else {
-                            binding.textStudentProfileExperience.setText("No volunteer experience yet.");
-                        }
+                        // 4. About Me
+                        String intro = documentSnapshot.getString("studentIntroduction");
+                        binding.textStudentProfileIntro.setText(
+                                (intro != null && !intro.isEmpty()) ? intro : "No introduction provided."
+                        );
 
+                        // 5. Experience
+                        String experience = documentSnapshot.getString("studentExperience");
+                        // Fallback if key is different in your DB
+                        if (experience == null) experience = documentSnapshot.getString("volunteerExperience");
+
+                        binding.textStudentProfileExperience.setText(
+                                (experience != null && !experience.isEmpty()) ? experience : "No experience listed."
+                        );
+
+                        // 6. Profile Picture
                         if (getContext() != null) {
                             String imageUrl = documentSnapshot.getString("profileImageUrl");
                             if (imageUrl != null && !imageUrl.trim().isEmpty()) {
                                 Glide.with(getContext())
                                         .load(imageUrl)
                                         .placeholder(R.drawable.ic_profile)
-                                        .circleCrop()
+                                        .centerCrop()
                                         .into(binding.imageStudentProfilePicture);
                             } else {
                                 binding.imageStudentProfilePicture.setImageResource(R.drawable.ic_profile);
@@ -128,32 +147,18 @@ public class StudentProfileFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e(TAG, "Error loading student profile", e));
     }
 
-    private void setupLogoutMenu() {
-        MenuHost menuHost = requireActivity();
-        LifecycleOwner lifecycleOwner = getViewLifecycleOwner();
-
-        menuHost.addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull android.view.Menu menu, @NonNull android.view.MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.toolbar_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull android.view.MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.toolbar_logout) {
-                    if (getActivity() != null) {
-                        ((StudentHomeActivity) getActivity()).returnToMain();
-                    }
-                    return true;
-                }
-                return false;
-            }
-        }, lifecycleOwner, Lifecycle.State.RESUMED);
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        // Clean up toolbar menu when leaving this fragment
+        if (getActivity() != null) {
+            Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+            if (toolbar != null) {
+                toolbar.getMenu().clear();
+            }
+        }
+
         binding = null;
     }
 }
