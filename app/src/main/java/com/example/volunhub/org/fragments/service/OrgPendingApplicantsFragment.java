@@ -232,6 +232,7 @@ public class OrgPendingApplicantsFragment extends Fragment {
                 .whereEqualTo("status", "Pending")
                 .get()
                 .addOnSuccessListener(applicationSnapshots -> {
+                    if(binding == null) return;
                     if (applicationSnapshots.isEmpty()) {
                         Log.d(TAG, "No pending applicants found.");
                         binding.textEmptyPending.setVisibility(View.VISIBLE);
@@ -296,6 +297,7 @@ public class OrgPendingApplicantsFragment extends Fragment {
         DocumentReference serviceRef = db.collection("services").document(serviceId);
         serviceRef.get()
                 .addOnSuccessListener(serviceSnapshot -> {
+                    if (binding == null) return;
                     if (!serviceSnapshot.exists()) {
                         Log.e(TAG, "Service document does not exist: " + serviceId);
                         Toast.makeText(getContext(), "Error: Service not found", Toast.LENGTH_SHORT).show();

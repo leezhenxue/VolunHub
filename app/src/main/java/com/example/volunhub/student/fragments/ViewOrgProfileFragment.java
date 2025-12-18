@@ -56,6 +56,7 @@ public class ViewOrgProfileFragment extends Fragment {
     private void loadOrgProfileData(String orgId) {
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
 
                         // 1. Basic Info

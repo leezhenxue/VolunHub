@@ -79,20 +79,29 @@ public class OrgDashboardFragment extends Fragment {
                 .whereEqualTo("orgId", orgId)
                 .whereEqualTo("status", "Pending")
                 .get()
-                .addOnSuccessListener(snap -> binding.textStatsPending.setText(String.valueOf(snap.size())));
+                .addOnSuccessListener(snap -> {
+                    if (binding == null) return;
+                    binding.textStatsPending.setText(String.valueOf(snap.size()));
+                });
 
         // Total active services
         db.collection("services")
                 .whereEqualTo("orgId", orgId)
                 .whereEqualTo("status", "Active")
                 .get()
-                .addOnSuccessListener(snap -> binding.textStatsJobs.setText(String.valueOf(snap.size())));
+                .addOnSuccessListener(snap -> {
+                    if (binding == null) return;
+                    binding.textStatsJobs.setText(String.valueOf(snap.size()));
+                });
 
         // Total volunteers applied
         db.collection("applications")
                 .whereEqualTo("orgId", orgId)
                 .get()
-                .addOnSuccessListener(snap -> binding.textStatsVolunteers.setText(String.valueOf(snap.size())));
+                .addOnSuccessListener(snap -> {
+                    if (binding == null) return;
+                    binding.textStatsVolunteers.setText(String.valueOf(snap.size()));
+                });
     }
 
     private void loadUpcomingEvent() {
@@ -141,6 +150,7 @@ public class OrgDashboardFragment extends Fragment {
                 .orderBy("appliedAt", Query.Direction.DESCENDING)
                 .limit(10)
                 .addSnapshotListener((snap, error) -> {
+                    if (binding == null) return;
                     if (error != null || snap == null) {
                         Log.e(TAG, "Error loading recent activity", error);
                         return;
@@ -174,6 +184,7 @@ public class OrgDashboardFragment extends Fragment {
                 .limit(10)
                 .get()
                 .addOnSuccessListener(serviceSnap -> {
+                    if (binding == null) return;
 
                     for (var doc : serviceSnap.getDocuments()) {
                         Timestamp ts = doc.getTimestamp("createdAt");

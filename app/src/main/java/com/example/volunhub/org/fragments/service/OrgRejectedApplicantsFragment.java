@@ -125,6 +125,7 @@ public class OrgRejectedApplicantsFragment extends Fragment {
                 .whereEqualTo("status", "Rejected") // Changed status
                 .get()
                 .addOnSuccessListener(applicationSnapshots -> {
+                    if (binding == null) return;
                     if (applicationSnapshots.isEmpty()) {
                         Log.d(TAG, "No rejected applicants found.");
                         binding.textEmptyRejected.setVisibility(View.VISIBLE); // Changed empty text

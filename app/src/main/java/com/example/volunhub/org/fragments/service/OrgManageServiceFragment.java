@@ -102,6 +102,7 @@ public class OrgManageServiceFragment extends Fragment {
 
         db.collection("services").document(serviceId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
                         Service service = documentSnapshot.toObject(Service.class);
                         if (service != null) {

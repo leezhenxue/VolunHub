@@ -82,6 +82,7 @@ public class StudentProfileFragment extends Fragment {
 
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
 
                         // 1. Name

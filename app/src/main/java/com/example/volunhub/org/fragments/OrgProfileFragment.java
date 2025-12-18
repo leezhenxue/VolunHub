@@ -87,6 +87,7 @@ public class OrgProfileFragment extends Fragment {
 
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
                         // 1. Header Info
                         String orgName = documentSnapshot.getString("orgCompanyName");

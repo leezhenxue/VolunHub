@@ -56,6 +56,7 @@ public class ViewStudentProfileFragment extends Fragment {
     private void loadStudentProfileData(String studentId) {
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
                         // 1. Basic Info
                         binding.textViewStudentName.setText(documentSnapshot.getString("studentName"));

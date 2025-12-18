@@ -302,6 +302,7 @@ public class StudentMyApplicationsFragment extends Fragment {
         db.collection("services").document(serviceId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     // Re-check position validity as list might have changed during async call
                     if (position >= applicationList.size()) return;
                     // Ensure we are updating the correct object
@@ -378,9 +379,10 @@ public class StudentMyApplicationsFragment extends Fragment {
         db.collection("applications").document(documentId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
+
                     Log.d(TAG, "Application removed successfully: " + documentId);
                     Toast.makeText(getContext(), R.string.application_removed_success, Toast.LENGTH_SHORT).show();
-
+                    if (binding == null) return;
                     // Immediately update UI by removing the item from the list
                     if (position != -1) {
                         // Item found in list, remove it

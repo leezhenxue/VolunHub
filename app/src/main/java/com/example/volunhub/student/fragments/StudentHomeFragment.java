@@ -210,6 +210,7 @@ public class StudentHomeFragment extends Fragment {
                 .limit(PAGE_SIZE)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    if (binding == null) return;
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         Log.d(TAG, "No more services to load.");
                         isLoading = false;
@@ -263,6 +264,7 @@ public class StudentHomeFragment extends Fragment {
                 .endAt(queryText + "\uf8ff")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    if (binding == null) return;
                     serviceList.clear();
 
                     if (querySnapshot == null || querySnapshot.isEmpty()) {

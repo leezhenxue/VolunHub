@@ -88,6 +88,7 @@ public class OrgServiceFragment extends Fragment {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    if (binding == null) return;
                     if (querySnapshot == null) {
                         Log.d(TAG, "Query snapshot is null.");
                         return;

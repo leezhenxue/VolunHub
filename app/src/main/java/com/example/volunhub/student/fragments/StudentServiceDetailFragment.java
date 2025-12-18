@@ -88,6 +88,7 @@ public class StudentServiceDetailFragment extends Fragment {
 
         db.collection("users").document(myId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
                         // Get the array from Firestore
                         List<String> savedIds = (List<String>) documentSnapshot.get("savedServices");
@@ -116,6 +117,7 @@ public class StudentServiceDetailFragment extends Fragment {
             db.collection("users").document(myId)
                     .update("savedServices", FieldValue.arrayRemove(serviceId))
                     .addOnSuccessListener(aVoid -> {
+                        if (binding == null) return;
                         isSaved = false;
                         updateSaveButtonUI();
                         Toast.makeText(getContext(), "Removed from Saved List", Toast.LENGTH_SHORT).show();
@@ -126,6 +128,7 @@ public class StudentServiceDetailFragment extends Fragment {
             db.collection("users").document(myId)
                     .update("savedServices", FieldValue.arrayUnion(serviceId))
                     .addOnSuccessListener(aVoid -> {
+                        if (binding == null) return;
                         isSaved = true;
                         updateSaveButtonUI();
                         Toast.makeText(getContext(), "Added to Saved List", Toast.LENGTH_SHORT).show();
@@ -155,6 +158,7 @@ public class StudentServiceDetailFragment extends Fragment {
 
         db.collection("services").document(serviceId).get()
             .addOnSuccessListener(documentSnapshot -> {
+                if (binding == null) return;
                 if (documentSnapshot.exists()) {
                     // Store the service object
                     currentService = documentSnapshot.toObject(Service.class);
@@ -220,6 +224,7 @@ public class StudentServiceDetailFragment extends Fragment {
                 .limit(1)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    if (binding == null) return;
                     if (!querySnapshot.isEmpty()) {
                         // User has an application, show dialog with remove option
                         DocumentSnapshot appDoc = querySnapshot.getDocuments().get(0);
@@ -283,6 +288,7 @@ public class StudentServiceDetailFragment extends Fragment {
         db.collection("applications").document(applicationDocId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
+                    if (binding == null) return;
                     Log.d(TAG, "Application removed successfully: " + applicationDocId);
                     Toast.makeText(getContext(), R.string.application_removed_success, Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).navigateUp();
@@ -305,6 +311,7 @@ public class StudentServiceDetailFragment extends Fragment {
                 .limit(1)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    if (binding == null) return;
                     if (!querySnapshot.isEmpty()) {
                         // Application found!
                         DocumentSnapshot doc = querySnapshot.getDocuments().get(0);
@@ -371,6 +378,7 @@ public class StudentServiceDetailFragment extends Fragment {
         // We go to the "users" collection to find the profileImageUrl
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (binding == null) return;
                     if (documentSnapshot.exists()) {
                         String imageUrl = documentSnapshot.getString("profileImageUrl");
 
@@ -414,6 +422,7 @@ public class StudentServiceDetailFragment extends Fragment {
         db.collection("applications")
                 .add(newApplication)
                 .addOnSuccessListener(documentReference -> {
+                    if (binding == null) return;
                     Toast.makeText(getContext(), "Application submitted!", Toast.LENGTH_SHORT).show();
 
                     // Refresh status and UI
@@ -432,6 +441,7 @@ public class StudentServiceDetailFragment extends Fragment {
         db.collection("applications").document(currentApplicationDocId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
+                    if (binding == null) return;
                     Toast.makeText(getContext(), "Application Cancelled", Toast.LENGTH_SHORT).show();
                     // Reset UI to "Apply" state
                     checkAndSetButtonState();

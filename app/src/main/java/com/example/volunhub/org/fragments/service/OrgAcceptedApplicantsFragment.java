@@ -78,13 +78,13 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
             }
             @Override
             public void onProfileClick(Applicant applicant) {
-                // Qimin: Clicking here should open the student profile
+                // Clicking here should open the student profile
                 String studentId = applicant.getStudentId();
-                Log.d("Qimin_Nav", "Clicked student: " + studentId);
+                Log.d(TAG, "Clicked student: " + studentId);
 
                 if (studentId == null || studentId.trim().isEmpty()) {
-                    // Qimin: I am avoiding navigation when studentId is missing
-                    Log.d("Qimin_Nav", "Student ID is null or empty, skipping navigation");
+                    // I am avoiding navigation when studentId is missing
+                    Log.d(TAG, "Student ID is null or empty, skipping navigation");
                     android.widget.Toast.makeText(getContext(),
                             "Student profile not available", android.widget.Toast.LENGTH_SHORT).show();
                     return;
@@ -100,7 +100,7 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
 
                     navController.navigate(action);
                 } catch (Exception e) {
-                    // Qimin: If navigation fails (graph or destination missing), I show a friendly message
+                    // If navigation fails (graph or destination missing), I show a friendly message
                     Log.e("Qimin_Nav", "Navigation to student profile failed", e);
                     android.widget.Toast.makeText(getContext(),
                             "Student Profile feature coming soon (Waiting for Edmond)", android.widget.Toast.LENGTH_SHORT).show();
@@ -125,6 +125,7 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
                 .whereEqualTo("status", "Accepted") // Changed status
                 .get()
                 .addOnSuccessListener(applicationSnapshots -> {
+                    if (binding == null) return;
                     if (applicationSnapshots.isEmpty()) {
                         Log.d(TAG, "No accepted applicants found.");
                         binding.textEmptyAccepted.setVisibility(View.VISIBLE); // Changed empty text
