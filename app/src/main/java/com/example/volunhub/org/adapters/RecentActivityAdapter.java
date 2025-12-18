@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.volunhub.R;
-import com.example.volunhub.org.models.RecentActivity;
+import com.example.volunhub.models.RecentActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

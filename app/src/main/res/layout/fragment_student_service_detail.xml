@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
-    tools:context=".student.fragments.StudentServiceDetailFragment">
+    tools:context=".student.applications.StudentServiceDetailFragment">
 
     <ScrollView
         android:id="@+id/scroll_view_detail"

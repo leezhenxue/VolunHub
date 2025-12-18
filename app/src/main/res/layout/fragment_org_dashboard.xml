@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".org.fragments.OrgDashboardFragment">
+    tools:context=".org.dashboard.OrgDashboardFragment">
 
     <ScrollView
         android:id="@+id/dashboard_scroll_view"
