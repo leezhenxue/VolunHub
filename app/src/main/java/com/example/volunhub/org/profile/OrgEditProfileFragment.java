@@ -45,6 +45,9 @@ public class OrgEditProfileFragment extends Fragment {
     private String currentImageUrl = null;
     private boolean isImageRemoved = false;
     private ActivityResultLauncher<String> imagePickerLauncher;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
 
     public OrgEditProfileFragment() {}
 
@@ -58,8 +61,8 @@ public class OrgEditProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getCurrentUser() == null) return;
         orgDocRef = db.collection("users").document(mAuth.getCurrentUser().getUid());
@@ -238,17 +241,87 @@ public class OrgEditProfileFragment extends Fragment {
     }
 
     private void updateFirestore(Map<String, Object> updates) {
-        orgDocRef.update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    setLoading(false);
-                    Toast.makeText(getContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                    NavController navController = Navigation.findNavController(requireView());
-                    navController.popBackStack();
+        // Check if the name is actually being changed
+        String newName = (String) updates.get("orgCompanyName");
+
+        // If no name change, just update the profile normally and exit
+        if (newName == null) {
+            orgDocRef.update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        if (binding == null) return;
+                        setLoading(false);
+                        Toast.makeText(getContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.popBackStack();
+                    })
+                    .addOnFailureListener(e -> {
+                        if (binding == null) return;
+                        setLoading(false);
+                        Toast.makeText(getContext(), "Error updating profile.", Toast.LENGTH_SHORT).show();
+                    });
+            return;
+        }
+
+        // --- CASCADING UPDATE LOGIC ---
+        // If name CHANGED, we must update: 1. User Profile, 2. All Services, 3. All Applications
+
+        String orgId = mAuth.getCurrentUser().getUid();
+
+        // 1. Find all Services by this Org
+        com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot> servicesTask =
+                db.collection("services").whereEqualTo("orgId", orgId).get();
+
+        // 2. Find all Applications to this Org
+        com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot> appsTask =
+                db.collection("applications").whereEqualTo("orgId", orgId).get();
+
+        // Wait for both searches to finish
+        com.google.android.gms.tasks.Tasks.whenAllSuccess(servicesTask, appsTask)
+                .addOnSuccessListener(results -> {
+                    if (binding == null) return;
+
+                    com.google.firebase.firestore.QuerySnapshot serviceSnapshots = (com.google.firebase.firestore.QuerySnapshot) results.get(0);
+                    com.google.firebase.firestore.QuerySnapshot appSnapshots = (com.google.firebase.firestore.QuerySnapshot) results.get(1);
+
+                    // Create a Batch (atomic update - all or nothing)
+                    com.google.firebase.firestore.WriteBatch batch = db.batch();
+
+                    // A. Update the Org Profile
+                    batch.update(orgDocRef, updates);
+
+                    // B. Update all Services
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : serviceSnapshots) {
+                        // IMPORTANT: Ensure "orgName" matches exactly what you named the field in your Service database
+                        batch.update(doc.getReference(), "orgName", newName);
+                    }
+
+                    // C. Update all Applications
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : appSnapshots) {
+                        // IMPORTANT: Ensure "orgName" matches the field in your Application database
+                        batch.update(doc.getReference(), "orgName", newName);
+                    }
+
+                    // Commit the batch
+                    batch.commit()
+                            .addOnSuccessListener(aVoid -> {
+                                if (binding == null) return;
+                                setLoading(false);
+                                Toast.makeText(getContext(), "Profile and all related posts updated!", Toast.LENGTH_SHORT).show();
+                                NavController navController = Navigation.findNavController(requireView());
+                                navController.popBackStack();
+                            })
+                            .addOnFailureListener(e -> {
+                                if (binding == null) return;
+                                setLoading(false);
+                                Log.e(TAG, "Batch update failed", e);
+                                Toast.makeText(getContext(), "Failed to update related records.", Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
+                    if (binding == null) return;
                     setLoading(false);
-                    Toast.makeText(getContext(), "Error updating profile.", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Error updating document", e);
+                    Log.e(TAG, "Failed to find related documents", e);
+                    Toast.makeText(getContext(), "Error preparing updates.", Toast.LENGTH_SHORT).show();
                 });
     }
 

@@ -8,6 +8,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.example.volunhub.student.StudentHomeActivity;
 import com.example.volunhub.student.applications.StudentHistoryFragment;
 import com.example.volunhub.student.applications.StudentMyApplicationsFragment;
+import com.example.volunhub.student.applications.StudentSavedListFragment;
 
 public class StudentAppViewPagerAdapter extends FragmentStateAdapter {
 
@@ -23,7 +24,7 @@ public class StudentAppViewPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return new StudentMyApplicationsFragment(); // The main list
             case 1:
-                return new StudentHomeActivity.StudentSavedListFragment();    // The saved list
+                return new StudentSavedListFragment();    // The saved list
             case 2:
                 return new StudentHistoryFragment();      // The history list
             default:
