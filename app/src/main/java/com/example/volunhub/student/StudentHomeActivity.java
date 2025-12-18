@@ -3,9 +3,12 @@ package com.example.volunhub.student;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+
 import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavBackStackEntry;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -18,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public class StudentHomeActivity extends AppCompatActivity {
@@ -49,6 +53,34 @@ public class StudentHomeActivity extends AppCompatActivity {
             AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations).build();
             NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
             NavigationUI.setupWithNavController(studentBottomNav, navController);
+
+            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                int id = destination.getId();
+                Menu menu = studentBottomNav.getMenu();
+
+                // --- Case A: Edit Profile ---
+                if (id == R.id.student_edit_profile) {
+                    menu.findItem(R.id.student_nav_profile).setChecked(true);
+                }
+
+                // --- Case B: Deep Navigation (Service Detail OR Org Profile) ---
+                else if (id == R.id.student_service_detail || id == R.id.student_view_org_profile) {
+
+                    try {
+                        // Check if "My Applications" is ANYWHERE in the history stack.
+                        // If this succeeds, it means we started from the Applications tab.
+                        navController.getBackStackEntry(R.id.student_nav_application);
+
+                        // If no error was thrown, highlight Applications
+                        menu.findItem(R.id.student_nav_application).setChecked(true);
+
+                    } catch (IllegalArgumentException e) {
+                        // If "My Applications" is NOT in the stack, an exception is thrown.
+                        // This means we must have come from Home.
+                        menu.findItem(R.id.student_nav_home).setChecked(true);
+                    }
+                }
+            });
         } else {
             Log.e(TAG, "ERROR: NavHostFragment not found in layout!");
         }

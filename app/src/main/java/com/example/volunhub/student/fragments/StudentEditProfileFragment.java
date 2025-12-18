@@ -230,10 +230,11 @@ public class StudentEditProfileFragment extends Fragment {
         updates.put("studentGender", gender); // Sync both keys to be safe
         updates.put("contactNumber", finalContact);
         updates.put("studentIntroduction", getSafeText(binding.editTextEditStudentIntro.getText()));
-
         // Optional Experience
-        updates.put("volunteerExperience", getSafeText(binding.editTextEditStudentExperience.getText()));
-        updates.put("studentExperience", getSafeText(binding.editTextEditStudentExperience.getText()));
+        String studentExperience = getSafeText(binding.editTextEditStudentExperience.getText());
+        if (!studentExperience.isEmpty()) {
+            updates.put("studentExperience", studentExperience);
+        }
 
         // Handle Image
         if (selectedImageUri != null) {
