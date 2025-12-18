@@ -103,7 +103,7 @@ public class StudentEditProfileFragment extends Fragment {
     private void removeProfilePhoto() {
         selectedImageUri = null;
         isImageRemoved = true;
-        binding.imageEditStudentPicture.setImageResource(R.drawable.ic_profile);
+        binding.imageEditStudentPicture.setImageResource(R.drawable.default_profile_picture);
         Toast.makeText(getContext(), "Photo removed (Save to apply)", Toast.LENGTH_SHORT).show();
     }
 
@@ -157,10 +157,13 @@ public class StudentEditProfileFragment extends Fragment {
                     if (getContext() != null) {
                         Glide.with(getContext())
                                 .load(currentImageUrl)
-                                .placeholder(R.drawable.ic_profile)
+                                .placeholder(R.drawable.default_profile_picture)
                                 .centerCrop()
                                 .into(binding.imageEditStudentPicture);
                     }
+                } else {
+                    // Show default if nothing in DB
+                    binding.imageEditStudentPicture.setImageResource(R.drawable.default_profile_picture);
                 }
             }
         }).addOnFailureListener(e -> {

@@ -43,7 +43,7 @@
                     app:shapeAppearanceOverlay="@style/CircularShapeAppearance"
                     app:strokeColor="@color/divider_color"
                     app:strokeWidth="1dp"
-                    tools:src="@drawable/ic_profile" />
+                    tools:src="@drawable/default_profile_picture" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

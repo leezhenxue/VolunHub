@@ -128,7 +128,7 @@ public class OrgProfileFragment extends Fragment {
                                         .centerCrop()
                                         .into(binding.imageOrgProfileLogo);
                             } else {
-                                binding.imageOrgProfileLogo.setImageResource(R.drawable.ic_org_dashboard);
+                                binding.imageOrgProfileLogo.setImageResource(R.drawable.default_profile_picture);
                             }
                         }
                     } else {

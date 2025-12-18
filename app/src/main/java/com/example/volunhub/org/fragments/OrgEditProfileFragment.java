@@ -109,7 +109,7 @@ public class OrgEditProfileFragment extends Fragment {
     private void removeProfilePhoto() {
         selectedImageUri = null;
         isImageRemoved = true;
-        binding.imageEditOrgLogo.setImageResource(R.drawable.ic_org_dashboard); // Default placeholder
+        binding.imageEditOrgLogo.setImageResource(R.drawable.default_profile_picture); // Default placeholder
         Toast.makeText(getContext(), "Photo removed (Save to apply)", Toast.LENGTH_SHORT).show();
     }
 
@@ -144,6 +144,9 @@ public class OrgEditProfileFragment extends Fragment {
                                 .centerCrop()
                                 .into(binding.imageEditOrgLogo);
                     }
+                } else {
+                    // Show default if nothing in DB
+                    binding.imageEditOrgLogo.setImageResource(R.drawable.default_profile_picture);
                 }
             }
         });

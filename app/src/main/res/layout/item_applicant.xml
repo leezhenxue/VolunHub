@@ -22,7 +22,7 @@
             app:shapeAppearanceOverlay="@style/CircularShapeAppearance"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_profile" />
+            tools:src="@drawable/default_profile_picture" />
 
         <TextView
             android:id="@+id/text_applicant_name"

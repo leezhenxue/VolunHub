@@ -133,11 +133,11 @@ public class StudentProfileFragment extends Fragment {
                             if (imageUrl != null && !imageUrl.trim().isEmpty()) {
                                 Glide.with(getContext())
                                         .load(imageUrl)
-                                        .placeholder(R.drawable.ic_profile)
+                                        .placeholder(R.drawable.default_profile_picture)
                                         .centerCrop()
                                         .into(binding.imageStudentProfilePicture);
                             } else {
-                                binding.imageStudentProfilePicture.setImageResource(R.drawable.ic_profile);
+                                binding.imageStudentProfilePicture.setImageResource(R.drawable.default_profile_picture);
                             }
                         }
                     } else {

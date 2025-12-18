@@ -100,7 +100,7 @@ public class ViewStudentProfileFragment extends Fragment {
                         if (getContext() != null) {
                             Glide.with(getContext())
                                     .load(documentSnapshot.getString("profileImageUrl"))
-                                    .placeholder(R.drawable.ic_profile)
+                                    .placeholder(R.drawable.default_profile_picture)
                                     .centerCrop()
                                     .into(binding.imageViewStudentPhoto);
                         }

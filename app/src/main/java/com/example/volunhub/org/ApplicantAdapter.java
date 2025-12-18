@@ -51,7 +51,7 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
             // Use Glide (or another library) to load the profile image
             Glide.with(context)
                     .load(applicant.getProfileImageUrl())
-                    .placeholder(R.drawable.ic_profile) // Default icon
+                    .placeholder(R.drawable.default_profile_picture) // Default icon
                     .circleCrop()
                     .into(binding.imageApplicantProfile);
 
