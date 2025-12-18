@@ -24,7 +24,7 @@ public class OrgHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "OrgHomeActivity";
     private FirebaseAuth mAuth;
-//    private NavController navController;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +38,7 @@ public class OrgHomeActivity extends AppCompatActivity {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.org_nav_host_fragment);
 
         if (navHostFragment != null) {
-            NavController navController = navHostFragment.getNavController();
+            navController = navHostFragment.getNavController();
 
             Set<Integer> topLevelDestinations = new HashSet<>();
             topLevelDestinations.add(R.id.org_nav_dashboard);
@@ -49,22 +49,6 @@ public class OrgHomeActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
             NavigationUI.setupWithNavController(orgBottomNav, navController);
 
-            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                int id = destination.getId();
-
-                // 1. Dashboard Sub-screens
-                if (id == R.id.org_post_service) {
-                    orgBottomNav.getMenu().findItem(R.id.org_nav_dashboard).setChecked(true);
-                }
-                // 2. My Services Sub-screens
-                else if (id == R.id.org_manage_service || id == R.id.org_view_student_profile) {
-                    orgBottomNav.getMenu().findItem(R.id.org_nav_service).setChecked(true);
-                }
-                // 3. Profile Sub-screens
-                else if (id == R.id.org_edit_profile) {
-                    orgBottomNav.getMenu().findItem(R.id.org_nav_profile).setChecked(true);
-                }
-            });
         } else {
             Log.e(TAG, "ERROR: NavHostFragment not found in layout!");
         }
@@ -80,8 +64,8 @@ public class OrgHomeActivity extends AppCompatActivity {
         finish();
     }
 
-//    @Override
-//    public boolean onSupportNavigateUp() {
-//        return navController.navigateUp() || super.onSupportNavigateUp();
-//    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        return navController.navigateUp() || super.onSupportNavigateUp();
+    }
 }

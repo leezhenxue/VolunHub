@@ -69,40 +69,20 @@ public class ApplicantAdapter extends RecyclerView.Adapter<ApplicantAdapter.Appl
             // Allow clicking the main card (not the buttons) to view the profile
             itemView.setOnClickListener(v -> {
                 String studentId = applicant.getStudentId();
+                if (studentId == null || studentId.trim().isEmpty()) {
+                    Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_student_profile_not_available), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Bundle args = new Bundle();
+                args.putString("studentId", studentId);
+
+                // Use NavController to navigate, ensuring the graph remains consistent
                 try {
-                    // Logging the click
-                    Log.d(TAG, "Clicked student: " + studentId);
-
-                    if (studentId == null || studentId.trim().isEmpty()) {
-                        // I am avoiding navigation when studentId is missing
-                        Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_student_profile_not_available), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // Preparing the fragment with the studentId
-                    ViewStudentProfileFragment fragment = new ViewStudentProfileFragment();
-                    Bundle args = new Bundle();
-                    args.putString("studentId", studentId); // passing studentId for profile
-                    fragment.setArguments(args);
-
-                    // Getting FragmentManager safely
-                    AppCompatActivity activity = (AppCompatActivity) v.getContext();
-
-                    // Using R.id.org_nav_host_fragment; please verify this ID matches your XML
-                    int containerId = R.id.org_nav_host_fragment;
-
-                    activity.getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(containerId, fragment)
-                            .addToBackStack(null)
-                            .commit();
-
-                    // Now navigating to profile with fragment transaction
+                    androidx.navigation.Navigation.findNavController(v).navigate(R.id.action_manage_service_to_view_student, args);
                 } catch (Exception e) {
-                    // Catch crash and print error
                     Log.e(TAG, "Navigation failed: " + e.getMessage());
-                    e.printStackTrace();
-                    Toast.makeText(v.getContext(), v.getContext().getString(R.string.error_nav_profile), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(v.getContext(), "Navigation failed. Ensure you are on the correct screen.", Toast.LENGTH_SHORT).show();
                 }
             });
         }
