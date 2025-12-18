@@ -8,11 +8,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.MenuHost;
-import androidx.core.view.MenuProvider;
+import androidx.appcompat.widget.Toolbar; // Import Toolbar
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -45,7 +42,9 @@ public class OrgProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        setupLogoutMenu();
+        // 1. SETUP LOGOUT MANUALLY (Since we removed setSupportActionBar)
+        setupToolbarMenu();
+
         loadProfileData();
 
         // Navigate to Edit Page
@@ -53,6 +52,31 @@ public class OrgProfileFragment extends Fragment {
             binding.fabOrgEditProfile.setOnClickListener(v -> {
                 NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.action_org_profile_to_edit_profile);
+            });
+        }
+    }
+
+    // --- NEW METHOD: Manually adding the menu to the toolbar ---
+    private void setupToolbarMenu() {
+        if (getActivity() == null) return;
+
+        // Find the toolbar from the Activity
+        Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+
+        if (toolbar != null) {
+            // Clear any old menu items first (so they don't duplicate)
+            toolbar.getMenu().clear();
+
+            // Inflate your menu (ensure you have res/menu/toolbar_menu.xml)
+            toolbar.inflateMenu(R.menu.toolbar_menu);
+
+            // Set the click listener
+            toolbar.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.toolbar_logout) {
+                    ((OrgHomeActivity) getActivity()).returnToMain();
+                    return true;
+                }
+                return false;
             });
         }
     }
@@ -81,7 +105,6 @@ public class OrgProfileFragment extends Fragment {
                                 (email != null && !email.isEmpty()) ? email : "No email"
                         );
 
-                        // NOTE: Checking both "contact" and "contactNumber" just in case your DB varies
                         String contact = documentSnapshot.getString("contact");
                         if (contact == null) contact = documentSnapshot.getString("contactNumber");
 
@@ -102,47 +125,32 @@ public class OrgProfileFragment extends Fragment {
                                 Glide.with(getContext())
                                         .load(imageUrl)
                                         .placeholder(R.drawable.ic_org_dashboard)
-                                        .centerCrop() // Center crop fills the circle nicely
+                                        .centerCrop()
                                         .into(binding.imageOrgProfileLogo);
                             } else {
-                                // Default icon if no image
                                 binding.imageOrgProfileLogo.setImageResource(R.drawable.ic_org_dashboard);
                             }
                         }
                     } else {
                         Log.w(TAG, "Org document not found.");
-                        binding.textOrgProfileName.setText("Profile not found");
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error loading org profile", e));
     }
 
-    private void setupLogoutMenu() {
-        MenuHost menuHost = requireActivity();
-        LifecycleOwner lifecycleOwner = getViewLifecycleOwner();
-
-        menuHost.addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull android.view.Menu menu, @NonNull android.view.MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.toolbar_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull android.view.MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.toolbar_logout) {
-                    if (getActivity() != null) {
-                        ((OrgHomeActivity) getActivity()).returnToMain();
-                    }
-                    return true;
-                }
-                return false;
-            }
-        }, lifecycleOwner, Lifecycle.State.RESUMED);
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        // --- CRITICAL: CLEAR THE MENU WHEN LEAVING ---
+        // If we don't do this, the "Logout" button might stay visible on the Dashboard!
+        if (getActivity() != null) {
+            Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+            if (toolbar != null) {
+                toolbar.getMenu().clear();
+            }
+        }
+
         binding = null;
     }
 }

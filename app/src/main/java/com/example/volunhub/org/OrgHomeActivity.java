@@ -50,12 +50,19 @@ public class OrgHomeActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(orgBottomNav, navController);
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                // Check if we are on a "sub-screen" of My Services
-                if (destination.getId() == R.id.org_manage_service ||
-                        destination.getId() == R.id.org_view_student_profile) {
+                int id = destination.getId();
 
-                    // Force the "My Services" tab to be checked
+                // 1. Dashboard Sub-screens
+                if (id == R.id.org_post_service) {
+                    orgBottomNav.getMenu().findItem(R.id.org_nav_dashboard).setChecked(true);
+                }
+                // 2. My Services Sub-screens
+                else if (id == R.id.org_manage_service || id == R.id.org_view_student_profile) {
                     orgBottomNav.getMenu().findItem(R.id.org_nav_service).setChecked(true);
+                }
+                // 3. Profile Sub-screens
+                else if (id == R.id.org_edit_profile) {
+                    orgBottomNav.getMenu().findItem(R.id.org_nav_profile).setChecked(true);
                 }
             });
         } else {
