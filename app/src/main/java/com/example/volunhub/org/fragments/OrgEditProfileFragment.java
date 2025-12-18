@@ -174,7 +174,6 @@ public class OrgEditProfileFragment extends Fragment {
         updates.put("orgCompanyName", getSafeText(binding.editTextEditOrgName.getText()));
         updates.put("orgField", getSafeText(binding.autoCompleteEditOrgField.getText()));
         updates.put("orgDescription", getSafeText(binding.editTextEditOrgDesc.getText()));
-        updates.put("contact", finalContact);
         updates.put("contactNumber", finalContact);
 
         // Handle Image Logic
