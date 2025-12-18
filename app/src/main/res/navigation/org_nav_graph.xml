@@ -79,27 +79,4 @@
             app:argType="string" />
     </fragment>
 
-    <fragment
-        android:id="@+id/orgProfileFragment"
-        android:name="com.example.volunhub.org.fragments.OrgProfileFragment"
-        android:label="Organization Profile"
-        tools:layout="@layout/fragment_org_profile">
-
-        <action
-            android:id="@+id/action_org_profile_to_edit_profile"
-            app:destination="@id/orgEditProfileFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/orgEditProfileFragment"
-        android:name="com.example.volunhub.org.fragments.OrgEditProfileFragment"
-        android:label="Edit Organization Profile"
-        tools:layout="@layout/fragment_org_edit_profile" />
-
-    <fragment
-        android:id="@+id/viewStudentProfileFragment"
-        android:name="com.example.volunhub.org.fragments.ViewStudentProfileFragment"
-        android:label="Student Profile"
-        tools:layout="@layout/fragment_view_student_profile" />
-
 </navigation>

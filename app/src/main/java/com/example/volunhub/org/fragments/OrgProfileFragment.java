@@ -48,6 +48,7 @@ public class OrgProfileFragment extends Fragment {
         setupLogoutMenu();
         loadProfileData();
 
+        // Navigate to Edit Page
         if (binding.fabOrgEditProfile != null) {
             binding.fabOrgEditProfile.setOnClickListener(v -> {
                 NavController navController = Navigation.findNavController(v);
@@ -63,45 +64,54 @@ public class OrgProfileFragment extends Fragment {
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        // 1. Header Info
                         String orgName = documentSnapshot.getString("orgCompanyName");
-                        String email = documentSnapshot.getString("email");
+                        binding.textOrgProfileName.setText(
+                                (orgName != null && !orgName.isEmpty()) ? orgName : "Organization Name"
+                        );
+
                         String orgField = documentSnapshot.getString("orgField");
-                        String orgDesc = documentSnapshot.getString("orgDescription");
+                        binding.textOrgProfileField.setText(
+                                (orgField != null && !orgField.isEmpty()) ? orgField : "Field not specified"
+                        );
 
-                        if (orgName != null) {
-                            binding.textOrgProfileName.setText(orgName);
-                        }
-                        if (email != null) {
-                            binding.textOrgProfileEmail.setText(email);
-                        }
-                        if (orgField != null) {
-                            binding.textOrgProfileField.setText(orgField);
-                        }
-                        if (orgDesc != null) {
-                            binding.textOrgProfileDesc.setText(orgDesc);
-                        }
+                        // 2. Contact Card Info
+                        String email = documentSnapshot.getString("email");
+                        binding.textOrgProfileEmail.setText(
+                                (email != null && !email.isEmpty()) ? email : "No email"
+                        );
 
+                        // NOTE: Checking both "contact" and "contactNumber" just in case your DB varies
                         String contact = documentSnapshot.getString("contact");
-                        if (contact != null && !contact.trim().isEmpty()) {
-                            binding.textOrgProfileContact.setText("Contact: " + contact);
-                            binding.textOrgProfileContact.setVisibility(View.VISIBLE);
-                        } else {
-                            binding.textOrgProfileContact.setVisibility(View.GONE);
-                        }
+                        if (contact == null) contact = documentSnapshot.getString("contactNumber");
 
+                        binding.textOrgProfilePhone.setText(
+                                (contact != null && !contact.isEmpty()) ? contact : "No contact number"
+                        );
+
+                        // 3. About Us Description
+                        String orgDesc = documentSnapshot.getString("orgDescription");
+                        binding.textOrgProfileDesc.setText(
+                                (orgDesc != null && !orgDesc.isEmpty()) ? orgDesc : "No description provided yet."
+                        );
+
+                        // 4. Logo Image
                         if (getContext() != null) {
                             String imageUrl = documentSnapshot.getString("profileImageUrl");
                             if (imageUrl != null && !imageUrl.trim().isEmpty()) {
                                 Glide.with(getContext())
                                         .load(imageUrl)
                                         .placeholder(R.drawable.ic_org_dashboard)
+                                        .centerCrop() // Center crop fills the circle nicely
                                         .into(binding.imageOrgProfileLogo);
                             } else {
+                                // Default icon if no image
                                 binding.imageOrgProfileLogo.setImageResource(R.drawable.ic_org_dashboard);
                             }
                         }
                     } else {
                         Log.w(TAG, "Org document not found.");
+                        binding.textOrgProfileName.setText("Profile not found");
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error loading org profile", e));

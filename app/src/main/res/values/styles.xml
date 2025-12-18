@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 应用主题 -->
+
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- 自定义主题颜色 -->
+
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryDark">@color/purple_700</item>
         <item name="colorAccent">@color/teal_200</item>
     </style>
 
-    <!-- 圆形图片样式 - 确保这只有一次！ -->
+
     <style name="CircularShapeAppearance" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>

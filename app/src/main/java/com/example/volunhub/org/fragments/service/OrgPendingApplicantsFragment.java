@@ -92,12 +92,12 @@ public class OrgPendingApplicantsFragment extends Fragment {
             // --- 2. THIS IS THE IMPLEMENTATION ---
             @Override
             public void onProfileClick(Applicant applicant) {
-                // Qimin: Clicking here should open the student profile
+                // Clicking here should open the student profile
                 String studentId = applicant.getStudentId();
                 Log.d("Qimin_Nav", "Clicked student: " + studentId);
 
                 if (studentId == null || studentId.trim().isEmpty()) {
-                    // Qimin: I am avoiding navigation when studentId is missing
+                    // I am avoiding navigation when studentId is missing
                     Log.d("Qimin_Nav", "Student ID is null or empty, skipping navigation");
                     Toast.makeText(getContext(),
                             "Student profile not available", Toast.LENGTH_SHORT).show();
@@ -114,7 +114,7 @@ public class OrgPendingApplicantsFragment extends Fragment {
 
                     navController.navigate(action);
                 } catch (Exception e) {
-                    // Qimin: If navigation fails (graph or destination missing), I show a friendly message
+                    // If navigation fails (graph or destination missing), I show a friendly message
                     Log.e("Qimin_Nav", "Navigation to student profile failed", e);
                     Toast.makeText(getContext(),
                             "Student Profile feature coming soon (Waiting for Edmond)", Toast.LENGTH_SHORT).show();
@@ -286,7 +286,7 @@ public class OrgPendingApplicantsFragment extends Fragment {
             Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
             return;
         }
-        // Qimin: Check if we have enough slots before accepting everyone.
+        // Check if we have enough slots before accepting everyone.
         if (applicantList.isEmpty()) {
             Toast.makeText(getContext(), "No pending applicants", Toast.LENGTH_SHORT).show();
             return;

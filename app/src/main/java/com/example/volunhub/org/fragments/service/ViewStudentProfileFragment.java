@@ -5,23 +5,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.bumptech.glide.Glide;
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentViewStudentProfileBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-
 public class ViewStudentProfileFragment extends Fragment {
 
-    private static final String TAG = "ViewStudentProfileFrag";
+    private static final String TAG = "ViewStudentProfile";
     private FragmentViewStudentProfileBinding binding;
     private FirebaseFirestore db;
     private String studentId;
@@ -31,10 +27,8 @@ public class ViewStudentProfileFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-        // Get the studentId passed from the navigation action
+        // Get the student ID passed from the previous screen
         if (getArguments() != null) {
-            // "studentId" MUST match the argument name in your nav graph
             studentId = getArguments().getString("studentId");
         }
     }
@@ -48,88 +42,76 @@ public class ViewStudentProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         db = FirebaseFirestore.getInstance();
 
-        AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        if (activity.getSupportActionBar() != null) {
-            // Qimin: Hooking up the existing Toolbar back arrow
-            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            activity.getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-            Toolbar toolbar = activity.findViewById(R.id.toolbar);
-            if (toolbar != null) {
-                toolbar.setNavigationOnClickListener(v -> {
-                    // Qimin: handling back button
-                    Log.d("Qimin_Nav", "Back button clicked");
-                    getParentFragmentManager().popBackStack();
-                });
-            } else {
-                Log.d("Qimin_Nav", "Using standard ActionBar back behavior");
-            }
-        }
-
-        if (studentId != null) {
-            loadStudentProfile();
+        if (studentId != null && !studentId.isEmpty()) {
+            loadStudentProfileData(studentId);
         } else {
-            Log.e(TAG, "Student ID is null. Cannot load profile.");
+            Log.e(TAG, "No student ID provided");
             binding.textViewStudentName.setText(getString(R.string.error_profile_not_found));
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            // Qimin: handling back button via ActionBar home
-            Log.d("Qimin_Nav", "ActionBar home pressed");
-            getParentFragmentManager().popBackStack();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void loadStudentProfile() {
+    private void loadStudentProfileData(String studentId) {
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Populate the views
+                        // 1. Basic Info
                         binding.textViewStudentName.setText(documentSnapshot.getString("studentName"));
 
-                        String gender = documentSnapshot.getString("studentGender");
+                        // Safe Age Handling: Prevents crash if age is number or string
                         String ageText;
                         try {
-                            // Qimin: Fixed crash by reading age as String
                             Object ageObj = documentSnapshot.get("studentAge");
-                            if (ageObj != null) {
-                                ageText = String.valueOf(ageObj);
-                            } else {
-                                ageText = getString(R.string.not_available);
-                            }
+                            ageText = (ageObj != null) ? String.valueOf(ageObj) : "N/A";
                         } catch (Exception e) {
-                            Log.e(TAG, "Failed to read studentAge safely", e);
-                            ageText = getString(R.string.not_available);
+                            ageText = "N/A";
                         }
-                        String genderText = gender != null ? gender : getString(R.string.not_available);
-                        binding.textViewStudentAgeGender.setText(ageText + ", " + genderText);
 
-                        binding.textViewStudentIntro.setText(documentSnapshot.getString("studentIntroduction"));
-                        binding.textViewStudentExp.setText(documentSnapshot.getString("studentExperience"));
+                        // Combine Age & Gender
+                        String gender = documentSnapshot.getString("studentGender");
+                        String genderText = (gender != null && !gender.isEmpty()) ? gender : "N/A";
+                        binding.textViewStudentAgeGender.setText(ageText + " Years Old • " + genderText);
 
-                        // Load profile image using Glide
+                        // 2. Contact Info (Matches your new XML Redesign)
+                        String email = documentSnapshot.getString("email");
+                        binding.textViewStudentEmail.setText(
+                                (email != null && !email.isEmpty()) ? email : "No email provided"
+                        );
+
+                        String phone = documentSnapshot.getString("contactNumber");
+                        binding.textViewStudentPhone.setText(
+                                (phone != null && !phone.isEmpty()) ? phone : "No contact number"
+                        );
+
+                        // 3. Details
+                        String intro = documentSnapshot.getString("studentIntroduction");
+                        binding.textViewStudentIntro.setText(
+                                (intro != null && !intro.isEmpty()) ? intro : "No introduction provided."
+                        );
+
+                        String exp = documentSnapshot.getString("studentExperience");
+                        binding.textViewStudentExp.setText(
+                                (exp != null && !exp.isEmpty()) ? exp : "No experience listed."
+                        );
+
+                        // 4. Load Profile Picture
                         if (getContext() != null) {
                             Glide.with(getContext())
                                     .load(documentSnapshot.getString("profileImageUrl"))
                                     .placeholder(R.drawable.ic_profile)
-                                    .circleCrop()
+                                    .centerCrop()
                                     .into(binding.imageViewStudentPhoto);
                         }
                     } else {
-                        Log.w(TAG, "Student document not found.");
-                        binding.textViewStudentName.setText(getString(R.string.error_student_profile_not_found));
+                        Log.w(TAG, "Student document not found");
+                        binding.textViewStudentName.setText("Student not found");
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading student profile", e);
-                    binding.textViewStudentName.setText(getString(R.string.error_loading_profile));
+                    binding.textViewStudentName.setText("Error loading data");
                 });
     }
 
