@@ -41,7 +41,7 @@
                 app:shapeAppearanceOverlay="@style/CircularShapeAppearance"
                 app:strokeColor="#DDDDDD"
                 app:strokeWidth="1dp"
-                tools:src="@drawable/ic_org_dashboard" />
+                tools:src="@drawable/default_profile_picture" />
 
             <TextView
                 android:id="@+id/text_org_profile_name"
@@ -170,7 +170,7 @@
                         android:id="@+id/label_org_profile_desc"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="About Us"
+                        android:text="Description"
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textColor="@android:color/black"
                         android:textStyle="bold" />

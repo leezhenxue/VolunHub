@@ -161,7 +161,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="About Me"
+                        android:text="Self Introduction"
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textColor="@color/text_primary"
                         android:textStyle="bold" />
@@ -196,7 +196,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Experience"
+                        android:text="Volunteer Experience"
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textColor="@color/text_primary"
                         android:textStyle="bold" />

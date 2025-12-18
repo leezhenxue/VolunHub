@@ -44,7 +44,7 @@
                     app:shapeAppearanceOverlay="@style/CircularShapeAppearance"
                     app:strokeColor="@color/divider_color"
                     app:strokeWidth="1dp"
-                    tools:src="@drawable/ic_org_dashboard" />
+                    tools:src="@drawable/default_profile_picture" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -121,7 +121,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="Organization Name">
+                        android:hint="Company Name">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/edit_text_edit_org_name"
@@ -137,7 +137,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="Industry Field">
+                        android:hint="Field">
 
                         <AutoCompleteTextView
                             android:id="@+id/auto_complete_edit_org_field"
