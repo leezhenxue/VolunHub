@@ -120,9 +120,23 @@ public class SignUpFragment extends Fragment {
                     selectedImageUri = uri;
                     Toast.makeText(getContext(), "Image selected", Toast.LENGTH_SHORT).show();
                     binding.imageViewProfilePicture.setImageURI(uri);
+                    binding.buttonRemoveProfilePicture.setVisibility(View.VISIBLE);
                 } else {
                     Toast.makeText(getContext(), "No image selected", Toast.LENGTH_SHORT).show();
                 }
+        });
+
+        binding.buttonRemoveProfilePicture.setOnClickListener(v -> {
+            // Reset the URI to null
+            selectedImageUri = null;
+
+            // Reset the View to the default drawable
+            binding.imageViewProfilePicture.setImageResource(R.drawable.default_profile_picture);
+
+            // Hide the remove button again
+            binding.buttonRemoveProfilePicture.setVisibility(View.GONE);
+
+            Toast.makeText(getContext(), "Image removed", Toast.LENGTH_SHORT).show();
         });
 
         binding.buttonUploadProfilePicture.setOnClickListener(v ->

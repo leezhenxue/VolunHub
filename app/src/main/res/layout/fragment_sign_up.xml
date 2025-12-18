@@ -65,12 +65,33 @@
                             android:src="@drawable/default_profile_picture"
                             app:shapeAppearanceOverlay="@style/CircularShapeAppearance" />
 
-                        <Button
-                            android:id="@+id/button_upload_profile_picture"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/btn_upload_image" />
+                            android:orientation="vertical">
+
+                            <Button
+                                android:id="@+id/button_upload_profile_picture"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/btn_upload_image" />
+
+                            <Button
+                                android:id="@+id/button_remove_profile_picture"
+                                style="@style/Widget.MaterialComponents.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:paddingTop="0dp"
+                                android:paddingBottom="0dp"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:minHeight="0dp"
+                                android:layout_gravity="start"
+                                android:text="Remove"
+                                android:textColor="@android:color/holo_red_light"
+                                android:visibility="gone" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout

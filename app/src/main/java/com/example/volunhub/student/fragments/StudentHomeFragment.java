@@ -47,7 +47,6 @@ public class StudentHomeFragment extends Fragment {
     private FirebaseFirestore db;
     private NavController navController;
     private boolean isLoading = false;
-    private static final String FIELD_START_TIME = "startDateTime";
     private ListenerRegistration servicesListener;
 
 
@@ -153,6 +152,9 @@ public class StudentHomeFragment extends Fragment {
                 .limit(PAGE_SIZE)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    if (binding == null) {
+                        return;
+                    }
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);

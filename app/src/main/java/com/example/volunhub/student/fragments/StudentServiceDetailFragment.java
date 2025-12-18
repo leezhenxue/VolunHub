@@ -378,8 +378,8 @@ public class StudentServiceDetailFragment extends Fragment {
                         if (getContext() != null) {
                             com.bumptech.glide.Glide.with(getContext())
                                     .load(imageUrl)
-                                    .placeholder(R.drawable.ic_org_dashboard) // Show this while loading
-                                    .error(R.drawable.ic_org_dashboard)       // Show this if URL is null/broken
+                                    .placeholder(R.drawable.default_profile_picture) // Show this while loading
+                                    .error(R.drawable.default_profile_picture)       // Show this if URL is null/broken
                                     .circleCrop()                             // Optional: Make it round
                                     .into(binding.imageViewStudentServiceDetailCompanyLogo);
                         }
