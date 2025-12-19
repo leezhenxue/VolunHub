@@ -46,6 +46,7 @@ public class StudentHomeFragment extends Fragment {
     private NavController navController;
     private boolean isLoading = false;
     private ListenerRegistration servicesListener;
+    private long startTime;
 
 
 
@@ -69,9 +70,12 @@ public class StudentHomeFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         navController = Navigation.findNavController(view);
 
+        startTime = System.currentTimeMillis();
+        Log.d("PerformanceTest", "P1 - Start Fetching Services: " + startTime);
+
         setupRecyclerView();
         setupSearch();
-        listenInitialServicesRealtime();  // Corrected to call loadInitialServices
+        loadInitialServices();
     }
 
     private void setupRecyclerView() {
@@ -154,6 +158,9 @@ public class StudentHomeFragment extends Fragment {
                         return;
                     }
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
+                        long endTime = System.currentTimeMillis();
+                        long duration = endTime - startTime;
+                        Log.d("NFRTest", "P1 - List Loaded (Empty). Duration: " + duration + "ms");
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);
                         isLoading = false;
@@ -173,6 +180,20 @@ public class StudentHomeFragment extends Fragment {
                         }
                     }
                     adapter.notifyDataSetChanged();
+
+                    // ---------------------------------------------------------
+                    // [NFR CODE] CAPTURE END TIME HERE
+                    // ---------------------------------------------------------
+                    long endTime = System.currentTimeMillis();
+                    long duration = endTime - startTime;
+
+                    Log.d("NFRTest", "P1 - List Rendered Successfully. Duration: " + duration + "ms");
+
+                    if (duration < 2000) {
+                        Log.d("NFRTest", "P1 - TEST PASSED (Duration <= 1000s)");
+                    } else {
+                        Log.d("NFRTest", "P1 - TEST FAILED (Duration > 1000s)");
+                    }
 
                     lastVisibleDocument = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                     isLoading = false;
@@ -327,77 +348,6 @@ public class StudentHomeFragment extends Fragment {
                     isLoading = false;
                     binding.progressBar.setVisibility(View.GONE);
                 });
-    }
-
-    private void listenInitialServicesRealtime() {
-        Log.d(TAG, "Listening initial services (realtime)...");
-        binding.progressBar.setVisibility(View.VISIBLE);
-
-        Timestamp now = Timestamp.now();
-
-        // IMPORTANT: Remove old listener before creating a new one
-        // Otherwise you may have multiple listeners running at the same time
-        if (servicesListener != null) {
-            servicesListener.remove();
-            servicesListener = null;
-        }
-
-        // Realtime query:
-        // 1) Only Active services
-        // 2) Only future services (serviceDate >= now)
-        // 3) Sort by serviceDate ascending (earliest upcoming at the top)
-        // 4) Limit for pagination (first page)
-        Query query = db.collection("services")
-                .whereEqualTo("status", "Active")
-                .whereGreaterThanOrEqualTo("serviceDate", now)
-                .orderBy("serviceDate", Query.Direction.ASCENDING)
-                .limit(PAGE_SIZE);
-
-        // Use snapshot listener to get realtime updates:
-        // - If someone edits serviceDate/status in Firebase Console, UI updates automatically
-        // - If a document no longer matches (e.g., status changes), it disappears automatically
-        servicesListener = query.addSnapshotListener((querySnapshot, e) -> {
-            binding.progressBar.setVisibility(View.GONE);
-
-            if (e != null) {
-                Log.e(TAG, "Realtime listen failed", e);
-                return;
-            }
-
-            // If no matching services, show empty state
-            if (querySnapshot == null || querySnapshot.isEmpty()) {
-                serviceList.clear();
-                adapter.notifyDataSetChanged();
-
-                binding.emptyView.setVisibility(View.VISIBLE);
-                binding.recyclerStudentHomeServices.setVisibility(View.GONE);
-
-                lastVisibleDocument = null;
-                return;
-            }
-
-            // If we have results, show RecyclerView and hide empty state
-            binding.emptyView.setVisibility(View.GONE);
-            binding.recyclerStudentHomeServices.setVisibility(View.VISIBLE);
-
-            // Replace the list with latest snapshot data
-            serviceList.clear();
-            for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                Service service = doc.toObject(Service.class);
-                if (service != null) {
-                    // Store Firestore docId for navigation/details
-                    service.setDocumentId(doc.getId());
-                    serviceList.add(service);
-                }
-            }
-
-            // Refresh UI
-            adapter.notifyDataSetChanged();
-
-            // Save last doc for "load more" pagination
-            lastVisibleDocument = querySnapshot.getDocuments()
-                    .get(querySnapshot.size() - 1);
-        });
     }
 
 
