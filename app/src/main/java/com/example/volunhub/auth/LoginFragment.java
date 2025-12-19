@@ -58,6 +58,11 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "Email and password cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
             }
+            // ---------------------------------------------------------
+            // [NFR 3 TEST] START TIMER: Manual Login Scenario
+            // ---------------------------------------------------------
+            BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
+            Log.d("NFRTest", "NFR 3 - Scenario 1 (Manual Login) Started at: " + BaseRouterActivity.nfrLoginStartTime);
             signIn(email, password);
         });
 

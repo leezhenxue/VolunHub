@@ -71,7 +71,7 @@ public class StudentHomeFragment extends Fragment {
         navController = Navigation.findNavController(view);
 
         startTime = System.currentTimeMillis();
-        Log.d("PerformanceTest", "P1 - Start Fetching Services: " + startTime);
+        Log.d("NFRTest", "P1 - Start Fetching Services: " + startTime);
 
         setupRecyclerView();
         setupSearch();
@@ -161,6 +161,9 @@ public class StudentHomeFragment extends Fragment {
                         long endTime = System.currentTimeMillis();
                         long duration = endTime - startTime;
                         Log.d("NFRTest", "P1 - List Loaded (Empty). Duration: " + duration + "ms");
+                        // [NFR 7 TEST] PROOF OF PAGINATION (PAGE 1)
+                        int count = querySnapshot.size();
+                        Log.d("NFRTest", "SC1 - Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);
                         isLoading = false;
@@ -182,18 +185,17 @@ public class StudentHomeFragment extends Fragment {
                     adapter.notifyDataSetChanged();
 
                     // ---------------------------------------------------------
-                    // [NFR CODE] CAPTURE END TIME HERE
+                    // [NFR 1 & 7 TEST] CAPTURE EVIDENCE HERE
                     // ---------------------------------------------------------
                     long endTime = System.currentTimeMillis();
                     long duration = endTime - startTime;
+                    int count = querySnapshot.size();
 
+                    // Log for NFR 1 (Performance)
                     Log.d("NFRTest", "P1 - List Rendered Successfully. Duration: " + duration + "ms");
 
-                    if (duration < 2000) {
-                        Log.d("NFRTest", "P1 - TEST PASSED (Duration <= 1000s)");
-                    } else {
-                        Log.d("NFRTest", "P1 - TEST FAILED (Duration > 1000s)");
-                    }
+                    // Log for NFR 7 (Scalability - Page 1)
+                    Log.d("NFRTest", "SC1 - Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
 
                     lastVisibleDocument = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                     isLoading = false;
@@ -249,6 +251,12 @@ public class StudentHomeFragment extends Fragment {
                     }
 
                     adapter.notifyItemRangeInserted(startPosition, querySnapshot.size());
+
+                    // ---------------------------------------------------------
+                    // [NFR 7 TEST] PROOF OF PAGINATION (PAGE 2)
+                    // ---------------------------------------------------------
+                    int count = querySnapshot.size();
+                    Log.d("NFRTest", "SC1 - Pagination: Next Batch Loaded. Count: " + count + " items.");
 
                     // Save the last document for next pagination
                     lastVisibleDocument = querySnapshot.getDocuments()

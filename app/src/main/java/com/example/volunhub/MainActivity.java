@@ -1,6 +1,7 @@
 package com.example.volunhub;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.volunhub.auth.AuthActivity;
 import com.example.volunhub.databinding.ActivityMainBinding;
@@ -42,6 +43,10 @@ public class MainActivity extends BaseRouterActivity {
         if (currentUser == null) {
             goToActivity(AuthActivity.class);
         } else {
+            // [NFR TEST] SCENARIO 2: AUTO LOGIN
+            // User is already logged in, measuring time to route to Home
+            BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
+            Log.d("NFRTest", "NFR 3 - Scenario 2 (Auto-Login) Started at: " + BaseRouterActivity.nfrLoginStartTime);
             routeUser(currentUser.getUid());
         }
     }

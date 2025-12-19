@@ -409,6 +409,9 @@ public class StudentServiceDetailFragment extends Fragment {
     private void createApplication() {
         String studentId = mAuth.getCurrentUser().getUid();
 
+        long startTime = System.currentTimeMillis();
+        Log.d("NFRTest", "P2 - Action Started: User clicked Apply at " + startTime);
+
         Map<String, Object> newApplication = new HashMap<>();
         newApplication.put("studentId", studentId);
         newApplication.put("serviceId", serviceId);
@@ -424,6 +427,18 @@ public class StudentServiceDetailFragment extends Fragment {
                 .add(newApplication)
                 .addOnSuccessListener(documentReference -> {
                     if (binding == null) return;
+                    // [NFR P2 TEST] 2. STOP TIMER & LOG RESULT
+                    // This callback fires when Firestore confirms the write
+                    long endTime = System.currentTimeMillis();
+                    long duration = endTime - startTime;
+
+                    Log.d("NFRTest", "P2 - Success: Application feedback shown. Duration: " + duration + "ms");
+
+                    if (duration < 1000) {
+                        Log.d("NFRTest", "P2 - TEST PASSED (Success < 1.0s)");
+                    } else {
+                        Log.d("NFRTest", "P2 - TEST FAILED (Too Slow)");
+                    }
                     Toast.makeText(getContext(), "Application submitted!", Toast.LENGTH_SHORT).show();
 
                     // Refresh status and UI

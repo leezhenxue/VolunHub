@@ -14,6 +14,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.example.volunhub.BaseRouterActivity;
 import com.example.volunhub.MainActivity;
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.ActivityStudentHomeBinding;
@@ -35,6 +36,26 @@ public class StudentHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ActivityStudentHomeBinding binding = ActivityStudentHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // ---------------------------------------------------------
+        // [NFR 3 TEST] STOP TIMER: Login/Routing Latency
+        // ---------------------------------------------------------
+        // This checks if we came from Login or MainActivity with a running timer.
+        if (BaseRouterActivity.nfrLoginStartTime > 0) {
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - BaseRouterActivity.nfrLoginStartTime;
+
+            Log.d("NFRTest", "NFR 3 - Login/Routing Complete (Activity Created). Duration: " + duration + "ms");
+
+            if (duration < 5000) {
+                Log.d("NFRTest", "NFR 3 - TEST PASSED (Success < 5.0s)");
+            } else {
+                Log.d("NFRTest", "NFR 3 - TEST FAILED (Too Slow)");
+            }
+
+            // Reset to 0 so navigation inside the app doesn't trigger false positives
+            BaseRouterActivity.nfrLoginStartTime = 0;
+        }
 
         BottomNavigationView studentBottomNav = binding.studentBottomNav;
         Toolbar toolbar = binding.toolbar;

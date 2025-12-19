@@ -29,6 +29,7 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
 
     /** Shared instance of FirebaseFirestore for child activities. */
     public FirebaseFirestore db;
+    public static long nfrLoginStartTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
