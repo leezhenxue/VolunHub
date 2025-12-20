@@ -15,6 +15,9 @@ import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentViewStudentProfileBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Allows the Organization to view the detailed profile of a Student applicant.
+ */
 public class ViewStudentProfileFragment extends Fragment {
 
     private static final String TAG = "ViewStudentProfile";
@@ -24,21 +27,39 @@ public class ViewStudentProfileFragment extends Fragment {
 
     public ViewStudentProfileFragment() {}
 
+    /**
+     * Retrieves the student ID passed in the arguments.
+     *
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Get the student ID passed from the previous screen
         if (getArguments() != null) {
             studentId = getArguments().getString("studentId");
         }
     }
 
+    /**
+     * Inflates the layout for this fragment.
+     *
+     * @param inflater The LayoutInflater object.
+     * @param container The parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentViewStudentProfileBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes the view and loads the student's profile data.
+     *
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -48,20 +69,23 @@ public class ViewStudentProfileFragment extends Fragment {
         if (studentId != null && !studentId.isEmpty()) {
             loadStudentProfileData(studentId);
         } else {
-            Log.e(TAG, "No student ID provided");
-            binding.textViewStudentName.setText(getString(R.string.error_profile_not_found));
+            binding.textViewStudentName.setText(R.string.error_profile_not_found);
         }
     }
 
+    /**
+     * Fetches and displays the student's data from Firestore.
+     *
+     * @param studentId The UID of the student to load.
+     */
     private void loadStudentProfileData(String studentId) {
         db.collection("users").document(studentId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (binding == null) return;
                     if (documentSnapshot.exists()) {
-                        // 1. Basic Info
                         binding.textViewStudentName.setText(documentSnapshot.getString("studentName"));
 
-                        // Safe Age Handling: Prevents crash if age is number or string
+                        // Safe Age Handling
                         String ageText;
                         try {
                             Object ageObj = documentSnapshot.get("studentAge");
@@ -70,34 +94,22 @@ public class ViewStudentProfileFragment extends Fragment {
                             ageText = "N/A";
                         }
 
-                        // Combine Age & Gender
                         String gender = documentSnapshot.getString("studentGender");
-                        String genderText = (gender != null && !gender.isEmpty()) ? gender : "N/A";
+                        String genderText = (gender != null) ? gender : "N/A";
                         binding.textViewStudentAgeGender.setText(ageText + " Years Old • " + genderText);
 
-                        // 2. Contact Info (Matches your new XML Redesign)
                         String email = documentSnapshot.getString("email");
-                        binding.textViewStudentEmail.setText(
-                                (email != null && !email.isEmpty()) ? email : "No email provided"
-                        );
+                        binding.textViewStudentEmail.setText(email != null ? email : getString(R.string.not_available));
 
                         String phone = documentSnapshot.getString("contactNumber");
-                        binding.textViewStudentPhone.setText(
-                                (phone != null && !phone.isEmpty()) ? phone : "No contact number"
-                        );
+                        binding.textViewStudentPhone.setText(phone != null ? phone : getString(R.string.not_available));
 
-                        // 3. Details
                         String intro = documentSnapshot.getString("studentIntroduction");
-                        binding.textViewStudentIntro.setText(
-                                (intro != null && !intro.isEmpty()) ? intro : "No introduction provided."
-                        );
+                        binding.textViewStudentIntro.setText(intro != null ? intro : "No introduction provided.");
 
                         String exp = documentSnapshot.getString("studentExperience");
-                        binding.textViewStudentExp.setText(
-                                (exp != null && !exp.isEmpty()) ? exp : "No experience listed."
-                        );
+                        binding.textViewStudentExp.setText(exp != null ? exp : "No experience listed.");
 
-                        // 4. Load Profile Picture
                         if (getContext() != null) {
                             Glide.with(getContext())
                                     .load(documentSnapshot.getString("profileImageUrl"))
@@ -106,16 +118,18 @@ public class ViewStudentProfileFragment extends Fragment {
                                     .into(binding.imageViewStudentPhoto);
                         }
                     } else {
-                        Log.w(TAG, "Student document not found");
-                        binding.textViewStudentName.setText("Student not found");
+                        binding.textViewStudentName.setText(R.string.error_student_profile_not_found);
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading student profile", e);
-                    binding.textViewStudentName.setText("Error loading data");
+                    if (binding != null) binding.textViewStudentName.setText(R.string.error_loading_profile);
                 });
     }
 
+    /**
+     * Cleans up the binding when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

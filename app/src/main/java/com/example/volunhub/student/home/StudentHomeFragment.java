@@ -19,23 +19,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.volunhub.databinding.FragmentStudentHomeBinding;
 import com.example.volunhub.models.Service;
 import com.example.volunhub.student.adapters.ServiceAdapter;
-//import com.example.volunhub.student.fragments.StudentHomeFragmentDirections;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import com.google.firebase.Timestamp;
-
-import java.util.Collections;
-
-import com.google.firebase.firestore.ListenerRegistration;
-
-
-
-
+/**
+ * The main dashboard for students.
+ * Displays a list of available volunteer services with pagination and search functionality.
+ */
 public class StudentHomeFragment extends Fragment {
 
     private static final String TAG = "StudentHomeFragment";
@@ -48,21 +45,31 @@ public class StudentHomeFragment extends Fragment {
     private ListenerRegistration servicesListener;
     private long startTime;
 
-
-
     // --- Pagination Variables ---
-    private static final long PAGE_SIZE = 10; // Load 5 at a time (adjusted from 10 to match your earlier request)
+    private static final long PAGE_SIZE = 10;
     private DocumentSnapshot lastVisibleDocument;
     private boolean isSearchActive = false;
 
     public StudentHomeFragment() {}
 
+    /**
+     * Inflates the layout for this fragment.
+     * @param inflater LayoutInflater object.
+     * @param container Parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentStudentHomeBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes the view, sets up RecyclerView, and loads initial data.
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -78,13 +85,16 @@ public class StudentHomeFragment extends Fragment {
         loadInitialServices();
     }
 
+    /**
+     * Configures the RecyclerView with a layout manager, adapter, and scroll listener for pagination.
+     */
     private void setupRecyclerView() {
         adapter = new ServiceAdapter(serviceList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         binding.recyclerStudentHomeServices.setLayoutManager(layoutManager);
         binding.recyclerStudentHomeServices.setAdapter(adapter);
 
-        // --- CLICK LISTENER ---
+        // Click Listener: Navigate to Service Detail
         adapter.setOnItemClickListener(service -> {
             Log.d(TAG, "Clicked on service: " + service.getTitle());
             StudentHomeFragmentDirections.ActionHomeToServiceDetail action =
@@ -94,7 +104,7 @@ public class StudentHomeFragment extends Fragment {
             navController.navigate(action);
         });
 
-        // --- SCROLL LISTENER FOR PAGINATION ---
+        // Scroll Listener: Trigger loadMoreServices when near bottom
         binding.recyclerStudentHomeServices.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -116,8 +126,10 @@ public class StudentHomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Sets up the search bar to filter services in real-time.
+     */
     private void setupSearch() {
-        // Use TextWatcher for real-time search
         binding.editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -139,6 +151,10 @@ public class StudentHomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Loads the first page of active services from Firestore.
+     * Captures performance metrics for NFR testing.
+     */
     private void loadInitialServices() {
         Log.d(TAG, "Loading initial services...");
         isLoading = true;
@@ -154,16 +170,16 @@ public class StudentHomeFragment extends Fragment {
                 .limit(PAGE_SIZE)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    if (binding == null) {
-                        return;
-                    }
+                    if (binding == null) return;
+
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         long endTime = System.currentTimeMillis();
                         long duration = endTime - startTime;
                         Log.d("NFRTest", "P1 - List Loaded (Empty). Duration: " + duration + "ms");
-                        // [NFR 7 TEST] PROOF OF PAGINATION (PAGE 1)
-                        int count = querySnapshot.size();
+
+                        int count = (querySnapshot == null) ? 0 : querySnapshot.size();
                         Log.d("NFRTest", "SC1 - Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
+
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);
                         isLoading = false;
@@ -184,17 +200,12 @@ public class StudentHomeFragment extends Fragment {
                     }
                     adapter.notifyDataSetChanged();
 
-                    // ---------------------------------------------------------
                     // [NFR 1 & 7 TEST] CAPTURE EVIDENCE HERE
-                    // ---------------------------------------------------------
                     long endTime = System.currentTimeMillis();
                     long duration = endTime - startTime;
                     int count = querySnapshot.size();
 
-                    // Log for NFR 1 (Performance)
                     Log.d("NFRTest", "P1 - List Rendered Successfully. Duration: " + duration + "ms");
-
-                    // Log for NFR 7 (Scalability - Page 1)
                     Log.d("NFRTest", "SC1 - Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
 
                     lastVisibleDocument = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
@@ -208,9 +219,9 @@ public class StudentHomeFragment extends Fragment {
                 });
     }
 
-
-
-    // --- NEW METHOD TO LOAD THE NEXT PAGE ---
+    /**
+     * Loads the next batch of services (Pagination) when scrolling to the bottom.
+     */
     private void loadMoreServices() {
         if (lastVisibleDocument == null) {
             Log.d(TAG, "No last document, can't load more.");
@@ -252,16 +263,11 @@ public class StudentHomeFragment extends Fragment {
 
                     adapter.notifyItemRangeInserted(startPosition, querySnapshot.size());
 
-                    // ---------------------------------------------------------
                     // [NFR 7 TEST] PROOF OF PAGINATION (PAGE 2)
-                    // ---------------------------------------------------------
                     int count = querySnapshot.size();
                     Log.d("NFRTest", "SC1 - Pagination: Next Batch Loaded. Count: " + count + " items.");
 
-                    // Save the last document for next pagination
-                    lastVisibleDocument = querySnapshot.getDocuments()
-                            .get(querySnapshot.size() - 1);
-
+                    lastVisibleDocument = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                     isLoading = false;
                     binding.progressBar.setVisibility(View.GONE);
                 })
@@ -272,8 +278,10 @@ public class StudentHomeFragment extends Fragment {
                 });
     }
 
-
-
+    /**
+     * Performs a Firestore query to find services matching the search text.
+     * @param searchText The text entered by the user.
+     */
     private void searchServicesFirestore(String searchText) {
         Log.d(TAG, "Searching for: " + searchText);
         isLoading = true;
@@ -281,12 +289,11 @@ public class StudentHomeFragment extends Fragment {
         binding.progressBar.setVisibility(View.VISIBLE);
 
         String queryText = searchText.toLowerCase();
-
         Timestamp now = Timestamp.now();
 
         db.collection("services")
                 .whereEqualTo("status", "Active")
-                .orderBy("searchTitle") // Ensure this field exists in your DB!
+                .orderBy("searchTitle")
                 .startAt(queryText)
                 .endAt(queryText + "\uf8ff")
                 .get()
@@ -305,18 +312,15 @@ public class StudentHomeFragment extends Fragment {
                     List<DocumentSnapshot> docs = new ArrayList<>(querySnapshot.getDocuments());
                     List<DocumentSnapshot> filtered = new ArrayList<>();
 
-                    // --- FIX 1: Use "serviceDate" instead of "startDateTime" ---
+                    // Filter future events locally since complex queries are limited
                     for (DocumentSnapshot d : docs) {
-                        // Try to get the date as a Date object first (standard Firestore mapping)
                         Timestamp serviceTimestamp = d.getTimestamp("serviceDate");
-
-                        // Filter: Keep only future events
                         if (serviceTimestamp != null && serviceTimestamp.compareTo(now) >= 0) {
                             filtered.add(d);
                         }
                     }
 
-                    // --- FIX 2: Sort using "serviceDate" ---
+                    // Sort by service date (earliest first)
                     Collections.sort(filtered, (d1, d2) -> {
                         Timestamp t1 = d1.getTimestamp("serviceDate");
                         Timestamp t2 = d2.getTimestamp("serviceDate");
@@ -324,12 +328,9 @@ public class StudentHomeFragment extends Fragment {
                         if (t1 == null && t2 == null) return 0;
                         if (t1 == null) return 1;
                         if (t2 == null) return -1;
-
-                        // Ascending order (Earliest first)
                         return t1.compareTo(t2);
                     });
 
-                    // Convert filtered snapshots to Service objects
                     for (DocumentSnapshot doc : filtered) {
                         Service service = doc.toObject(Service.class);
                         if (service != null) {
@@ -338,7 +339,6 @@ public class StudentHomeFragment extends Fragment {
                         }
                     }
 
-                    // Update UI based on results
                     if (serviceList.isEmpty()) {
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);
@@ -358,7 +358,9 @@ public class StudentHomeFragment extends Fragment {
                 });
     }
 
-
+    /**
+     * Cleans up the binding and listeners when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -372,6 +374,8 @@ public class StudentHomeFragment extends Fragment {
 
     /**
      * Safely gets text from an EditText, trims it, and handles nulls.
+     * @param editable The editable object from the EditText.
+     * @return The trimmed string or empty string.
      */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();

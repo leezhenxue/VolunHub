@@ -6,7 +6,6 @@ package com.example.volunhub;
  */
 public final class Constants {
 
-    // Private constructor prevents instantiation
     private Constants() {}
 
     /**

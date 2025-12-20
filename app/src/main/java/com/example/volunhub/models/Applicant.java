@@ -2,21 +2,23 @@ package com.example.volunhub.models;
 
 /**
  * A custom model class that combines data from the "applications" collection and the "users" collection.
- * This is used by the Organization to view a Student Applicant.
- * It is NOT saved directly to Firestore as a single document.
+ * This class is used by the Organization to view details of a Student who applied.
+ * It is not saved directly to Firestore as a single document but is created dynamically in the app.
  */
 public class Applicant {
 
-    // From the "applications" document
+    // Fields from the "applications" document
     private String applicationId;
     private String studentId;
 
-    // From the "users" document
+    // Fields from the "users" document
     private String studentName;
     private String studentIntroduction;
     private String profileImageUrl;
 
-    // Empty constructor for Firestore
+    /**
+     * Empty constructor required by Firestore for automatic data mapping.
+     */
     public Applicant() {}
 
     // --- Getters ---

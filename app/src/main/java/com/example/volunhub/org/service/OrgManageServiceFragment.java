@@ -12,62 +12,76 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-// --- 1. Add these imports ---
-//import com.example.volunhub.org.fragments.service.OrgManageServiceFragmentArgs;
-import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.firestore.AggregateSource;
 
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgManageServiceBinding;
 import com.example.volunhub.models.Service;
 import com.example.volunhub.org.adapters.OrgManageViewPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * Fragment for managing a specific service.
+ * Displays service details and tabs for managing applicants (Pending, Accepted, Rejected).
+ */
 public class OrgManageServiceFragment extends Fragment {
 
     private static final String TAG = "OrgManageService";
     private FirebaseFirestore db;
     private FragmentOrgManageServiceBinding binding;
     private String serviceId;
-    private Service currentService; // Store the loaded service for edit functionality
+    private Service currentService;
 
     public OrgManageServiceFragment() {}
 
+    /**
+     * Retrieves the service ID from arguments.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            // Uses Safe Args to get the ID
             serviceId = OrgManageServiceFragmentArgs.fromBundle(getArguments()).getServiceId();
             Log.d(TAG, "Received serviceId: " + serviceId);
         }
     }
 
+    /**
+     * Inflates the layout for this fragment.
+     * @param inflater LayoutInflater object.
+     * @param container Parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentOrgManageServiceBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes the view, loads service details, and sets up the ViewPager.
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         db = FirebaseFirestore.getInstance();
 
-        // 1. Load Service Details (Title, Desc, Stats)
         loadServiceDetails();
 
-        // 2. Setup Adapter
         OrgManageViewPagerAdapter viewPagerAdapter = new OrgManageViewPagerAdapter(this, serviceId);
         binding.viewPagerOrg.setAdapter(viewPagerAdapter);
 
-        // 3. Link Tabs (Set initial titles)
         new TabLayoutMediator(binding.tabLayoutOrg, binding.viewPagerOrg,
                 (tab, position) -> {
                     switch (position) {
@@ -84,16 +98,14 @@ public class OrgManageServiceFragment extends Fragment {
                     updateTabCounts();
                 });
 
-        // 4. --- NEW: Fetch and update the counts on the tabs ---
         updateTabCounts();
 
-        // 5. Set up delete button click listener
         binding.buttonDeleteService.setOnClickListener(v -> showDeleteConfirmationDialog());
-
-        // 6. Set up edit button click listener
-//        binding.buttonEditService.setOnClickListener(v -> openEditServiceActivity());
     }
 
+    /**
+     * Fetches and displays the service details from Firestore.
+     */
     private void loadServiceDetails() {
         if (serviceId == null) {
             Log.e(TAG, "Service ID is null, cannot load details.");
@@ -106,9 +118,8 @@ public class OrgManageServiceFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         Service service = documentSnapshot.toObject(Service.class);
                         if (service != null) {
-                            // Store service for edit functionality
                             currentService = service;
-                            
+
                             binding.textManageTitle.setText(service.getTitle());
                             binding.textManageDescription.setText(service.getDescription());
 
@@ -123,23 +134,18 @@ public class OrgManageServiceFragment extends Fragment {
                                 sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
                                 String dateText = sdf.format(service.getServiceDate());
                                 binding.textManageDate.setText(dateText);
-                                Log.d(TAG, "Loaded service date: " + dateText);
                             } else {
                                 binding.textManageDate.setText("Date not set");
-                                Log.d(TAG, "Service date missing, showing fallback text");
                             }
 
                             String contactNumber = service.getContactNumber();
                             if (contactNumber != null && !contactNumber.trim().isEmpty()) {
                                 binding.textManageContact.setText(contactNumber);
-                                Log.d(TAG, "Contact number is: " + contactNumber);
                             } else {
                                 binding.textManageContact.setText("No contact info");
-                                Log.d(TAG, "Contact number missing, hiding view");
                             }
                         }
                     } else {
-                        Log.w(TAG, "Service document not found.");
                         binding.textManageTitle.setText(getString(R.string.error_service_not_found));
                     }
                 })
@@ -149,7 +155,9 @@ public class OrgManageServiceFragment extends Fragment {
                 });
     }
 
-    // --- 5. NEW METHOD: Counts applicants for each status ---
+    /**
+     * Queries Firestore to count applicants for each status and updates tab titles.
+     */
     private void updateTabCounts() {
         if (serviceId == null) return;
 
@@ -184,11 +192,15 @@ public class OrgManageServiceFragment extends Fragment {
                 });
     }
 
-    // --- 6. Helper to update the Tab Text ---
+    /**
+     * Updates the text of a specific tab with the applicant count.
+     * @param position The index of the tab.
+     * @param title The base title of the tab.
+     * @param count The number of applicants.
+     */
     private void updateTabTitle(int position, String title, long count) {
         TabLayout.Tab tab = binding.tabLayoutOrg.getTabAt(position);
         if (tab != null) {
-            // Example result: "Pending (3)"
             if (count > 0) {
                 tab.setText(title + " (" + count + ")");
             } else {
@@ -215,9 +227,7 @@ public class OrgManageServiceFragment extends Fragment {
     }
 
     /**
-     * Deletes the service from Firestore.
-     * On success: Shows a success toast and navigates back to the previous screen.
-     * On failure: Shows an error toast.
+     * Deletes the service from Firestore and navigates back.
      */
     private void deleteService() {
         if (serviceId == null) {
@@ -230,19 +240,17 @@ public class OrgManageServiceFragment extends Fragment {
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "Service deleted successfully: " + serviceId);
                     Toast.makeText(getContext(), R.string.delete_success, Toast.LENGTH_SHORT).show();
-                    // Navigate back to the previous screen
                     Navigation.findNavController(requireView()).popBackStack();
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error deleting service", e);
-                    String errorMsg = getString(R.string.delete_error);
-                    if (e.getMessage() != null) {
-                        errorMsg += ": " + e.getMessage();
-                    }
-                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), getString(R.string.delete_error), Toast.LENGTH_LONG).show();
                 });
     }
 
+    /**
+     * Cleans up the binding when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

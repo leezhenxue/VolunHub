@@ -8,21 +8,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.example.volunhub.BaseRouterActivity;
-import com.example.volunhub.R;
-import com.example.volunhub.databinding.FragmentSignUpBinding;
-import com.example.volunhub.Constants;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
-import com.cloudinary.android.MediaManager;
-import com.cloudinary.android.callback.ErrorInfo;
-import com.cloudinary.android.callback.UploadCallback;
-
-import android.widget.ArrayAdapter;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,21 +18,25 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
+import com.example.volunhub.BaseRouterActivity;
+import com.example.volunhub.R;
+import com.example.volunhub.databinding.FragmentSignUpBinding;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.HashMap;
 import java.util.Map;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * Handles new user registration for both Students and Organizations.
- *
- * <p>This activity manages a complex flow:
- * <ol>
- * <li><b>Validation:</b> checks for empty fields, password strength, and role-specific requirements.</li>
- * <li><b>Authentication:</b> Creates a new user in Firebase Auth.</li>
- * <li><b>Media Upload:</b> Uploads the profile picture to Cloudinary (if selected).</li>
- * <li><b>Database:</b> Creates a new document in the 'users' Firestore collection.</li>
- * </ol>
- * </p>
+ * It validates inputs, creates a Firebase Auth account, uploads profile images,
+ * and saves the user profile data to Firestore.
  */
 public class SignUpFragment extends Fragment {
 
@@ -55,107 +47,93 @@ public class SignUpFragment extends Fragment {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    /**
+     * Inflates the layout for the Sign Up screen.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentSignUpBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes UI components, listeners, and external services (Firebase).
+     */
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        clearErrorOnType(binding.textInputLayoutEmail);
-        clearErrorOnType(binding.textInputLayoutPassword);
-        clearErrorOnType(binding.textInputLayoutRetypePassword);
-        clearErrorOnType(binding.textInputLayoutStudentName);
-        clearErrorOnType(binding.textInputLayoutStudentAge);
-        clearErrorOnType(binding.textInputLayoutStudentIntroduction);
-        clearErrorOnType(binding.textInputLayoutOrgCompanyName);
-        clearErrorOnType(binding.textInputLayoutOrgField);
-        clearErrorOnType(binding.textInputLayoutOrgDescription);
-        clearErrorOnType(binding.textInputLayoutContactNumber);
+        setupValidationListeners();
 
+        // Force uppercase input for Student Name
         binding.editTextStudentName.setFilters(new InputFilter[] {
-            new InputFilter.AllCaps()
+                new InputFilter.AllCaps()
         });
 
+        // Navigation Back Button
         binding.buttonBackToLogin.setOnClickListener(v ->
-            Navigation.findNavController(v).navigate(R.id.action_sign_up_to_login)
+                Navigation.findNavController(v).navigate(R.id.action_sign_up_to_login)
         );
 
+        // Sign Up Button
         binding.buttonSignUp.setOnClickListener(v ->
-            registerUser()
+                registerUser()
         );
 
+        // Dropdown setup for Organization Field
         binding.autoCompleteOrgField.setOnClickListener(v ->
-            binding.autoCompleteOrgField.showDropDown()
+                binding.autoCompleteOrgField.showDropDown()
         );
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
+        String[] orgFields = getResources().getStringArray(R.array.org_field_options);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, orgFields);
         binding.autoCompleteOrgField.setAdapter(adapter);
 
+        // Role Selection Logic
         binding.radioGroupRole.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radio_button_student) {
                 binding.linearLayoutSignUpStudent.setVisibility(View.VISIBLE);
                 binding.linearLayoutSignUpOrg.setVisibility(View.GONE);
-
             } else if (checkedId == R.id.radio_button_organization) {
                 binding.linearLayoutSignUpStudent.setVisibility(View.GONE);
                 binding.linearLayoutSignUpOrg.setVisibility(View.VISIBLE);
             }
         });
 
+        // Image Picker Logic
         imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    long fileSizeInBytes = getFileSize(uri);
-                    long sizeInMB = fileSizeInBytes / (1024 * 1024);
-                    if (sizeInMB > 5) {
-                        Toast.makeText(getContext(), "Image is too large! Please choose an image under 5MB.", Toast.LENGTH_LONG).show();
-                        selectedImageUri = null;
-                        return;
-                    }
-                    selectedImageUri = uri;
-                    Toast.makeText(getContext(), "Image selected", Toast.LENGTH_SHORT).show();
-                    binding.imageViewProfilePicture.setImageURI(uri);
-                    binding.buttonRemoveProfilePicture.setVisibility(View.VISIBLE);
-                } else {
-                    Toast.makeText(getContext(), "No image selected", Toast.LENGTH_SHORT).show();
+            if (uri != null) {
+                if (getFileSizeInMB(uri) > 5) {
+                    showToast(R.string.error_image_too_large);
+                    selectedImageUri = null;
+                    return;
                 }
+                selectedImageUri = uri;
+                showToast(R.string.msg_image_selected);
+                binding.imageViewProfilePicture.setImageURI(uri);
+                binding.buttonRemoveProfilePicture.setVisibility(View.VISIBLE);
+            } else {
+                showToast(R.string.error_image_too_large); // Generic error or create new string "No image selected"
+            }
         });
 
         binding.buttonRemoveProfilePicture.setOnClickListener(v -> {
-            // Reset the URI to null
             selectedImageUri = null;
-
-            // Reset the View to the default drawable
             binding.imageViewProfilePicture.setImageResource(R.drawable.default_profile_picture);
-
-            // Hide the remove button again
             binding.buttonRemoveProfilePicture.setVisibility(View.GONE);
-
-            Toast.makeText(getContext(), "Image removed", Toast.LENGTH_SHORT).show();
+            showToast(R.string.msg_image_removed);
         });
 
         binding.buttonUploadProfilePicture.setOnClickListener(v ->
-            imagePickerLauncher.launch("image/*")
+                imagePickerLauncher.launch("image/*")
         );
-
     }
 
     /**
-     * Handles the user login process.
-     *
-     * <p>This activity is responsible for:
-     * <ul>
-     * <li>Validating email and password input.</li>
-     * <li>Authenticating against Firebase Auth.</li>
-     * <li>Fetching the user's role (Student/Org) from Firestore upon success.</li>
-     * <li>Routing the user to the correct dashboard via {@link com.example.volunhub.BaseRouterActivity}.</li>
-     * </ul>
-     * </p>
+     * Orchestrates the user registration process.
+     * It validates the form, creates the auth account, and then saves user data.
      */
     private void registerUser() {
         String email = getSafeText(binding.editTextSignUpEmail.getText());
@@ -165,37 +143,35 @@ public class SignUpFragment extends Fragment {
         int selectedId = binding.radioGroupRole.getCheckedRadioButtonId();
 
         if (selectedId == -1) {
-            Toast.makeText(getContext(), "Please select a role (Student or Organization)", Toast.LENGTH_SHORT).show();
+            showToast(R.string.error_role_required);
             return;
         }
 
         final String role;
         if (selectedId == binding.radioButtonStudent.getId()) {
-            role = binding.radioButtonStudent.getText().toString();
+            role = "Student";
         } else {
-            role = binding.radioButtonOrganization.getText().toString();
+            role = "Organization";
         }
 
         if (!validateForm(email, password, retypePassword, role)) {
             return;
         }
 
-        binding.progressBarSignup.setVisibility(View.VISIBLE);
-        binding.buttonSignUp.setEnabled(false);
+        toggleLoading(true);
 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
-            binding.progressBarSignup.setVisibility(View.GONE);
-            binding.buttonSignUp.setEnabled(true);
+            toggleLoading(false);
             if (task.isSuccessful()) {
-                Toast.makeText(getContext(), "Sign up successful", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "createUserWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
+
                 if (user == null) {
-                    Toast.makeText(getContext(), "Sign up failed, user is null.", Toast.LENGTH_SHORT).show();
+                    showToast(R.string.error_signup_failed);
                     return;
                 }
-                String uid = user.getUid();
 
+                String uid = user.getUid();
                 Map<String, Object> userData = buildUserData(email, role);
 
                 if (selectedImageUri != null) {
@@ -205,121 +181,121 @@ public class SignUpFragment extends Fragment {
                 }
 
             } else {
-                Exception e = task.getException();
                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                if (e instanceof com.google.firebase.auth.FirebaseAuthUserCollisionException) {
-                    Toast.makeText(getContext(), "This email is already registered.", Toast.LENGTH_LONG).show();
-                    binding.textInputLayoutEmail.setError("Email already in use");
+                if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                    binding.textInputLayoutEmail.setError(getString(R.string.error_email_in_use));
                     binding.textInputLayoutEmail.requestFocus();
                 } else {
-                    Toast.makeText(getContext(), "Sign up failed.", Toast.LENGTH_LONG).show();
+                    showToast(R.string.error_signup_failed);
                 }
             }
         });
     }
 
     /**
-     * Validates all input fields based on the selected role.
-     * Performs checks for empty fields, email format, password strength, and role-specific requirements.
-     *
-     * @param email          The email entered by the user.
-     * @param password       The password entered by the user.
-     * @param retypePassword The confirmation password.
-     * @param role           The selected role ("Student" or "Organization").
-     * @return true if all fields are valid; false otherwise (sets error on the invalid view).
+     * Validates all input fields based on the selected role using regex and length checks.
+     * * @param email User email
+     * @param password User password
+     * @param retypePassword Password confirmation
+     * @param role Selected role
+     * @return True if form is valid, false otherwise.
      */
     private boolean validateForm(String email, String password, String retypePassword, String role) {
         boolean isValid = true;
-        if (checkEditTextIsEmpty(binding.textInputLayoutEmail, binding.editTextSignUpEmail, "Email is required")) {
+
+        if (checkEditTextIsEmpty(binding.textInputLayoutEmail, binding.editTextSignUpEmail, R.string.error_email_required)) {
             isValid = false;
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.textInputLayoutEmail.setError("Invalid email format");
+            binding.textInputLayoutEmail.setError(getString(R.string.error_invalid_email));
             isValid = false;
         }
 
-        if (checkEditTextIsEmpty(binding.textInputLayoutPassword, binding.editTextSignUpPassword, "Password is required")) {
+        if (checkEditTextIsEmpty(binding.textInputLayoutPassword, binding.editTextSignUpPassword, R.string.error_password_required)) {
             isValid = false;
         } else if (password.length() < 6 || password.length() > 20) {
-            binding.textInputLayoutPassword.setError("Password length must between 6 to 20 characters");
+            binding.textInputLayoutPassword.setError(getString(R.string.error_password_length));
             isValid = false;
         } else {
             String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{6,20}$";
             if (!password.matches(passwordPattern)) {
-                binding.textInputLayoutPassword.setError("Password must contain 1 uppercase, 1 lowercase, 1 number, and 1 symbol");
+                binding.textInputLayoutPassword.setError(getString(R.string.error_password_complexity));
                 isValid = false;
             }
         }
 
         String contactNumberInput = getSafeText(binding.editTextSignUpContactNumber.getText());
-
         if (TextUtils.isEmpty(contactNumberInput)) {
-            binding.textInputLayoutContactNumber.setError("contactNumber number is required");
+            binding.textInputLayoutContactNumber.setError(getString(R.string.error_contact_required));
             isValid = false;
-        } else {
-            if (contactNumberInput.length() < 8 || contactNumberInput.length() > 10) {
-                binding.textInputLayoutContactNumber.setError("Please enter 8 to 10 digits");
-                isValid = false;
-            }
+        } else if (contactNumberInput.length() < 8 || contactNumberInput.length() > 11) {
+            binding.textInputLayoutContactNumber.setError(getString(R.string.error_contact_length));
+            isValid = false;
         }
 
         if (!password.equals(retypePassword)) {
-            binding.textInputLayoutRetypePassword.setError("Passwords do not match");
+            binding.textInputLayoutRetypePassword.setError(getString(R.string.error_password_mismatch));
             isValid = false;
         }
 
         if (role.equals("Student")) {
-            if (checkEditTextIsEmpty(binding.textInputLayoutStudentName, binding.editTextStudentName, "Full Name is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutStudentName, binding.editTextStudentName, R.string.error_name_required)) {
                 isValid = false;
             } else if (getSafeText(binding.editTextStudentName.getText()).matches(".*\\d.*")) {
-                binding.textInputLayoutStudentName.setError("Name cannot contain numbers");
+                binding.textInputLayoutStudentName.setError(getString(R.string.error_name_no_numbers));
                 isValid = false;
             }
 
             String ageText = getSafeText(binding.editTextStudentAge.getText());
             if (TextUtils.isEmpty(ageText)) {
-                binding.textInputLayoutStudentAge.setError("Age is required");
+                binding.textInputLayoutStudentAge.setError(getString(R.string.error_age_required));
                 isValid = false;
             } else {
                 int age = Integer.parseInt(ageText);
                 if (age < 13 || age > 100) {
-                    binding.textInputLayoutStudentAge.setError("Age must be between 13 and 100");
+                    binding.textInputLayoutStudentAge.setError(getString(R.string.error_age_range));
                     isValid = false;
                 }
             }
 
             if (binding.radioGroupStudentGender.getCheckedRadioButtonId() == -1) {
-                Toast.makeText(getContext(), "Please select a gender", Toast.LENGTH_SHORT).show();
+                showToast(R.string.error_gender_required);
                 isValid = false;
             }
-            if (checkEditTextIsEmpty(binding.textInputLayoutStudentIntroduction, binding.editTextStudentIntroduction, "Introduction is required")) {
+            if (checkEditTextIsEmpty(binding.textInputLayoutStudentIntroduction, binding.editTextStudentIntroduction, R.string.error_intro_required)) {
                 isValid = false;
             }
         } else if (role.equals("Organization")) {
-            if (checkEditTextIsEmpty(binding.textInputLayoutOrgCompanyName, binding.editTextOrgCompanyName, "Company Name is required")) {
-                isValid = false;
-            }
-            if (checkEditTextIsEmpty(binding.textInputLayoutOrgDescription, binding.editTextOrgDescription, "Description is required")) {
-                isValid = false;
-            }
-            if (checkEditTextIsEmpty(binding.textInputLayoutOrgField, binding.autoCompleteOrgField, "Field is required")) {
-                isValid = false;
-            }
-        } else {
-            Log.e(TAG, "Unknown role: " + role);
-            isValid = false;
+            if (checkEditTextIsEmpty(binding.textInputLayoutOrgCompanyName, binding.editTextOrgCompanyName, R.string.error_company_required)) isValid = false;
+            if (checkEditTextIsEmpty(binding.textInputLayoutOrgDescription, binding.editTextOrgDescription, R.string.error_desc_required)) isValid = false;
+            if (checkEditTextIsEmpty(binding.textInputLayoutOrgField, binding.autoCompleteOrgField, R.string.error_field_required)) isValid = false;
         }
 
         return isValid;
-
     }
 
     /**
-     * Constructs the User Data Map to be saved in Firestore.
-     * Filters and adds only the fields relevant to the selected role.
-     *
-     * @param email The validated email address.
-     * @param role  The selected role.
-     * @return A Map containing the key-value pairs for the user document.
+     * Helper to check if an EditText is empty and set an error on its layout if so.
+     * * @param inputLayout The layout wrapper to display the error.
+     * @param field The EditText to check.
+     * @param errorStringId The Resource ID of the error message string.
+     * @return True if empty, false otherwise.
+     */
+    private boolean checkEditTextIsEmpty(TextInputLayout inputLayout, @NonNull EditText field, int errorStringId) {
+        String text = field.getText().toString().trim();
+        if (TextUtils.isEmpty(text)) {
+            inputLayout.setError(getString(errorStringId));
+            return true;
+        } else {
+            inputLayout.setError(null);
+            return false;
+        }
+    }
+
+    /**
+     * Constructs a Map object containing all relevant user data to be saved in Firestore.
+     * * @param email Validated email.
+     * @param role Selected role.
+     * @return A Map of key-value pairs representing the user profile.
      */
     @NonNull
     private Map<String, Object> buildUserData(String email, String role) {
@@ -350,157 +326,119 @@ public class SignUpFragment extends Fragment {
     }
 
     /**
-     * Uploads the profile image to Cloudinary.
-     * Upon success, it retrieves the image URL and then triggers the Firestore save.
-     * Upon failure, it defaults to a local image and triggers the Firestore save.
-     *
-     * @param uid       The user's Firebase Auth UID.
-     * @param imageUri  The URI of the selected image.
-     * @param userData  The map of user data to be updated with the image URL.
+     * Uploads the selected profile image to Cloudinary and saves the resulting URL.
+     * * @param uid User ID.
+     * @param imageUri Image file URI.
+     * @param userData User data map to append the image URL to.
      */
     private void uploadImageToCloudinary(String uid, Uri imageUri, Map<String, Object> userData) {
-        Toast.makeText(getContext(), "Uploading image...", Toast.LENGTH_SHORT).show();
+        showToast(R.string.msg_uploading_image);
 
         MediaManager.get().upload(imageUri)
-            .option("folder", "profileImages")
-            .unsigned("volunhub")
-            .callback(new UploadCallback() {
-                @Override
-                public void onStart(String requestId) {
-                    Log.d(TAG, "Cloudinary upload started...");
-                }
+                .option("folder", "profileImages")
+                .unsigned("volunhub")
+                .callback(new UploadCallback() {
+                    @Override public void onStart(String requestId) {}
+                    @Override public void onProgress(String requestId, long bytes, long totalBytes) {}
 
-                @Override
-                public void onProgress(String requestId, long bytes, long totalBytes) {}
+                    @Override
+                    public void onSuccess(String requestId, Map resultData) {
+                        String imageUrl = (String) resultData.get("secure_url");
+                        userData.put("profileImageUrl", imageUrl);
+                        saveMapToFirestore(uid, userData);
+                    }
 
-                @Override
-                public void onSuccess(String requestId, Map resultData) {
-                    String imageUrl = (String) resultData.get("secure_url");
-                    Log.d(TAG, "Image uploaded to Cloudinary: " + imageUrl);
-                    userData.put("profileImageUrl", imageUrl);
-                    saveMapToFirestore(uid, userData);
-                }
+                    @Override
+                    public void onError(String requestId, ErrorInfo error) {
+                        Log.w(TAG, "Error uploading to Cloudinary: " + error.getDescription());
+                        showToast(R.string.error_upload_failed);
+                        saveMapToFirestore(uid, userData); // Save without image on failure
+                    }
 
-                @Override
-                public void onError(String requestId, ErrorInfo error) {
-                    Log.w(TAG, "Error uploading to Cloudinary: " + error.getDescription());
-                    Toast.makeText(getContext(), "Image upload failed", Toast.LENGTH_SHORT).show();
-                    saveMapToFirestore(uid, userData);
-                }
-
-                @Override
-                public void onReschedule(String requestId, ErrorInfo error) {}
-
-            })
-            .dispatch(); // This starts the upload
+                    @Override public void onReschedule(String requestId, ErrorInfo error) {}
+                })
+                .dispatch();
     }
 
     /**
-     * This is the FINAL step.
-     * Saves the completed User Data Map to Firestore and navigates to the correct home.
-     *
-     * @param uid      The user's unique ID from Firebase Authentication.
-     * @param userData The Map containing all the user's data (email, role, name, etc.).
+     * Saves the final user data map to the 'users' collection in Firestore.
+     * Routes the user to their home screen upon success.
      */
     private void saveMapToFirestore(String uid, Map<String, Object> userData) {
         db.collection("users").document(uid).set(userData)
-            .addOnSuccessListener(aVoid -> {
-                Log.d(TAG, "User document successfully created in Firestore!");
-                Toast.makeText(getContext(), "Sign up successful", Toast.LENGTH_SHORT).show();
-                if (getActivity() instanceof BaseRouterActivity) {
-                    ((BaseRouterActivity) getActivity()).routeUser(uid);
-                }
-            })
-            .addOnFailureListener(e -> {
-                Log.w(TAG, "Error creating user document in Firestore", e);
-                Toast.makeText(getContext(), "Error: Could not save user data.", Toast.LENGTH_LONG).show();
-                FirebaseUser user = mAuth.getCurrentUser();
-                if (user != null) {
-                    user.delete();
-                }
-            });
+                .addOnSuccessListener(aVoid -> {
+                    showToast(R.string.msg_signup_success);
+                    if (getActivity() instanceof BaseRouterActivity) {
+                        ((BaseRouterActivity) getActivity()).routeUser(uid);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Error creating user document", e);
+                    showToast(R.string.error_save_user_data);
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null) user.delete();
+                });
     }
 
     /**
-     * A helper method to check if an EditText is empty.
-     * If it is empty, it sets an error and returns false.
-     *
-     * @param field        The EditText to check.
-     * @param errorMessage The error message to display.
-     * @return true if the field is empty (invalid), false if it has text (valid).
+     * Attaches a TextWatcher to clear the error message on a layout as soon as the user types.
      */
-    private boolean checkEditTextIsEmpty(com.google.android.material.textfield.TextInputLayout inputLayout, @NonNull EditText field, String errorMessage) {
-        String text = field.getText().toString().trim();
-        if (TextUtils.isEmpty(text)) {
-            inputLayout.setError(errorMessage);
-            return true;
-        } else {
-            inputLayout.setError(null);
-            return false;
-        }
+    private void setupValidationListeners() {
+        clearErrorOnType(binding.textInputLayoutEmail);
+        clearErrorOnType(binding.textInputLayoutPassword);
+        clearErrorOnType(binding.textInputLayoutRetypePassword);
+        clearErrorOnType(binding.textInputLayoutStudentName);
+        clearErrorOnType(binding.textInputLayoutStudentAge);
+        clearErrorOnType(binding.textInputLayoutStudentIntroduction);
+        clearErrorOnType(binding.textInputLayoutOrgCompanyName);
+        clearErrorOnType(binding.textInputLayoutOrgField);
+        clearErrorOnType(binding.textInputLayoutOrgDescription);
+        clearErrorOnType(binding.textInputLayoutContactNumber);
     }
 
-    /**
-     * Helper method to get the size of a file from its URI.
-     *
-     * @param uri The URI of the selected file.
-     * @return The size of the file in bytes, or -1 if it cannot be determined.
-     */
-    private long getFileSize(Uri uri) {
-        android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null) {
-            int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
-            cursor.moveToFirst();
-            long size = cursor.getLong(sizeIndex);
-            cursor.close();
-            return size;
-        }
-        return -1;
-    }
-
-    /**
-     * Automatically clears the error message and the error state from the TextInputLayout
-     * as soon as the user starts typing in its child EditText.
-     *
-     * <p>This improves user experience by removing the "red" error feedback immediately
-     * when the user attempts to fix the input, rather than waiting for the next
-     * validation check.</p>
-     *
-     * @param textInputLayout The TextInputLayout wrapper that is displaying the error.
-     */
-    private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout textInputLayout) {
+    private void clearErrorOnType(TextInputLayout textInputLayout) {
         if (textInputLayout.getEditText() == null) return;
-
         textInputLayout.getEditText().addTextChangedListener(new android.text.TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // The moment they type ANYTHING, hide the error.
-                // We will re-check validity when they click "Sign Up" again.
-                if (textInputLayout.getError() != null) {
-                    textInputLayout.setError(null);
-                }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (textInputLayout.getError() != null) textInputLayout.setError(null);
             }
-
-            @Override
-            public void afterTextChanged(android.text.Editable s) {}
+            @Override public void afterTextChanged(android.text.Editable s) {}
         });
     }
 
-    /**
-     * Safely retrieves text from an {@link android.text.Editable} object, handling potential null values.
-     *
-     * <p>This helper method prevents {@link NullPointerException} when accessing text from an EditText,
-     * as {@code getText()} can theoretically return null. It also automatically trims leading and
-     * trailing whitespace from the result.</p>
-     *
-     * @param editable The Editable object returned by {@code EditText.getText()}.
-     * @return A trimmed String containing the text, or an empty String ("") if the input was null.
-     */
+    private long getFileSizeInMB(Uri uri) {
+        try (android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                long size = cursor.getLong(sizeIndex);
+                return size / (1024 * 1024);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking file size", e);
+        }
+        return 0;
+    }
+
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
     }
 
+    private void showToast(int stringId) {
+        if (getContext() != null) Toast.makeText(getContext(), stringId, Toast.LENGTH_SHORT).show();
+    }
+
+    private void toggleLoading(boolean isLoading) {
+        binding.progressBarSignup.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        binding.buttonSignUp.setEnabled(!isLoading);
+    }
+
+    /**
+     * Cleans up the binding reference to prevent memory leaks when the view is destroyed.
+     */
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 }

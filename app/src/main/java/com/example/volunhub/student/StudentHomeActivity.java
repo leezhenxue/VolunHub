@@ -5,10 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 
-import androidx.appcompat.widget.Toolbar;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavBackStackEntry;
+import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -18,29 +16,34 @@ import com.example.volunhub.BaseRouterActivity;
 import com.example.volunhub.MainActivity;
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.ActivityStudentHomeBinding;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * The main container Activity for the Student side of the application.
+ * Hosts the navigation graph and handles bottom navigation logic.
+ */
 public class StudentHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "StudentHomeActivity";
     private FirebaseAuth mAuth;
     private NavController navController;
 
+    /**
+     * Initializes the activity, sets up the navigation controller, and handles NFR performance logging.
+     *
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityStudentHomeBinding binding = ActivityStudentHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // ---------------------------------------------------------
         // [NFR 3 TEST] STOP TIMER: Login/Routing Latency
-        // ---------------------------------------------------------
-        // This checks if we came from Login or MainActivity with a running timer.
         if (BaseRouterActivity.nfrLoginStartTime > 0) {
             long endTime = System.currentTimeMillis();
             long duration = endTime - BaseRouterActivity.nfrLoginStartTime;
@@ -53,7 +56,6 @@ public class StudentHomeActivity extends AppCompatActivity {
                 Log.d("NFRTest", "NFR 3 - TEST FAILED (Too Slow)");
             }
 
-            // Reset to 0 so navigation inside the app doesn't trigger false positives
             BaseRouterActivity.nfrLoginStartTime = 0;
         }
 
@@ -75,29 +77,20 @@ public class StudentHomeActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
             NavigationUI.setupWithNavController(studentBottomNav, navController);
 
+            // Handle Bottom Navigation highlighting for nested screens
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int id = destination.getId();
                 Menu menu = studentBottomNav.getMenu();
 
-                // --- Case A: Edit Profile ---
                 if (id == R.id.student_edit_profile) {
                     menu.findItem(R.id.student_nav_profile).setChecked(true);
-                }
-
-                // --- Case B: Deep Navigation (Service Detail OR Org Profile) ---
-                else if (id == R.id.student_service_detail || id == R.id.student_view_org_profile) {
-
+                } else if (id == R.id.student_service_detail || id == R.id.student_view_org_profile) {
                     try {
-                        // Check if "My Applications" is ANYWHERE in the history stack.
-                        // If this succeeds, it means we started from the Applications tab.
+                        // Check if we came from Applications tab
                         navController.getBackStackEntry(R.id.student_nav_application);
-
-                        // If no error was thrown, highlight Applications
                         menu.findItem(R.id.student_nav_application).setChecked(true);
-
                     } catch (IllegalArgumentException e) {
-                        // If "My Applications" is NOT in the stack, an exception is thrown.
-                        // This means we must have come from Home.
+                        // Otherwise, assume we came from Home
                         menu.findItem(R.id.student_nav_home).setChecked(true);
                     }
                 }
@@ -107,6 +100,9 @@ public class StudentHomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Signs the user out and returns to the main landing page.
+     */
     public void returnToMain() {
         if (mAuth != null) {
             mAuth.signOut();
@@ -117,6 +113,11 @@ public class StudentHomeActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * Handles the Up button navigation in the toolbar.
+     *
+     * @return True if navigation was successful, false otherwise.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         return navController.navigateUp() || super.onSupportNavigateUp();

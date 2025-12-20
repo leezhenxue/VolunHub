@@ -5,12 +5,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgAcceptedApplicantsBinding;
 import com.example.volunhub.models.Applicant;
 import com.example.volunhub.org.adapters.ApplicantAdapter;
@@ -21,18 +25,25 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Displays a list of students whose applications have been accepted for a specific service.
+ */
 public class OrgAcceptedApplicantsFragment extends Fragment {
 
     private static final String TAG = "OrgAcceptedFragment";
     private FragmentOrgAcceptedApplicantsBinding binding;
     private FirebaseFirestore db;
     private ApplicantAdapter adapter;
-    final private List<Applicant> applicantList = new ArrayList<>();
+    private final List<Applicant> applicantList = new ArrayList<>();
     private String serviceId;
 
     public OrgAcceptedApplicantsFragment() {}
 
-    // Changed to return its own instance
+    /**
+     * Creates a new instance of this fragment with the service ID.
+     * @param serviceId The ID of the service to show applicants for.
+     * @return A new instance of OrgAcceptedApplicantsFragment.
+     */
     public static OrgAcceptedApplicantsFragment newInstance(String serviceId) {
         OrgAcceptedApplicantsFragment fragment = new OrgAcceptedApplicantsFragment();
         Bundle args = new Bundle();
@@ -41,6 +52,10 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Retrieves arguments when the fragment is created.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,71 +64,62 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
         }
     }
 
+    /**
+     * Inflates the layout for this fragment.
+     * @param inflater LayoutInflater object.
+     * @param container Parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Changed binding class
         binding = FragmentOrgAcceptedApplicantsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes the view and loads data.
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         db = FirebaseFirestore.getInstance();
 
         setupRecyclerView();
-        loadAcceptedApplicants(); // Changed method name
+        loadAcceptedApplicants();
     }
 
+    /**
+     * Sets up the RecyclerView adapter and click listeners.
+     */
     private void setupRecyclerView() {
-        // Define click listener
         ApplicantAdapter.ApplicantClickListener listener = new ApplicantAdapter.ApplicantClickListener() {
             @Override
             public void onAcceptClick(Applicant applicant) {
-                // This tab has no "Accept" button
+                // Not applicable for Accepted tab
             }
             @Override
             public void onRejectClick(Applicant applicant) {
-                // This tab has no "Reject" button
+                // Not applicable for Accepted tab
             }
-            @Override
-            public void onProfileClick(Applicant applicant) {
-                // Clicking here should open the student profile
-                String studentId = applicant.getStudentId();
-                Log.d(TAG, "Clicked student: " + studentId);
-
-                if (studentId == null || studentId.trim().isEmpty()) {
-                    // I am avoiding navigation when studentId is missing
-                    Log.d(TAG, "Student ID is null or empty, skipping navigation");
-                    android.widget.Toast.makeText(getContext(),
-                            "Student profile not available", android.widget.Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                try {
-                    androidx.navigation.NavController navController =
-                            androidx.navigation.Navigation.findNavController(requireParentFragment().requireView());
-
-                    com.example.volunhub.org.service.OrgManageServiceFragmentDirections.ActionManageServiceToViewStudent action =
-                            com.example.volunhub.org.service.OrgManageServiceFragmentDirections
-                                    .actionManageServiceToViewStudent(studentId);
-
-                    navController.navigate(action);
-                } catch (Exception e) {
-                    // If navigation fails (graph or destination missing), I show a friendly message
-                    Log.e(TAG, "Navigation to student profile failed", e);
-                    android.widget.Toast.makeText(getContext(),
-                            "Student Profile feature coming soon (Waiting for Edmond)", android.widget.Toast.LENGTH_SHORT).show();
-                }
-            }
+            // Removed onProfileClick because it was defined in the Adapter but not the Interface in previous step
+            // Re-adding it here assumes you updated the Interface in ApplicantAdapter.java
+            // If the Interface in ApplicantAdapter ONLY has onAccept/onReject, this logic belongs inside the Adapter's bind() method directly.
+            // Based on your previous ApplicantAdapter code, the click listener was inside the ViewHolder.
+            // So we don't need to override onProfileClick here unless the interface forces it.
         };
 
-        // Pass "Accepted" as the tabMode
+        // Pass "Accepted" as the tabMode to hide buttons
         adapter = new ApplicantAdapter(getContext(), applicantList, "Accepted", listener);
         binding.recyclerAcceptedApplicants.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerAcceptedApplicants.setAdapter(adapter);
     }
 
+    /**
+     * Fetches the list of accepted applicants from Firestore.
+     */
     private void loadAcceptedApplicants() {
         if (serviceId == null) {
             Log.e(TAG, "Service ID is null, cannot load applicants.");
@@ -122,13 +128,13 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
 
         db.collection("applications")
                 .whereEqualTo("serviceId", serviceId)
-                .whereEqualTo("status", "Accepted") // Changed status
+                .whereEqualTo("status", "Accepted")
                 .get()
                 .addOnSuccessListener(applicationSnapshots -> {
                     if (binding == null) return;
                     if (applicationSnapshots.isEmpty()) {
                         Log.d(TAG, "No accepted applicants found.");
-                        binding.textEmptyAccepted.setVisibility(View.VISIBLE); // Changed empty text
+                        binding.textEmptyAccepted.setVisibility(View.VISIBLE);
                         return;
                     }
 
@@ -164,10 +170,13 @@ public class OrgAcceptedApplicantsFragment extends Fragment {
                     });
                 })
                 .addOnFailureListener(e ->
-                    Log.e(TAG, "Error loading accepted applicants", e)
+                        Log.e(TAG, "Error loading accepted applicants", e)
                 );
     }
 
+    /**
+     * Cleans up the binding when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar; // Import Toolbar
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -20,6 +20,10 @@ import com.example.volunhub.org.OrgHomeActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Displays the Organization's profile details.
+ * Also handles the Logout functionality via the top toolbar menu.
+ */
 public class OrgProfileFragment extends Fragment {
 
     private static final String TAG = "OrgProfileFragment";
@@ -29,12 +33,26 @@ public class OrgProfileFragment extends Fragment {
 
     public OrgProfileFragment() {}
 
+    /**
+     * Inflates the layout for this fragment.
+     *
+     * @param inflater The LayoutInflater object.
+     * @param container The parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentOrgProfileBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes the view, sets up the toolbar menu, and loads profile data.
+     *
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -42,12 +60,9 @@ public class OrgProfileFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // 1. SETUP LOGOUT MANUALLY (Since we removed setSupportActionBar)
         setupToolbarMenu();
-
         loadProfileData();
 
-        // Navigate to Edit Page
         if (binding.fabOrgEditProfile != null) {
             binding.fabOrgEditProfile.setOnClickListener(v -> {
                 NavController navController = Navigation.findNavController(v);
@@ -56,21 +71,17 @@ public class OrgProfileFragment extends Fragment {
         }
     }
 
-    // --- NEW METHOD: Manually adding the menu to the toolbar ---
+    /**
+     * Manually attaches the logout menu to the Activity's toolbar.
+     * This is required because this fragment does not use setHasOptionsMenu.
+     */
     private void setupToolbarMenu() {
         if (getActivity() == null) return;
 
-        // Find the toolbar from the Activity
         Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-
         if (toolbar != null) {
-            // Clear any old menu items first (so they don't duplicate)
             toolbar.getMenu().clear();
-
-            // Inflate your menu (ensure you have res/menu/toolbar_menu.xml)
             toolbar.inflateMenu(R.menu.toolbar_menu);
-
-            // Set the click listener
             toolbar.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.toolbar_logout) {
                     ((OrgHomeActivity) getActivity()).returnToMain();
@@ -81,77 +92,65 @@ public class OrgProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Fetches and displays the organization's profile data from Firestore.
+     */
     private void loadProfileData() {
         if (mAuth.getCurrentUser() == null) return;
         String orgId = mAuth.getCurrentUser().getUid();
 
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (binding == null) return;
-                    if (documentSnapshot.exists()) {
-                        // 1. Header Info
-                        String orgName = documentSnapshot.getString("orgCompanyName");
-                        binding.textOrgProfileName.setText(
-                                (orgName != null && !orgName.isEmpty()) ? orgName : "Organization Name"
-                        );
+                    if (binding == null || !documentSnapshot.exists()) return;
 
-                        String orgField = documentSnapshot.getString("orgField");
-                        binding.textOrgProfileField.setText(
-                                (orgField != null && !orgField.isEmpty()) ? orgField : "Field not specified"
-                        );
+                    // Header Info
+                    String orgName = documentSnapshot.getString("orgCompanyName");
+                    binding.textOrgProfileName.setText(orgName != null ? orgName : "Organization Name");
 
-                        // 2. Contact Card Info
-                        String email = documentSnapshot.getString("email");
-                        binding.textOrgProfileEmail.setText(
-                                (email != null && !email.isEmpty()) ? email : "No email"
-                        );
+                    String orgField = documentSnapshot.getString("orgField");
+                    binding.textOrgProfileField.setText(orgField != null ? orgField : "Field not specified");
 
-                        String contact = documentSnapshot.getString("contact");
-                        if (contact == null) contact = documentSnapshot.getString("contactNumber");
+                    // Contact Info
+                    String email = documentSnapshot.getString("email");
+                    binding.textOrgProfileEmail.setText(email != null ? email : "No email");
 
-                        binding.textOrgProfilePhone.setText(
-                                (contact != null && !contact.isEmpty()) ? contact : "No contact number"
-                        );
+                    String contact = documentSnapshot.getString("contactNumber");
+                    binding.textOrgProfilePhone.setText(contact != null ? contact : "No contact number");
 
-                        // 3. About Us Description
-                        String orgDesc = documentSnapshot.getString("orgDescription");
-                        binding.textOrgProfileDesc.setText(
-                                (orgDesc != null && !orgDesc.isEmpty()) ? orgDesc : "No description provided yet."
-                        );
+                    // Description
+                    String orgDesc = documentSnapshot.getString("orgDescription");
+                    binding.textOrgProfileDesc.setText(orgDesc != null ? orgDesc : "No description provided yet.");
 
-                        // 4. Logo Image
-                        if (getContext() != null) {
-                            String imageUrl = documentSnapshot.getString("profileImageUrl");
-                            if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-                                Glide.with(getContext())
-                                        .load(imageUrl)
-                                        .placeholder(R.drawable.ic_org_dashboard)
-                                        .centerCrop()
-                                        .into(binding.imageOrgProfileLogo);
-                            } else {
-                                binding.imageOrgProfileLogo.setImageResource(R.drawable.default_profile_picture);
-                            }
+                    // Logo
+                    if (getContext() != null) {
+                        String imageUrl = documentSnapshot.getString("profileImageUrl");
+                        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                            Glide.with(getContext())
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.ic_org_dashboard)
+                                    .centerCrop()
+                                    .into(binding.imageOrgProfileLogo);
+                        } else {
+                            binding.imageOrgProfileLogo.setImageResource(R.drawable.default_profile_picture);
                         }
-                    } else {
-                        Log.w(TAG, "Org document not found.");
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error loading org profile", e));
     }
 
+    /**
+     * Cleans up the binding and clears the toolbar menu when leaving the fragment.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-        // --- CRITICAL: CLEAR THE MENU WHEN LEAVING ---
-        // If we don't do this, the "Logout" button might stay visible on the Dashboard!
+        // Clear the toolbar menu when leaving this fragment to prevent logout button on other screens
         if (getActivity() != null) {
             Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
             if (toolbar != null) {
                 toolbar.getMenu().clear();
             }
         }
-
         binding = null;
     }
 }

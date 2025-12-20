@@ -11,13 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation; // <-- Import this
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.volunhub.databinding.FragmentOrgPendingApplicantsBinding;
 import com.example.volunhub.models.Applicant;
 import com.example.volunhub.org.adapters.ApplicantAdapter;
-//import com.example.volunhub.org.fragments.service.OrgManageServiceFragmentDirections;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
@@ -28,17 +27,25 @@ import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Displays a list of pending applicants and allows managing them (Accept/Reject).
+ */
 public class OrgPendingApplicantsFragment extends Fragment {
 
     private static final String TAG = "OrgPendingFragment";
     private FragmentOrgPendingApplicantsBinding binding;
     private FirebaseFirestore db;
     private ApplicantAdapter adapter;
-    final private List<Applicant> applicantList = new ArrayList<>();
+    private final List<Applicant> applicantList = new ArrayList<>();
     private String serviceId;
 
     public OrgPendingApplicantsFragment() {}
 
+    /**
+     * Creates a new instance of this fragment.
+     * @param serviceId The ID of the service.
+     * @return New instance of OrgPendingApplicantsFragment.
+     */
     public static OrgPendingApplicantsFragment newInstance(String serviceId) {
         OrgPendingApplicantsFragment fragment = new OrgPendingApplicantsFragment();
         Bundle args = new Bundle();
@@ -47,6 +54,10 @@ public class OrgPendingApplicantsFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Retrieves arguments.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,12 +66,24 @@ public class OrgPendingApplicantsFragment extends Fragment {
         }
     }
 
+    /**
+     * Inflates the layout.
+     * @param inflater LayoutInflater object.
+     * @param container Parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentOrgPendingApplicantsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes view and loads data.
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -70,53 +93,25 @@ public class OrgPendingApplicantsFragment extends Fragment {
         loadPendingApplicants();
     }
 
+    /**
+     * Configures the "Accept All" button listener.
+     */
     private void setupAcceptAllButton() {
         binding.btnAcceptAll.setOnClickListener(v -> acceptAllEligible());
     }
 
+    /**
+     * Configures the RecyclerView and adapter click listeners.
+     */
     private void setupRecyclerView() {
         ApplicantAdapter.ApplicantClickListener listener = new ApplicantAdapter.ApplicantClickListener() {
             @Override
             public void onAcceptClick(Applicant applicant) {
-                Log.d(TAG, "Accept clicked: " + applicant.getStudentName());
                 updateApplicationStatus(applicant, "Accepted");
             }
             @Override
             public void onRejectClick(Applicant applicant) {
-                Log.d(TAG, "Reject clicked: " + applicant.getStudentName());
                 updateApplicationStatus(applicant, "Rejected");
-            }
-
-            // --- 2. THIS IS THE IMPLEMENTATION ---
-            @Override
-            public void onProfileClick(Applicant applicant) {
-                // Clicking here should open the student profile
-                String studentId = applicant.getStudentId();
-                Log.d("Qimin_Nav", "Clicked student: " + studentId);
-
-                if (studentId == null || studentId.trim().isEmpty()) {
-                    // I am avoiding navigation when studentId is missing
-                    Log.d("Qimin_Nav", "Student ID is null or empty, skipping navigation");
-                    Toast.makeText(getContext(),
-                            "Student profile not available", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                try {
-                    NavController navController =
-                            Navigation.findNavController(requireParentFragment().requireView());
-
-                    OrgManageServiceFragmentDirections.ActionManageServiceToViewStudent action =
-                            OrgManageServiceFragmentDirections
-                                    .actionManageServiceToViewStudent(studentId);
-
-                    navController.navigate(action);
-                } catch (Exception e) {
-                    // If navigation fails (graph or destination missing), I show a friendly message
-                    Log.e("Qimin_Nav", "Navigation to student profile failed", e);
-                    Toast.makeText(getContext(),
-                            "Student Profile feature coming soon (Waiting for Edmond)", Toast.LENGTH_SHORT).show();
-                }
             }
         };
 
@@ -125,105 +120,64 @@ public class OrgPendingApplicantsFragment extends Fragment {
         binding.recyclerPendingApplicants.setAdapter(adapter);
     }
 
+    /**
+     * Updates the status of an application in Firestore (Accepted/Rejected).
+     * @param applicant The applicant to update.
+     * @param newStatus The new status string.
+     */
     private void updateApplicationStatus(Applicant applicant, String newStatus) {
-        // Validate inputs
-        if (serviceId == null) {
-            Log.e(TAG, "Service ID is null, cannot update application status.");
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
+        if (serviceId == null || applicant.getApplicationId() == null) {
+            Toast.makeText(getContext(), "Error: Missing ID", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String applicationId = applicant.getApplicationId();
-        if (applicationId == null || applicationId.isEmpty()) {
-            Log.e(TAG, "Application ID is null or empty, cannot update application status.");
-            Toast.makeText(getContext(), "Error: Application ID is missing", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Log.d(TAG, "Updating application status. ApplicationId: " + applicationId + ", NewStatus: " + newStatus);
-
-        // Get document references - CRITICAL: Use existing document ID, NEVER create new document
         final DocumentReference serviceRef = db.collection("services").document(serviceId);
-        final DocumentReference appRef = db.collection("applications").document(applicationId);
+        final DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
 
-        // Use transaction to ensure atomic update
         db.runTransaction(transaction -> {
-            // 1. READ: Verify application document exists
             DocumentSnapshot appSnapshot = transaction.get(appRef);
-            if (!appSnapshot.exists()) {
-                throw new IllegalStateException("Application document does not exist: " + applicationId);
-            }
+            if (!appSnapshot.exists()) throw new IllegalStateException("Application not found");
 
-            // Verify current status is "Pending" (optional check for safety)
-            String currentStatus = appSnapshot.getString("status");
-            if (currentStatus == null || !currentStatus.equals("Pending")) {
-                Log.w(TAG, "Application status is not Pending. Current: " + currentStatus);
-                // Continue anyway, but log warning
-            }
-
-            // 2. READ: Get current service state
             DocumentSnapshot serviceSnapshot = transaction.get(serviceRef);
-            if (!serviceSnapshot.exists()) {
-                throw new IllegalStateException("Service document does not exist: " + serviceId);
-            }
-            long applied = serviceSnapshot.getLong("volunteersApplied");
-            long needed = serviceSnapshot.getLong("volunteersNeeded");
+            if (!serviceSnapshot.exists()) throw new IllegalStateException("Service not found");
 
-            // 3. WRITE: Update Application Status - CRITICAL: Use update(), NOT add() or set()
             transaction.update(appRef, "status", newStatus);
 
-            // 4. WRITE: Update Service Counter & Check Full (only for Accepted)
             if (newStatus.equals("Accepted")) {
+                long applied = serviceSnapshot.getLong("volunteersApplied") != null ? serviceSnapshot.getLong("volunteersApplied") : 0;
+                long needed = serviceSnapshot.getLong("volunteersNeeded") != null ? serviceSnapshot.getLong("volunteersNeeded") : 0;
                 long newCount = applied + 1;
+
                 transaction.update(serviceRef, "volunteersApplied", newCount);
 
-                // Auto-close the service if full
                 if (newCount >= needed) {
                     transaction.update(serviceRef, "status", "Closed");
                 }
             }
-
-            return null; // Success
+            return null;
         }).addOnSuccessListener(result -> {
-            // 5. UI Cleanup: Remove item from Pending list immediately
-            Log.d(TAG, "Application status updated successfully! ApplicationId: " + applicationId);
             Toast.makeText(getContext(), "Application " + newStatus.toLowerCase() + " successfully", Toast.LENGTH_SHORT).show();
-            
-            // Find and remove the applicant from the list
+
             int position = applicantList.indexOf(applicant);
             if (position != -1) {
                 applicantList.remove(position);
                 adapter.notifyItemRemoved(position);
-                adapter.notifyItemRangeChanged(position, applicantList.size()); // Notify remaining items
-                
-                // Show empty state if list is now empty
-                if (applicantList.isEmpty()) {
-                    binding.textEmptyPending.setVisibility(View.VISIBLE);
-                }
+                if (applicantList.isEmpty()) binding.textEmptyPending.setVisibility(View.VISIBLE);
                 notifyParentToUpdateCounts();
             } else {
-                Log.w(TAG, "Applicant not found in list, refreshing entire list");
-                // Fallback: reload the entire list if item not found
                 loadPendingApplicants();
             }
         }).addOnFailureListener(e -> {
-            // Error handling
-            Log.e(TAG, "Failed to update application status. ApplicationId: " + applicationId, e);
-            
-            String errorMessage = "Failed to update application status";
-            if (e.getMessage() != null) {
-                errorMessage += ": " + e.getMessage();
-            }
-            
-            Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Failed to update status", e);
+            Toast.makeText(getContext(), "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         });
     }
 
+    /**
+     * Loads the list of pending applicants from Firestore.
+     */
     private void loadPendingApplicants() {
-        if (serviceId == null) {
-            Log.e(TAG, "Service ID is null, cannot load applicants.");
-            return;
-        }
+        if (serviceId == null) return;
 
         db.collection("applications")
                 .whereEqualTo("serviceId", serviceId)
@@ -232,7 +186,6 @@ public class OrgPendingApplicantsFragment extends Fragment {
                 .addOnSuccessListener(applicationSnapshots -> {
                     if(binding == null) return;
                     if (applicationSnapshots.isEmpty()) {
-                        Log.d(TAG, "No pending applicants found.");
                         binding.textEmptyPending.setVisibility(View.VISIBLE);
                         return;
                     }
@@ -268,128 +221,73 @@ public class OrgPendingApplicantsFragment extends Fragment {
                         adapter.notifyDataSetChanged();
                     });
                 })
-                .addOnFailureListener(e ->
-                    Log.e(TAG, "Error loading pending applicants", e)
-                );
+                .addOnFailureListener(e -> Log.e(TAG, "Error loading pending applicants", e));
     }
 
     /**
-     * Accepts all eligible applicants up to the remaining capacity.
-     * Uses batch update to efficiently process multiple applications.
+     * Batch accepts all eligible applicants until the service is full.
      */
-    
     private void acceptAllEligible() {
-        // Validation: Check if serviceId is available
-        if (serviceId == null) {
-            Log.e(TAG, "Service ID is null, cannot accept applicants.");
-            Toast.makeText(getContext(), "Error: Service ID is missing", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // Check if we have enough slots before accepting everyone.
-        if (applicantList.isEmpty()) {
+        if (serviceId == null || applicantList.isEmpty()) {
             Toast.makeText(getContext(), "No pending applicants", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Step 1: Get service capacity information
         DocumentReference serviceRef = db.collection("services").document(serviceId);
-        serviceRef.get()
-                .addOnSuccessListener(serviceSnapshot -> {
-                    if (binding == null) return;
-                    if (!serviceSnapshot.exists()) {
-                        Log.e(TAG, "Service document does not exist: " + serviceId);
-                        Toast.makeText(getContext(), "Error: Service not found", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+        serviceRef.get().addOnSuccessListener(serviceSnapshot -> {
+            if (binding == null || !serviceSnapshot.exists()) return;
 
-                    // Get capacity information
-                    Long volunteersNeeded = serviceSnapshot.getLong("volunteersNeeded");
-                    Long volunteersApplied = serviceSnapshot.getLong("volunteersApplied");
+            Long needed = serviceSnapshot.getLong("volunteersNeeded");
+            Long applied = serviceSnapshot.getLong("volunteersApplied");
+            if (needed == null) needed = 0L;
+            if (applied == null) applied = 0L;
 
-                    if (volunteersNeeded == null) volunteersNeeded = 0L;
-                    if (volunteersApplied == null) volunteersApplied = 0L;
+            long slotsRemaining = needed - applied;
+            if (slotsRemaining <= 0) {
+                Toast.makeText(getContext(), "Service is already full!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                    long slotsRemaining = volunteersNeeded - volunteersApplied;
+            List<Applicant> applicantsToAccept = new ArrayList<>();
+            int countToAccept = Math.min(applicantList.size(), (int) slotsRemaining);
 
-                    // Validation: Check if service is full
-                    if (slotsRemaining <= 0) {
-                        Toast.makeText(getContext(), "Service is already full!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+            for (int i = 0; i < countToAccept; i++) {
+                applicantsToAccept.add(applicantList.get(i));
+            }
 
-                    // Step 2: Select applicants to accept (only up to slotsRemaining)
-                    List<Applicant> applicantsToAccept = new ArrayList<>();
-                    int countToAccept = Math.min(applicantList.size(), (int) slotsRemaining);
-                    
-                    for (int i = 0; i < countToAccept; i++) {
-                        applicantsToAccept.add(applicantList.get(i));
-                    }
+            WriteBatch batch = db.batch();
+            for (Applicant applicant : applicantsToAccept) {
+                DocumentReference appRef = db.collection("applications").document(applicant.getApplicationId());
+                batch.update(appRef, "status", "Accepted");
+            }
 
-                    if (applicantsToAccept.isEmpty()) {
-                        Toast.makeText(getContext(), "No eligible applicants to accept", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+            long newApplied = applied + applicantsToAccept.size();
+            batch.update(serviceRef, "volunteersApplied", newApplied);
 
-                    Log.d(TAG, "Accepting " + applicantsToAccept.size() + " applicants. Slots remaining: " + slotsRemaining);
+            if (newApplied >= needed) {
+                batch.update(serviceRef, "status", "Closed");
+            }
 
-                    // Step 3: Batch update using WriteBatch
-                    WriteBatch batch = db.batch();
-
-                    // Update each application status to "Accepted"
-                    for (Applicant applicant : applicantsToAccept) {
-                        String applicationId = applicant.getApplicationId();
-                        if (applicationId != null && !applicationId.isEmpty()) {
-                            DocumentReference appRef = db.collection("applications").document(applicationId);
-                            batch.update(appRef, "status", "Accepted");
-                        } else {
-                            Log.w(TAG, "Skipping applicant with null applicationId: " + applicant.getStudentName());
-                        }
-                    }
-
-                    // Update service volunteersApplied count
-                    long newVolunteersApplied = volunteersApplied + applicantsToAccept.size();
-                    batch.update(serviceRef, "volunteersApplied", newVolunteersApplied);
-
-                    // Auto-close the service if full
-                    if (newVolunteersApplied >= volunteersNeeded) {
-                        batch.update(serviceRef, "status", "Closed");
-                        Log.d(TAG, "Service is now full, closing it.");
-                    }
-
-                    // Commit the batch
-                    batch.commit()
-                            .addOnSuccessListener(aVoid -> {
-                                Log.d(TAG, "Batch update successful. Accepted " + applicantsToAccept.size() + " applicants.");
-                                Toast.makeText(getContext(), 
-                                        "Auto-accepted " + applicantsToAccept.size() + " applicants", 
-                                        Toast.LENGTH_SHORT).show();
-                                
-                                // Step 4: Refresh the list
-                                loadPendingApplicants();
-
-                                notifyParentToUpdateCounts();
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e(TAG, "Batch update failed", e);
-                                Toast.makeText(getContext(), 
-                                        "Error accepting applicants: " + e.getMessage(), 
-                                        Toast.LENGTH_LONG).show();
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching service information", e);
-                    Toast.makeText(getContext(), "Error loading service information", Toast.LENGTH_SHORT).show();
-                });
+            batch.commit().addOnSuccessListener(aVoid -> {
+                Toast.makeText(getContext(), "Auto-accepted " + applicantsToAccept.size() + " applicants", Toast.LENGTH_SHORT).show();
+                loadPendingApplicants();
+                notifyParentToUpdateCounts();
+            }).addOnFailureListener(e -> Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        });
     }
 
-    // Helper method to notify the parent (OrgManageServiceFragment)
+    /**
+     * Sends a signal to the parent fragment to refresh the tab counts.
+     */
     private void notifyParentToUpdateCounts() {
         Bundle result = new Bundle();
-        result.putBoolean("refresh", true); // The value doesn't matter, just the signal
-        // We use getParentFragmentManager() because this fragment is inside the ViewPager
+        result.putBoolean("refresh", true);
         getParentFragmentManager().setFragmentResult("KEY_REFRESH_COUNTS", result);
     }
 
+    /**
+     * Cleans up the binding when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

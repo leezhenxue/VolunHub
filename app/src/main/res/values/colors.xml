@@ -1,33 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Your Brand Colors -->
     <color name="volunhub_primary">#4962bf</color>
-    <color name="volunhub_accent">#FFC107</color> <!-- Bright Gold -->
+    <color name="volunhub_accent">#FFC107</color>
 
-    <!-- Base UI Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray">#FF808080</color> <color name="background_color">#F7F8FC</color>
+    <color name="divider_color">#E0E0E0</color>
 
-    <!-- Neutral Colors -->
-    <!-- Use "white" as your main surface/card color -->
-    <color name="background_color">#F7F8FC</color> <!-- Light, cool grey for screen backgrounds -->
-    <color name="divider_color">#E0E0E0</color> <!-- For 1dp lines between list items -->
+    <color name="text_primary">#E6000000</color>
+    <color name="text_secondary">#99000000</color>
 
-    <!-- Text Colors -->
-    <color name="text_primary">#E6000000</color> <!-- 90% black (for titles) -->
-    <color name="text_secondary">#99000000</color> <!-- 60% black (for descriptions) -->
-
-    <!-- Semantic Colors (for meaning) -->
     <color name="success_green">#28A745</color>
     <color name="error_red">#DC3545</color>
-
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-
-
-    <color name="gray">#FF808080</color>
-
 </resources>

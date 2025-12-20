@@ -94,7 +94,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:text="Contact Information"
-                        android:textColor="@color/purple_500"
+                        android:textColor="@color/text_primary"
                         android:textStyle="bold" />
 
                     <LinearLayout

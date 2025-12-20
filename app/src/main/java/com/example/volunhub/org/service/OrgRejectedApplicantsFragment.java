@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgRejectedApplicantsBinding;
 import com.example.volunhub.models.Applicant;
 import com.example.volunhub.org.adapters.ApplicantAdapter;
@@ -21,18 +22,25 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Displays a list of students whose applications have been rejected for a specific service.
+ */
 public class OrgRejectedApplicantsFragment extends Fragment {
 
     private static final String TAG = "OrgRejectedFragment";
     private FragmentOrgRejectedApplicantsBinding binding;
     private FirebaseFirestore db;
     private ApplicantAdapter adapter;
-    final private List<Applicant> applicantList = new ArrayList<>();
+    private final List<Applicant> applicantList = new ArrayList<>();
     private String serviceId;
 
     public OrgRejectedApplicantsFragment() {}
 
-    // Changed to return its own instance
+    /**
+     * Creates a new instance of this fragment with the service ID.
+     * @param serviceId The ID of the service to show applicants for.
+     * @return A new instance of OrgRejectedApplicantsFragment.
+     */
     public static OrgRejectedApplicantsFragment newInstance(String serviceId) {
         OrgRejectedApplicantsFragment fragment = new OrgRejectedApplicantsFragment();
         Bundle args = new Bundle();
@@ -41,6 +49,10 @@ public class OrgRejectedApplicantsFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Retrieves arguments when the fragment is created.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,71 +61,57 @@ public class OrgRejectedApplicantsFragment extends Fragment {
         }
     }
 
+    /**
+     * Inflates the layout for this fragment.
+     * @param inflater LayoutInflater object.
+     * @param container Parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Changed binding class
         binding = FragmentOrgRejectedApplicantsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes the view and loads data.
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         db = FirebaseFirestore.getInstance();
 
         setupRecyclerView();
-        loadRejectedApplicants(); // Changed method name
+        loadRejectedApplicants();
     }
 
+    /**
+     * Sets up the RecyclerView adapter and click listeners.
+     */
     private void setupRecyclerView() {
-        // Define click listener
         ApplicantAdapter.ApplicantClickListener listener = new ApplicantAdapter.ApplicantClickListener() {
             @Override
             public void onAcceptClick(Applicant applicant) {
-                // This tab has no "Accept" button
+                // Not applicable for Rejected tab
             }
             @Override
             public void onRejectClick(Applicant applicant) {
-                // This tab has no "Reject" button
-            }
-            @Override
-            public void onProfileClick(Applicant applicant) {
-                // Qimin: Clicking here should open the student profile
-                String studentId = applicant.getStudentId();
-                Log.d("Qimin_Nav", "Clicked student: " + studentId);
-
-                if (studentId == null || studentId.trim().isEmpty()) {
-                    // Qimin: I am avoiding navigation when studentId is missing
-                    Log.d("Qimin_Nav", "Student ID is null or empty, skipping navigation");
-                    android.widget.Toast.makeText(getContext(),
-                            "Student profile not available", android.widget.Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                try {
-                    androidx.navigation.NavController navController =
-                            androidx.navigation.Navigation.findNavController(requireParentFragment().requireView());
-
-                    com.example.volunhub.org.service.OrgManageServiceFragmentDirections.ActionManageServiceToViewStudent action =
-                            com.example.volunhub.org.service.OrgManageServiceFragmentDirections
-                                    .actionManageServiceToViewStudent(studentId);
-
-                    navController.navigate(action);
-                } catch (Exception e) {
-                    // Qimin: If navigation fails (graph or destination missing), I show a friendly message
-                    Log.e("Qimin_Nav", "Navigation to student profile failed", e);
-                    android.widget.Toast.makeText(getContext(),
-                            "Student Profile feature coming soon (Waiting for Edmond)", android.widget.Toast.LENGTH_SHORT).show();
-                }
+                // Not applicable for Rejected tab
             }
         };
 
-        // Pass "Rejected" as the tabMode
+        // Pass "Rejected" as the tabMode to hide buttons
         adapter = new ApplicantAdapter(getContext(), applicantList, "Rejected", listener);
         binding.recyclerRejectedApplicants.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerRejectedApplicants.setAdapter(adapter);
     }
 
+    /**
+     * Fetches the list of rejected applicants from Firestore.
+     */
     private void loadRejectedApplicants() {
         if (serviceId == null) {
             Log.e(TAG, "Service ID is null, cannot load applicants.");
@@ -122,13 +120,13 @@ public class OrgRejectedApplicantsFragment extends Fragment {
 
         db.collection("applications")
                 .whereEqualTo("serviceId", serviceId)
-                .whereEqualTo("status", "Rejected") // Changed status
+                .whereEqualTo("status", "Rejected")
                 .get()
                 .addOnSuccessListener(applicationSnapshots -> {
                     if (binding == null) return;
                     if (applicationSnapshots.isEmpty()) {
                         Log.d(TAG, "No rejected applicants found.");
-                        binding.textEmptyRejected.setVisibility(View.VISIBLE); // Changed empty text
+                        binding.textEmptyRejected.setVisibility(View.VISIBLE);
                         return;
                     }
 
@@ -164,10 +162,13 @@ public class OrgRejectedApplicantsFragment extends Fragment {
                     });
                 })
                 .addOnFailureListener(e ->
-                    Log.e(TAG, "Error loading rejected applicants", e)
+                        Log.e(TAG, "Error loading rejected applicants", e)
                 );
     }
 
+    /**
+     * Cleans up the binding when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

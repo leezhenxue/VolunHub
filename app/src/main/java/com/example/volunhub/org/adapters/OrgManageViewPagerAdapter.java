@@ -8,21 +8,26 @@ import com.example.volunhub.org.service.OrgAcceptedApplicantsFragment;
 import com.example.volunhub.org.service.OrgPendingApplicantsFragment;
 import com.example.volunhub.org.service.OrgRejectedApplicantsFragment;
 
+/**
+ * Adapter for the ViewPager in the "Manage Service" screen.
+ * It manages the tabs: Pending, Accepted, and Rejected.
+ */
 public class OrgManageViewPagerAdapter extends FragmentStateAdapter {
 
-    // --- 1. Add a field to hold the serviceId ---
     private final String serviceId;
 
-    // --- 2. Modify the constructor to accept the serviceId ---
     public OrgManageViewPagerAdapter(@NonNull Fragment fragment, String serviceId) {
         super(fragment);
         this.serviceId = serviceId;
     }
 
+    /**
+     * Creates the correct fragment based on the tab position.
+     * Passes the serviceId to each fragment so they can load data.
+     */
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        // --- 3. Pass the serviceId to each fragment ---
         switch (position) {
             case 1:
                 return OrgAcceptedApplicantsFragment.newInstance(serviceId);
@@ -33,6 +38,9 @@ public class OrgManageViewPagerAdapter extends FragmentStateAdapter {
         }
     }
 
+    /**
+     * Returns the total number of tabs.
+     */
     @Override
     public int getItemCount() {
         return 3;

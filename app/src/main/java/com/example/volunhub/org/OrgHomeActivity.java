@@ -21,22 +21,27 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * The main container Activity for the Organization side of the app.
+ * It hosts the Navigation Graph and handles the bottom navigation bar.
+ */
 public class OrgHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "OrgHomeActivity";
     private FirebaseAuth mAuth;
     private NavController navController;
 
+    /**
+     * Initializes the activity, sets up navigation, and checks NFR performance metrics.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityOrgHomeBinding binding = ActivityOrgHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // ---------------------------------------------------------
         // [NFR 3 TEST] STOP TIMER: Login/Routing Latency
-        // ---------------------------------------------------------
-        // This checks if we came from Login or MainActivity with a running timer.
         if (BaseRouterActivity.nfrLoginStartTime > 0) {
             long endTime = System.currentTimeMillis();
             long duration = endTime - BaseRouterActivity.nfrLoginStartTime;
@@ -75,6 +80,9 @@ public class OrgHomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Signs the user out and returns them to the main entry point (Login/Splash).
+     */
     public void returnToMain() {
         if (mAuth != null) {
             mAuth.signOut();
@@ -85,6 +93,10 @@ public class OrgHomeActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * Handles the Up button navigation in the toolbar.
+     * @return True if navigation was successful, false otherwise.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         return navController.navigateUp() || super.onSupportNavigateUp();

@@ -31,22 +31,38 @@ import java.util.TimeZone;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 
+/**
+ * Fragment responsible for allowing organizations to create and post new volunteer services.
+ * It handles form validation, date/time selection, and Firestore data entry.
+ */
 public class OrgPostServiceFragment extends Fragment {
 
     private static final String TAG = "OrgPostServiceFragment";
     private FragmentOrgPostServiceBinding binding;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private Date selectedServiceDate; // To store the chosen date
+    private Date selectedServiceDate;
 
     public OrgPostServiceFragment() {}
 
+    /**
+     * Inflates the fragment layout using ViewBinding.
+     * @param inflater The LayoutInflater object.
+     * @param container The parent view container.
+     * @param savedInstanceState Saved state bundle.
+     * @return The root view for the fragment.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentOrgPostServiceBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes components and sets up UI listeners after the view is created.
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -54,18 +70,22 @@ public class OrgPostServiceFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        //added Shao Yee
         setupClearErrors();
         setupDatePicker();
         binding.buttonPostService.setOnClickListener(v -> postService());
     }
 
+    /**
+     * Configures the click listeners for the date input field and its end icon.
+     */
     private void setupDatePicker() {
         binding.editTextPostServiceServiceDate.setOnClickListener(v -> showDatePicker());
         binding.inputLayoutPostServiceServiceDate.setEndIconOnClickListener(v -> showDatePicker());
     }
 
-    // Replace your old showDatePicker with this updated logic
+    /**
+     * Displays a Material Design Date Picker and transitions to the Time Picker upon selection.
+     */
     private void showDatePicker() {
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Select service date")
@@ -73,20 +93,19 @@ public class OrgPostServiceFragment extends Fragment {
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
-            // 1. Capture the selected date (It comes in UTC)
             Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             utcCalendar.setTimeInMillis(selection);
-
-            // 2. Launch the Time Picker immediately
             showTimePicker(utcCalendar);
         });
 
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
-    // Add this new method
+    /**
+     * Displays a Material Design Time Picker and combines selected time with the chosen date.
+     * @param dateCalendar The Calendar object containing the year, month, and day selected previously.
+     */
     private void showTimePicker(Calendar dateCalendar) {
-        // Default to 12:00 PM or current time
         MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
                 .setTimeFormat(TimeFormat.CLOCK_12H)
                 .setHour(12)
@@ -98,45 +117,37 @@ public class OrgPostServiceFragment extends Fragment {
             int hour = timePicker.getHour();
             int minute = timePicker.getMinute();
 
-            // 3. Combine Date + Time
-            // We use a "Local" calendar to build the final object
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
-
-            // Copy Year/Month/Day from the Date Picker (UTC)
             calendar.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
             calendar.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
             calendar.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH));
-
-            // Set Hour/Minute from the Time Picker
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MILLISECOND, 0);
 
-            // 4. Save the final result
             selectedServiceDate = calendar.getTime();
 
-            // 5. Update the UI text
             SimpleDateFormat formatter = new SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault());
             formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
             binding.editTextPostServiceServiceDate.setText(formatter.format(selectedServiceDate));
 
-            //Shao Yee edited
-            // Clear error after selecting a date
             binding.inputLayoutPostServiceServiceDate.setError(null);
             binding.inputLayoutPostServiceServiceDate.setErrorEnabled(false);
-
         });
 
         timePicker.show(getParentFragmentManager(), "TIME_PICKER");
     }
 
+    /**
+     * Validates form inputs and fetches current organization details before saving to Firestore.
+     */
     private void postService() {
         String title = getSafeText(binding.editTextPostServiceTitle.getText());
         String description = getSafeText(binding.editTextPostServiceDescription.getText());
         String requirements = getSafeText(binding.editTextPostServiceRequirements.getText());
         String volunteersNeededStr = getSafeText(binding.editTextPostServiceVolunteersNeeded.getText());
-        String contactNumberNumber = getSafeText(binding.editTextPostServiceContactNumber.getText());
+        String contactNumber = getSafeText(binding.editTextPostServiceContactNumber.getText());
 
         if (TextUtils.isEmpty(title)) {
             binding.inputLayoutPostServiceTitle.setError("Title is required");
@@ -146,16 +157,15 @@ public class OrgPostServiceFragment extends Fragment {
             binding.inputLayoutPostServiceDescription.setError("Description is required");
             return;
         }
-
         if (TextUtils.isEmpty(requirements)) {
             binding.inputLayoutPostServiceRequirements.setError("Requirements is required");
             return;
         }
-        if (TextUtils.isEmpty(contactNumberNumber)) {
-            binding.inputLayoutPostServiceContactNumber.setError("contactNumber number is required");
+        if (TextUtils.isEmpty(contactNumber)) {
+            binding.inputLayoutPostServiceContactNumber.setError("Contact number is required");
             return;
-        } else if (contactNumberNumber.length() < 8 || contactNumberNumber.length() > 10) {
-            binding.inputLayoutPostServiceContactNumber.setError("Please enter 8 to 10 digits");
+        } else if (contactNumber.length() < 8 || contactNumber.length() > 11) {
+            binding.inputLayoutPostServiceContactNumber.setError("Please enter 8 to 11 digits");
             return;
         }
 
@@ -163,6 +173,7 @@ public class OrgPostServiceFragment extends Fragment {
             binding.inputLayoutPostServiceVolunteersNeeded.setError("Volunteers needed is required");
             return;
         }
+
         int volunteersNeeded;
         try {
             volunteersNeeded = Integer.parseInt(volunteersNeededStr);
@@ -180,42 +191,45 @@ public class OrgPostServiceFragment extends Fragment {
             return;
         }
 
-
-
-        // Get current user's orgId and orgName
         String orgId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
         if (orgId == null) {
             Toast.makeText(getContext(), "Error: Organization not logged in.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // You might need to fetch orgName from your Firestore "users" collection
-        // For simplicity, let's assume you have it or fetch it before this
-        // Or pass it as an argument if coming from OrgDashboardFragment
         db.collection("users").document(orgId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String orgName = documentSnapshot.getString("orgCompanyName");
                         if (orgName == null) orgName = "Unknown Organization";
-                        saveServiceToFireStore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNumberNumber);
+                        saveServiceToFirestore(orgId, orgName, title, description, requirements, volunteersNeeded, contactNumber);
                     } else {
                         Toast.makeText(getContext(), "Error: Organization not found.", Toast.LENGTH_SHORT).show();
                     }
                 });
-
     }
-    public void saveServiceToFireStore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contactNumber) {
-        // Create a new service document in the)
+
+    /**
+     * Constructs the data map and writes a new document to the "services" collection in Firestore.
+     * @param orgId The UID of the organization posting the service.
+     * @param orgName The name of the organization.
+     * @param title Title of the volunteer service.
+     * @param description Detailed description of the tasks.
+     * @param requirements Necessary skills or items for volunteers.
+     * @param volunteersNeeded Total slots available.
+     * @param contactNumber Contact phone number for the service.
+     */
+    private void saveServiceToFirestore(String orgId, String orgName, String title, String description, String requirements, int volunteersNeeded, String contactNumber) {
         Map<String, Object> serviceData = new HashMap<>();
         serviceData.put("orgId", orgId);
-        serviceData.put("orgName", orgName); // Make sure this is correct
+        serviceData.put("orgName", orgName);
         serviceData.put("title", title);
         serviceData.put("description", description);
         serviceData.put("requirements", requirements);
         serviceData.put("volunteersNeeded", volunteersNeeded);
-        serviceData.put("volunteersApplied", 0); // Always start with 0
+        serviceData.put("volunteersApplied", 0);
         serviceData.put("serviceDate", selectedServiceDate);
-        serviceData.put("createdAt", FieldValue.serverTimestamp()); // Firestore will set this
+        serviceData.put("createdAt", FieldValue.serverTimestamp());
         serviceData.put("status", "Active");
         serviceData.put("searchTitle", title.toLowerCase());
         serviceData.put("contactNumber", "+60" + contactNumber);
@@ -224,11 +238,7 @@ public class OrgPostServiceFragment extends Fragment {
                 .add(serviceData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(getContext(), "Service posted successfully!", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-
-                    // Navigate back to the OrgServiceFragment
-                    NavController navController = Navigation.findNavController(requireView());
-                    navController.popBackStack(); // Go back to previous screen
+                    Navigation.findNavController(requireView()).popBackStack();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Error posting service: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -236,6 +246,9 @@ public class OrgPostServiceFragment extends Fragment {
                 });
     }
 
+    /**
+     * Cleans up the ViewBinding reference when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -243,17 +256,17 @@ public class OrgPostServiceFragment extends Fragment {
     }
 
     /**
-     * Safely gets text from an EditText, trims it, and handles nulls.
-     * @param editable The Editable text from binding.editText.getText()
-     * @return A trimmed String, or an empty String ("") if it was null.
+     * Safely retrieves trimmed text from an Editable source, handling null values.
+     * @param editable The Editable text from an EditText.
+     * @return A trimmed String, or an empty String if null.
      */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
     }
 
-
-    // SHAO YEE edited
-
+    /**
+     * Attaches text change listeners to all input fields to clear errors dynamically.
+     */
     private void setupClearErrors() {
         clearErrorOnType(binding.inputLayoutPostServiceTitle, binding.editTextPostServiceTitle);
         clearErrorOnType(binding.inputLayoutPostServiceDescription, binding.editTextPostServiceDescription);
@@ -262,6 +275,11 @@ public class OrgPostServiceFragment extends Fragment {
         clearErrorOnType(binding.inputLayoutPostServiceContactNumber, binding.editTextPostServiceContactNumber);
     }
 
+    /**
+     * Helper method to clear the error state of a TextInputLayout as soon as the user types.
+     * @param layout The TextInputLayout displaying the error.
+     * @param editText The child TextInputEditText being monitored.
+     */
     private void clearErrorOnType(com.google.android.material.textfield.TextInputLayout layout,
                                   com.google.android.material.textfield.TextInputEditText editText) {
 
@@ -271,7 +289,6 @@ public class OrgPostServiceFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Clear error as soon as user types valid text
                 if (!s.toString().trim().isEmpty()) {
                     layout.setError(null);
                     layout.setErrorEnabled(false);
@@ -281,16 +298,5 @@ public class OrgPostServiceFragment extends Fragment {
             @Override
             public void afterTextChanged(android.text.Editable s) {}
         });
-    }
-
-    private boolean checkEditTextIsEmpty(com.google.android.material.textfield.TextInputLayout inputLayout, @NonNull EditText field, String errorMessage) {
-        String text = field.getText().toString().trim();
-        if (TextUtils.isEmpty(text)) {
-            inputLayout.setError(errorMessage);
-            return true;
-        } else {
-            inputLayout.setError(null);
-            return false;
-        }
     }
 }

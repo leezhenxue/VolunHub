@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -14,37 +15,51 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.volunhub.databinding.FragmentStudentHistoryBinding;
 import com.example.volunhub.models.Application;
 import com.example.volunhub.student.adapters.StudentApplicationAdapter;
-import com.google.firebase.Timestamp; // <-- Import Timestamp
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
-
+/**
+ * Fragment that displays a history of completed volunteer services.
+ * Filters for applications that were accepted and whose service date has passed.
+ */
 public class StudentHistoryFragment extends Fragment {
 
     private static final String TAG = "StudentHistoryFragment";
     private FragmentStudentHistoryBinding binding;
-    private StudentApplicationAdapter adapter; // Re-use the same adapter
-    private List<Application> historyList = new ArrayList<>();
+    private StudentApplicationAdapter adapter;
+    private final List<Application> historyList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private ListenerRegistration historyListener;
 
     public StudentHistoryFragment() {}
 
+    /**
+     * Inflates the layout for this fragment using ViewBinding.
+     * @param inflater The LayoutInflater object.
+     * @param container The parent view group.
+     * @param savedInstanceState Saved state bundle.
+     * @return The root View of the fragment.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentStudentHistoryBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes Firestore, Auth, and triggers UI setup after the view is created.
+     * @param view The created View.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -56,99 +71,87 @@ public class StudentHistoryFragment extends Fragment {
         loadHistory();
     }
 
+    /**
+     * Configures the RecyclerView and handles navigation to service details when an item is clicked.
+     */
     private void setupRecyclerView() {
         adapter = new StudentApplicationAdapter(getContext(), historyList);
         binding.recyclerStudentHistory.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerStudentHistory.setAdapter(adapter);
 
         adapter.setOnItemClickListener(application -> {
-            // 1. Use the DIRECTIONS from the HOST fragment
-            // (Make sure you import this specific class)
+            // Navigation via the Host Fragment's Directions
             StudentApplicationsFragmentDirections.ActionAppsHostToServiceDetail action =
                     StudentApplicationsFragmentDirections.actionAppsHostToServiceDetail(
                             application.getServiceId()
                     );
-
-            // 2. Find the NavController
-            // Since we are inside a ViewPager, standard findNavController(view) works fine
-            // because the ViewPager is part of the nav host.
             Navigation.findNavController(requireView()).navigate(action);
         });
-
     }
 
+    /**
+     * Attaches a real-time listener to Firestore to fetch accepted applications from the past.
+     * Sorts the results by date in descending order (most recent first).
+     */
     private void loadHistory() {
         if (mAuth.getCurrentUser() == null) return;
         String myId = mAuth.getCurrentUser().getUid();
 
-        // If a Firestore listener already exists, remove it first
-        // This prevents duplicate listeners when switching tabs.
+        // Cleanup existing listener to prevent leaks or duplicates
         if (historyListener != null) {
             historyListener.remove();
-            historyListener = null;
         }
 
-        // Create a real-time Firestore listener
         historyListener = db.collection("applications")
-                .whereEqualTo("studentId", myId)              // Only this student's applications
-                .whereEqualTo("status", "Accepted")          // Only accepted applications
-                .whereLessThan("serviceDate", Timestamp.now())// Service date is in the past → completed
+                .whereEqualTo("studentId", myId)
+                .whereEqualTo("status", "Accepted")
+                .whereLessThan("serviceDate", Timestamp.now()) // Only services in the past
                 .orderBy("serviceDate", Query.Direction.DESCENDING)
                 .addSnapshotListener((querySnapshot, e) -> {
-
-                    // Handle Firestore listener errors
                     if (e != null) {
                         Log.e(TAG, "Error listening to history", e);
-                        binding.textEmptyHistory.setVisibility(View.VISIBLE);
+                        if (binding != null) binding.textEmptyHistory.setVisibility(View.VISIBLE);
                         return;
                     }
 
-                    // If the result is empty, show the empty message
+                    if (binding == null) return;
+
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         Log.d(TAG, "No history found.");
                         historyList.clear();
                         adapter.notifyDataSetChanged();
                         binding.textEmptyHistory.setVisibility(View.VISIBLE);
-                    }
-                    else {
-                        // Data exists → update list in real-time
+                    } else {
                         binding.textEmptyHistory.setVisibility(View.GONE);
                         historyList.clear();
                         historyList.addAll(querySnapshot.toObjects(Application.class));
 
-                        // Sort by serviceDate DESC (most recent past service on top)
-                        Collections.sort(historyList, new Comparator<Application>() {
-                            @Override
-                            public int compare(Application a1, Application a2) {
-                                Date d1 = a1.getServiceDate(); // make sure Application has this getter
-                                Date d2 = a2.getServiceDate();
+                        // Manual sort to ensure consistency with Date objects
+                        Collections.sort(historyList, (a1, a2) -> {
+                            Date d1 = a1.getServiceDate();
+                            Date d2 = a2.getServiceDate();
 
-                                if (d1 == null && d2 == null) return 0;
-                                if (d1 == null) return 1;   // null = older → put at bottom
-                                if (d2 == null) return -1;
+                            if (d1 == null && d2 == null) return 0;
+                            if (d1 == null) return 1;
+                            if (d2 == null) return -1;
 
-                                // d2.compareTo(d1) = DESC (latest date first)
-                                return d2.compareTo(d1);
-                            }
+                            return d2.compareTo(d1); // Descending order
                         });
 
-                        // Notify adapter to refresh RecyclerView
                         adapter.notifyDataSetChanged();
                     }
                 });
     }
 
+    /**
+     * Removes the Firestore listener and cleans up the UI binding reference.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-        // Remove the real-time listener to avoid memory leaks
         if (historyListener != null) {
             historyListener.remove();
-            historyListener = null;
         }
-
-        // Clear view binding reference
         binding = null;
     }
 }

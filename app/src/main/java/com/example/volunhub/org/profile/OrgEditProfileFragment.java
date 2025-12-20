@@ -23,7 +23,6 @@ import com.bumptech.glide.Glide;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
-import com.example.volunhub.Constants;
 import com.example.volunhub.R;
 import com.example.volunhub.databinding.FragmentOrgEditProfileBinding;
 import com.google.android.material.textfield.TextInputLayout;
@@ -34,13 +33,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Handles editing of the Organization's profile.
+ * Supports updating name, description, field, contact number, and profile image.
+ * If the name changes, it performs a cascading update to related documents.
+ */
 public class OrgEditProfileFragment extends Fragment {
 
     private static final String TAG = "OrgEditProfile";
     private FragmentOrgEditProfileBinding binding;
     private DocumentReference orgDocRef;
 
-    // Image Handling
     private Uri selectedImageUri = null;
     private String currentImageUrl = null;
     private boolean isImageRemoved = false;
@@ -48,15 +51,28 @@ public class OrgEditProfileFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
-
     public OrgEditProfileFragment() {}
 
+    /**
+     * Inflates the layout for this fragment.
+     *
+     * @param inflater The LayoutInflater object.
+     * @param container The parent view.
+     * @param savedInstanceState Saved state bundle.
+     * @return The View for the fragment's UI.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentOrgEditProfileBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
+    /**
+     * Initializes UI, listeners, and loads current profile data.
+     *
+     * @param view The created view.
+     * @param savedInstanceState Saved state bundle.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -67,36 +83,26 @@ public class OrgEditProfileFragment extends Fragment {
         if (mAuth.getCurrentUser() == null) return;
         orgDocRef = db.collection("users").document(mAuth.getCurrentUser().getUid());
 
-        // 1. Setup Validation Logic (Clear error when typing)
-        clearErrorOnType(binding.inputLayoutEditOrgName);
-        clearErrorOnType(binding.inputLayoutEditOrgField);
-        clearErrorOnType(binding.inputLayoutEditOrgDesc);
-        clearErrorOnType(binding.inputLayoutEditOrgContact);
-
+        setupValidationListeners();
         setupOrgFieldSpinner();
-
-        // 2. Setup Image Picker
         setupImagePicker();
-
-        // 3. Load Data
         loadCurrentProfileData();
 
-        // 4. Button Listeners
         binding.btnChangePhoto.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
-
         binding.btnRemovePhoto.setOnClickListener(v -> removeProfilePhoto());
-
         binding.buttonSaveOrgProfile.setOnClickListener(v -> validateAndSave());
     }
 
+    /**
+     * Registers the activity result launcher for selecting an image from the gallery.
+     */
     private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
-                // Check size (5MB limit)
                 long fileSizeInBytes = getFileSize(uri);
                 long sizeInMB = fileSizeInBytes / (1024 * 1024);
                 if (sizeInMB > 5) {
-                    Toast.makeText(getContext(), "Image is too large! Please choose an image under 5MB.", Toast.LENGTH_LONG).show();
+                    showToast(R.string.error_image_too_large);
                     return;
                 }
 
@@ -104,31 +110,33 @@ public class OrgEditProfileFragment extends Fragment {
                 isImageRemoved = false;
 
                 binding.imageEditOrgLogo.setImageURI(uri);
-                Toast.makeText(getContext(), "Photo selected", Toast.LENGTH_SHORT).show();
+                showToast(R.string.msg_image_selected);
             }
         });
     }
 
+    /**
+     * Removes the currently selected profile photo and sets the default placeholder.
+     */
     private void removeProfilePhoto() {
         selectedImageUri = null;
         isImageRemoved = true;
-        binding.imageEditOrgLogo.setImageResource(R.drawable.default_profile_picture); // Default placeholder
-        Toast.makeText(getContext(), "Photo removed (Save to apply)", Toast.LENGTH_SHORT).show();
+        binding.imageEditOrgLogo.setImageResource(R.drawable.default_profile_picture);
+        showToast(R.string.msg_image_removed);
     }
 
+    /**
+     * Fetches current organization data from Firestore and populates the fields.
+     */
     private void loadCurrentProfileData() {
         orgDocRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (binding == null) return;
             if (documentSnapshot.exists()) {
                 binding.editTextEditOrgName.setText(documentSnapshot.getString("orgCompanyName"));
                 binding.editTextEditOrgDesc.setText(documentSnapshot.getString("orgDescription"));
                 binding.autoCompleteEditOrgField.setText(documentSnapshot.getString("orgField"), false);
 
-                // Note: Email logic removed
-
-                // Handle Contact (+60 removal)
-                String contact = documentSnapshot.getString("contact");
-                if (contact == null) contact = documentSnapshot.getString("contactNumber");
-
+                String contact = documentSnapshot.getString("contactNumber");
                 if (contact != null) {
                     if (contact.startsWith("+60")) {
                         binding.editTextEditOrgContact.setText(contact.substring(3));
@@ -137,7 +145,6 @@ public class OrgEditProfileFragment extends Fragment {
                     }
                 }
 
-                // Handle Image
                 currentImageUrl = documentSnapshot.getString("profileImageUrl");
                 if (currentImageUrl != null && !currentImageUrl.isEmpty()) {
                     if (getContext() != null) {
@@ -148,30 +155,30 @@ public class OrgEditProfileFragment extends Fragment {
                                 .into(binding.imageEditOrgLogo);
                     }
                 } else {
-                    // Show default if nothing in DB
                     binding.imageEditOrgLogo.setImageResource(R.drawable.default_profile_picture);
                 }
             }
         });
     }
 
+    /**
+     * Validates input fields and initiates the save process if valid.
+     */
     private void validateAndSave() {
-        // Validation Checks
-        if (checkEditTextIsEmpty(binding.inputLayoutEditOrgName, binding.editTextEditOrgName, "Name is required")) return;
-        if (checkEditTextIsEmpty(binding.inputLayoutEditOrgField, binding.autoCompleteEditOrgField, "Field is required")) return;
-        if (checkEditTextIsEmpty(binding.inputLayoutEditOrgDesc, binding.editTextEditOrgDesc, "Description is required")) return;
+        if (checkEditTextIsEmpty(binding.inputLayoutEditOrgName, binding.editTextEditOrgName, R.string.error_company_required)) return;
+        if (checkEditTextIsEmpty(binding.inputLayoutEditOrgField, binding.autoCompleteEditOrgField, R.string.error_field_required)) return;
+        if (checkEditTextIsEmpty(binding.inputLayoutEditOrgDesc, binding.editTextEditOrgDesc, R.string.error_desc_required)) return;
 
         String rawContact = getSafeText(binding.editTextEditOrgContact.getText());
         if (TextUtils.isEmpty(rawContact)) {
-            binding.inputLayoutEditOrgContact.setError("Contact number is required");
+            binding.inputLayoutEditOrgContact.setError(getString(R.string.error_contact_required));
             return;
         }
         if (rawContact.length() < 8 || rawContact.length() > 10) {
-            binding.inputLayoutEditOrgContact.setError("Enter 8-10 digits");
+            binding.inputLayoutEditOrgContact.setError(getString(R.string.error_contact_length));
             return;
         }
 
-        // Prepare Data
         setLoading(true);
 
         String finalContact = rawContact.startsWith("0") ? "+60" + rawContact.substring(1) : "+60" + rawContact;
@@ -182,11 +189,9 @@ public class OrgEditProfileFragment extends Fragment {
         updates.put("orgDescription", getSafeText(binding.editTextEditOrgDesc.getText()));
         updates.put("contactNumber", finalContact);
 
-        // Handle Image Logic
         if (selectedImageUri != null) {
             uploadImageToCloudinary(updates);
         } else if (isImageRemoved) {
-            deleteOldImageIfExist();
             updates.put("profileImageUrl", "");
             updateFirestore(updates);
         } else {
@@ -194,25 +199,24 @@ public class OrgEditProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Uploads the new profile image to Cloudinary and updates the Firestore map on success.
+     *
+     * @param updates The map of user data to be updated.
+     */
     private void uploadImageToCloudinary(Map<String, Object> updates) {
+        showToast(R.string.msg_uploading_image);
         MediaManager.get().upload(selectedImageUri)
                 .option("folder", "profileImages")
                 .unsigned("volunhub")
                 .callback(new UploadCallback() {
-                    @Override
-                    public void onStart(String requestId) {}
-
-                    @Override
-                    public void onProgress(String requestId, long bytes, long totalBytes) {}
+                    @Override public void onStart(String requestId) {}
+                    @Override public void onProgress(String requestId, long bytes, long totalBytes) {}
 
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
                         String newImageUrl = (String) resultData.get("secure_url");
-
-                        deleteOldImageIfExist();
-
                         updates.put("profileImageUrl", newImageUrl);
-
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> updateFirestore(updates));
                         }
@@ -223,110 +227,85 @@ public class OrgEditProfileFragment extends Fragment {
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 setLoading(false);
-                                Toast.makeText(getContext(), "Image upload failed", Toast.LENGTH_SHORT).show();
+                                showToast(R.string.error_upload_failed);
                             });
                         }
                     }
 
-                    @Override
-                    public void onReschedule(String requestId, ErrorInfo error) {}
+                    @Override public void onReschedule(String requestId, ErrorInfo error) {}
                 })
                 .dispatch();
     }
 
-    private void deleteOldImageIfExist() {
-        if (currentImageUrl != null && !currentImageUrl.isEmpty()) {
-            Log.d(TAG, "Old image would be deleted here: " + currentImageUrl);
-        }
-    }
-
+    /**
+     * Updates the Firestore document with the new data.
+     * Performs a batch update for cascading changes if the organization name has changed.
+     *
+     * @param updates The map containing the updated fields.
+     */
     private void updateFirestore(Map<String, Object> updates) {
-        // Check if the name is actually being changed
         String newName = (String) updates.get("orgCompanyName");
 
-        // If no name change, just update the profile normally and exit
+        // If name unchanged, standard update
         if (newName == null) {
             orgDocRef.update(updates)
-                    .addOnSuccessListener(aVoid -> {
-                        if (binding == null) return;
-                        setLoading(false);
-                        Toast.makeText(getContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-                        NavController navController = Navigation.findNavController(requireView());
-                        navController.popBackStack();
-                    })
-                    .addOnFailureListener(e -> {
-                        if (binding == null) return;
-                        setLoading(false);
-                        Toast.makeText(getContext(), "Error updating profile.", Toast.LENGTH_SHORT).show();
-                    });
+                    .addOnSuccessListener(aVoid -> finishUpdate(true))
+                    .addOnFailureListener(e -> finishUpdate(false));
             return;
         }
 
-        // --- CASCADING UPDATE LOGIC ---
-        // If name CHANGED, we must update: 1. User Profile, 2. All Services, 3. All Applications
-
+        // Cascading Update if name changed
         String orgId = mAuth.getCurrentUser().getUid();
 
-        // 1. Find all Services by this Org
-        com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot> servicesTask =
-                db.collection("services").whereEqualTo("orgId", orgId).get();
+        var servicesTask = db.collection("services").whereEqualTo("orgId", orgId).get();
+        var appsTask = db.collection("applications").whereEqualTo("orgId", orgId).get();
 
-        // 2. Find all Applications to this Org
-        com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot> appsTask =
-                db.collection("applications").whereEqualTo("orgId", orgId).get();
-
-        // Wait for both searches to finish
         com.google.android.gms.tasks.Tasks.whenAllSuccess(servicesTask, appsTask)
                 .addOnSuccessListener(results -> {
                     if (binding == null) return;
 
-                    com.google.firebase.firestore.QuerySnapshot serviceSnapshots = (com.google.firebase.firestore.QuerySnapshot) results.get(0);
-                    com.google.firebase.firestore.QuerySnapshot appSnapshots = (com.google.firebase.firestore.QuerySnapshot) results.get(1);
+                    var serviceSnapshots = (com.google.firebase.firestore.QuerySnapshot) results.get(0);
+                    var appSnapshots = (com.google.firebase.firestore.QuerySnapshot) results.get(1);
 
-                    // Create a Batch (atomic update - all or nothing)
-                    com.google.firebase.firestore.WriteBatch batch = db.batch();
+                    var batch = db.batch();
 
-                    // A. Update the Org Profile
                     batch.update(orgDocRef, updates);
 
-                    // B. Update all Services
-                    for (com.google.firebase.firestore.DocumentSnapshot doc : serviceSnapshots) {
-                        // IMPORTANT: Ensure "orgName" matches exactly what you named the field in your Service database
+                    for (var doc : serviceSnapshots) {
+                        batch.update(doc.getReference(), "orgName", newName);
+                    }
+                    for (var doc : appSnapshots) {
                         batch.update(doc.getReference(), "orgName", newName);
                     }
 
-                    // C. Update all Applications
-                    for (com.google.firebase.firestore.DocumentSnapshot doc : appSnapshots) {
-                        // IMPORTANT: Ensure "orgName" matches the field in your Application database
-                        batch.update(doc.getReference(), "orgName", newName);
-                    }
-
-                    // Commit the batch
                     batch.commit()
-                            .addOnSuccessListener(aVoid -> {
-                                if (binding == null) return;
-                                setLoading(false);
-                                Toast.makeText(getContext(), "Profile and all related posts updated!", Toast.LENGTH_SHORT).show();
-                                NavController navController = Navigation.findNavController(requireView());
-                                navController.popBackStack();
-                            })
-                            .addOnFailureListener(e -> {
-                                if (binding == null) return;
-                                setLoading(false);
-                                Log.e(TAG, "Batch update failed", e);
-                                Toast.makeText(getContext(), "Failed to update related records.", Toast.LENGTH_SHORT).show();
-                            });
+                            .addOnSuccessListener(aVoid -> finishUpdate(true))
+                            .addOnFailureListener(e -> finishUpdate(false));
                 })
-                .addOnFailureListener(e -> {
-                    if (binding == null) return;
-                    setLoading(false);
-                    Log.e(TAG, "Failed to find related documents", e);
-                    Toast.makeText(getContext(), "Error preparing updates.", Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> finishUpdate(false));
     }
 
-    // --- Helper Methods ---
+    /**
+     * Finalizes the update process, shows a status message, and navigates back on success.
+     *
+     * @param success True if the update was successful, false otherwise.
+     */
+    private void finishUpdate(boolean success) {
+        if (binding == null) return;
+        setLoading(false);
+        if (success) {
+            showToast(R.string.msg_signup_success);
+            Navigation.findNavController(requireView()).popBackStack();
+        } else {
+            showToast(R.string.error_save_user_data);
+        }
+    }
 
+    /**
+     * Toggles the loading state of the UI.
+     *
+     * @param isLoading True to show progress bar and disable inputs, false otherwise.
+     */
     private void setLoading(boolean isLoading) {
         binding.buttonSaveOrgProfile.setVisibility(isLoading ? View.INVISIBLE : View.VISIBLE);
         binding.progressBarSave.setVisibility(isLoading ? View.VISIBLE : View.GONE);
@@ -334,16 +313,27 @@ public class OrgEditProfileFragment extends Fragment {
         binding.btnChangePhoto.setEnabled(!isLoading);
     }
 
+    /**
+     * Sets up the dropdown adapter for organization fields.
+     */
     private void setupOrgFieldSpinner() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, Constants.ORG_FIELDS);
+                android.R.layout.simple_dropdown_item_1line, getResources().getStringArray(R.array.org_field_options));
         binding.autoCompleteEditOrgField.setAdapter(adapter);
     }
 
-    private boolean checkEditTextIsEmpty(TextInputLayout inputLayout, EditText field, String errorMessage) {
+    /**
+     * Checks if an EditText field is empty and sets an error on its layout.
+     *
+     * @param inputLayout The TextInputLayout to display the error.
+     * @param field The EditText to check.
+     * @param errorId The resource ID of the error message string.
+     * @return True if the field is empty, false otherwise.
+     */
+    private boolean checkEditTextIsEmpty(TextInputLayout inputLayout, EditText field, int errorId) {
         String text = getSafeText(field.getText());
         if (TextUtils.isEmpty(text)) {
-            inputLayout.setError(errorMessage);
+            inputLayout.setError(getString(errorId));
             return true;
         } else {
             inputLayout.setError(null);
@@ -351,36 +341,73 @@ public class OrgEditProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Sets up listeners to clear validation errors when the user starts typing.
+     */
+    private void setupValidationListeners() {
+        clearErrorOnType(binding.inputLayoutEditOrgName);
+        clearErrorOnType(binding.inputLayoutEditOrgField);
+        clearErrorOnType(binding.inputLayoutEditOrgDesc);
+        clearErrorOnType(binding.inputLayoutEditOrgContact);
+    }
+
+    /**
+     * Helper to clear errors from a TextInputLayout on text change.
+     *
+     * @param textInputLayout The layout to monitor.
+     */
     private void clearErrorOnType(TextInputLayout textInputLayout) {
         if (textInputLayout.getEditText() == null) return;
         textInputLayout.getEditText().addTextChangedListener(new android.text.TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (textInputLayout.getError() != null) textInputLayout.setError(null);
             }
-            @Override
-            public void afterTextChanged(android.text.Editable s) {}
+            @Override public void afterTextChanged(android.text.Editable s) {}
         });
     }
 
+    /**
+     * Safely retrieves text from an Editable, handling nulls.
+     *
+     * @param editable The editable object.
+     * @return The trimmed string or empty string.
+     */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
     }
 
+    /**
+     * Gets the file size of a URI in bytes.
+     *
+     * @param uri The URI of the file.
+     * @return The size in bytes, or -1 if failed.
+     */
     private long getFileSize(Uri uri) {
-        android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null) {
-            int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
-            cursor.moveToFirst();
-            long size = cursor.getLong(sizeIndex);
-            cursor.close();
-            return size;
+        try (android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                long size = cursor.getLong(sizeIndex);
+                return size;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking file size", e);
         }
         return -1;
     }
 
+    /**
+     * Shows a toast message safely.
+     *
+     * @param msgId The resource ID of the message.
+     */
+    private void showToast(int msgId) {
+        if (getContext() != null) Toast.makeText(getContext(), msgId, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Cleans up the binding when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

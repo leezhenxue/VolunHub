@@ -9,17 +9,14 @@ import com.google.firebase.auth.FirebaseUser;
 
 /**
  * The initial entry point (Launcher Activity) for the application.
- *
- * <p>This activity displays a Splash/Loading screen while it performs an asynchronous check of the user's authentication state.</p>
- *
- * <p>Its primary purpose is to route the user to the correct destination:</p>
- * <ul>
- * <li>If logged in: Routes to StudentHomeActivity or OrgHomeActivity based on the user's role.</li>
- * <li>If logged out: Routes to LoginActivity.</li>
- * </ul>
+ * It displays a loading screen while checking the user's authentication state.
+ * Based on the result, it routes the user to either the Home screen or the Login screen.
  */
 public class MainActivity extends BaseRouterActivity {
 
+    /**
+     * Sets up the layout view when the activity is created.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,13 +25,10 @@ public class MainActivity extends BaseRouterActivity {
     }
 
     /**
-     * Called when the activity becomes visible to the user.
-     *
-     * <p>Checks for a currently signed-in Firebase user.</p>
-     * <ul>
-     * <li>If found: Routes the user based on their role (Student vs Org).</li>
-     * <li>If not found: Redirects to the LoginActivity.</li>
-     * </ul>
+     * Called when the activity becomes visible.
+     * It checks if a user is already signed in via Firebase.
+     * If signed in, it routes to the dashboard (NFR 3 Test starts here).
+     * If not signed in, it redirects to the Login page.
      */
     @Override
     protected void onStart() {
@@ -47,8 +41,8 @@ public class MainActivity extends BaseRouterActivity {
             // User is already logged in, measuring time to route to Home
             BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
             Log.d("NFRTest", "NFR 3 - Scenario 2 (Auto-Login) Started at: " + BaseRouterActivity.nfrLoginStartTime);
+
             routeUser(currentUser.getUid());
         }
     }
-
 }
