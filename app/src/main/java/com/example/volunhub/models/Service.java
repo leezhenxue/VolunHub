@@ -5,8 +5,8 @@ import com.google.firebase.firestore.ServerTimestamp;
 import java.util.Date;
 
 /**
- * Represents a document in the "services" collection.
- * Contains details about a volunteer opportunity posted by an Organization.
+ * Represents a document in the "services" collection in Firestore.
+ * Contains all details about a volunteer opportunity posted by an Organization.
  */
 public class Service {
     private String orgId;
@@ -17,20 +17,24 @@ public class Service {
     private long volunteersNeeded;
     private long volunteersApplied;
     private Date serviceDate;
+
     @ServerTimestamp
     private Date createdAt;
     private String status;
-    @Exclude
-    private String documentId;
     private String searchTitle;
     private String contactNumber;
 
-    // Empty constructor for Firestore
+    @Exclude
+    private String documentId;
+
+    /**
+     * Empty constructor required by Firestore for automatic data mapping.
+     */
     public Service() {}
 
     public Service(String orgId, String orgName, String title, String description, String requirements,
                    long volunteersNeeded, long volunteersApplied, Date serviceDate, Date createdAt,
-                   String status, String searchTitle, String contactNum) {
+                   String status, String searchTitle, String contactNumber) {
         this.orgId = orgId;
         this.orgName = orgName;
         this.title = title;
@@ -42,19 +46,14 @@ public class Service {
         this.createdAt = createdAt;
         this.status = status;
         this.searchTitle = searchTitle;
-        this.contactNum = contactNum;
+        this.contactNumber = contactNumber;
     }
 
-    public Service(String title, String description, String contactNum) {
+    public Service(String title, String description, String contactNumber) {
         this.title = title;
         this.description = description;
-        this.contactNum = contactNum;
+        this.contactNumber = contactNumber;
     }
-
-    @Exclude
-    public String getDocumentId() { return documentId; }
-    public void setDocumentId(String documentId) { this.documentId = documentId; }
-    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
 
     // --- Getters ---
     public String getOrgId() { return orgId; }
@@ -68,4 +67,10 @@ public class Service {
     public Date getCreatedAt() { return createdAt; }
     public String getStatus() { return status; }
     public String getContactNumber() { return contactNumber; }
+    public String getSearchTitle() { return searchTitle; }
+    @Exclude
+    public String getDocumentId() { return documentId; }
+
+    // --- Setters ---
+    public void setDocumentId(String documentId) { this.documentId = documentId; }
 }

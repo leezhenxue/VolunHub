@@ -32,11 +32,6 @@
             android:name=".student.StudentHomeActivity"
             android:exported="false">
         </activity>
-        <activity
-            android:name=".org.EditJobActivity"
-            android:exported="false"
-            android:parentActivityName=".org.OrgHomeActivity">
-        </activity>
     </application>
 
 </manifest>

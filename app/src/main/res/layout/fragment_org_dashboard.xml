@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".org.fragments.OrgDashboardFragment">
+    tools:context=".org.dashboard.OrgDashboardFragment">
 
     <ScrollView
-        android:id="@+id/dashboardScrollView"
+        android:id="@+id/dashboard_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
@@ -17,14 +17,14 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
-            android:id="@+id/dashboardContainer"
+            android:id="@+id/dashboard_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardQuickStats"
+                android:id="@+id/card_quick_stats"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -38,7 +38,7 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/textQuickStatsTitle"
+                        android:id="@+id/text_quick_stats_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/dashboard_quick_stats"
@@ -59,7 +59,7 @@
                             android:layout_weight="1">
 
                             <TextView
-                                android:id="@+id/textStatsVolunteers"
+                                android:id="@+id/text_stats_volunteers"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/preview_number"
@@ -80,7 +80,7 @@
                             android:layout_weight="1">
 
                             <TextView
-                                android:id="@+id/textStatsJobs"
+                                android:id="@+id/text_stats_jobs"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/preview_number"
@@ -90,7 +90,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/dashboard_jobs" />
+                                android:text="@string/dashboard_services" />
                         </LinearLayout>
 
                         <!-- Pending Applicants -->
@@ -102,7 +102,7 @@
                             android:layout_weight="1">
 
                             <TextView
-                                android:id="@+id/textStatsPending"
+                                android:id="@+id/text_stats_pending"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/preview_number"
@@ -120,7 +120,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardUpcomingEvents"
+                android:id="@+id/card_upcoming_events"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -136,15 +136,15 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/dashboard_upcoming_events"
+                        android:text="@string/dashboard_upcoming_event"
                         android:textAppearance="?attr/textAppearanceTitleMedium" />
 
                     <TextView
-                        android:id="@+id/textUpcomingEvents"
+                        android:id="@+id/text_upcoming_event"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingTop="8dp"
-                        android:text="@string/dashboard_no_upcoming_events"
+                        android:text="@string/dashboard_no_upcoming_event"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
                         tools:text="Beach Cleanup – Feb 3, 9:00 AM" />
 
@@ -159,7 +159,7 @@
                 android:paddingBottom="8dp" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerRecentActivity"
+                android:id="@+id/recycler_recent_activity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
@@ -176,7 +176,6 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/dashboard_manage_services"
         android:src="@drawable/ic_add"
-        app:tint="@android:color/white"
         app:contentDescription="@string/dashboard_add_service"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

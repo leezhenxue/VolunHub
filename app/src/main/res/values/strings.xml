@@ -6,9 +6,14 @@
     <!-- Main Activity -->
     <string name="checking_account_credentials">Checking account credentials...</string>
 
+    <!-- Base Router Activity -->
+    <string name="error_login_failed">Login failed. Please try again.</string>
+
     <!-- Login Fragment and Sign Up Fragment -->
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
+
+    <string name="error_email_required">Email is required</string>
 
     <!-- Login Fragment -->
     <string name="title_login">Login</string>
@@ -16,6 +21,15 @@
     <string name="action_login">Login to account</string>
     <string name="link_forgot_password">Forgot Password?</string>
     <string name="link_go_to_sign_up">Don\'t have an account? Sign Up</string>
+
+    <string name="error_login_empty">Email and password cannot be empty</string>
+    <string name="toast_login_failed">Login failed. Please try again.</string>
+    <string name="toast_auth_failed">Authentication failed.</string>
+    <string name="dialog_title_reset_password">Reset Password</string>
+    <string name="dialog_msg_reset_password">Enter your email to receive a password reset link.</string>
+    <string name="btn_send">Send</string>
+    <string name="toast_reset_email_sent">Reset link sent to your email.</string>
+    <string name="toast_reset_email_failed">Failed to send reset email. Please try again.</string>
 
     <!-- Sign Up Fragment -->
     <string name="title_sign_up">Sign Up</string>
@@ -31,13 +45,40 @@
     <string name="radio_male">Male</string>
     <string name="radio_female">Female</string>
     <string name="hint_experience">Volunteer Experience (Optional)</string>
-    <string name="hint_about_me">About Me</string>
+    <string name="hint_self_introduction">Self Introduction</string>
     <string name="hint_company_name">Company Name</string>
     <string name="hint_field">Field</string>
     <string name="hint_description">Description</string>
     <string name="btn_sign_up">Sign Up</string>
     <string name="action_complete_signup">Complete registration</string>
     <string name="link_go_to_login">Already have an account? Login</string>
+
+    <string name="error_invalid_email">Invalid email format</string>
+    <string name="error_email_in_use">Email is already in use</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_password_length">Password length must be between 6 and 20 characters</string>
+    <string name="error_password_complexity">Password must contain 1 uppercase, 1 lowercase, 1 number, and 1 symbol</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_contact_required">Contact number is required</string>
+    <string name="error_contact_length">Please enter 8 to 11 digits</string>
+    <string name="error_role_required">Please select a role (Student or Organization)</string>
+    <string name="error_name_required">Full Name is required</string>
+    <string name="error_name_no_numbers">Name cannot contain numbers</string>
+    <string name="error_age_required">Age is required</string>
+    <string name="error_age_range">Age must be between 13 and 100</string>
+    <string name="error_gender_required">Please select a gender</string>
+    <string name="error_intro_required">Introduction is required</string>
+    <string name="error_company_required">Company Name is required</string>
+    <string name="error_desc_required">Description is required</string>
+    <string name="error_field_required">Field is required</string>
+    <string name="error_image_too_large">Image is too large! Please choose an image under 5MB.</string>
+    <string name="error_upload_failed">Image upload failed.</string>
+    <string name="msg_uploading_image">Uploading image...</string>
+    <string name="msg_image_selected">Image selected</string>
+    <string name="msg_image_removed">Image removed</string>
+    <string name="msg_signup_success">Sign up successful</string>
+    <string name="error_signup_failed">Sign up failed.</string>
+    <string name="error_save_user_data">Error: Could not save user data.</string>
 
 
 
@@ -58,7 +99,7 @@
     <string name="label_date_time">Date &amp; Time</string>
     <string name="label_volunteers">Volunteers</string>
     <string name="label_description">Description</string>
-    <string name="label_requirements">Requirements</string>
+    <string name="label_requirements">Requirements: \n%s</string>
 
     <string name="btn_apply_now">Apply Now</string>
     <string name="btn_cancel_application">Cancel Application</string>
@@ -91,6 +132,7 @@
 
     <!-- Student My Applications Fragment -->
     <string name="text_empty_applications">You have no active applications.</string>
+    <string name="text_my_applications">My Applicatons</string>
 
     <!-- Student Saved List Fragment -->
     <string name="text_empty_saved">Your saved list is empty.</string>
@@ -115,11 +157,11 @@
     <!-- Org Dashboard Fragment -->
     <string name="dashboard_quick_stats">Quick Stats</string>
     <string name="dashboard_volunteers">Volunteers</string>
-    <string name="dashboard_jobs">Jobs</string>
+    <string name="dashboard_services">Services</string>
     <string name="dashboard_pending">Pending</string>
 
-    <string name="dashboard_upcoming_events">Upcoming Events</string>
-    <string name="dashboard_no_upcoming_events">No upcoming events</string>
+    <string name="dashboard_upcoming_event">Upcoming Event</string>
+    <string name="dashboard_no_upcoming_event">No upcoming event</string>
 
     <string name="dashboard_recent_activity">Recent Activity</string>
 
@@ -157,7 +199,6 @@
     <string name="tab_rejected">Rejected</string>
     <string name="error_student_profile_not_available">Student profile not available</string>
     <string name="error_nav_profile">Error opening profile</string>
-    <string name="label_requirements">Requirements: %1$s</string>
     <string name="label_applicants">Applicants: %1$d / %2$d</string>
     <string name="error_service_not_found">Error: Service not found</string>
     <string name="error_loading_data">Error loading data</string>

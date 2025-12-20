@@ -17,17 +17,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * An abstract base class that provides common authentication and navigation logic.
- * Activities that need to check user roles or handle routing (like MainActivity and LoginActivity)
- * should extend this class to inherit shared functionality.
+ * Used by MainActivity and AuthActivity.
  */
 public abstract class BaseRouterActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseRouterActivity";
-
-    /** Shared instance of FirebaseAuth for child activities. */
+    public static long nfrLoginStartTime = 0;
     public FirebaseAuth mAuth;
-
-    /** Shared instance of FirebaseFirestore for child activities. */
     public FirebaseFirestore db;
 
     @Override
@@ -38,24 +34,17 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetches the user's document from Firestore and routes them based on their 'role'.
-     *
-     * <ul>
-     * <li>Student -> StudentHomeActivity</li>
-     * <li>Organization -> OrgHomeActivity</li>
-     * <li>Unknown/Error -> LoginActivity (and signs out)</li>
-     * </ul>
-     *
-     * @param uid The unique user ID (UID) from Firebase Authentication.
+     * Fetches the user's document from Firestore and routes them based on their role.
+     * Routes Students to StudentHomeActivity and Organizations to OrgHomeActivity.
+     * @param uid The unique user ID from Firebase Authentication.
      */
     public void routeUser(String uid) {
         DocumentReference docRef = db.collection("users").document(uid);
         docRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
+                if (document != null && document.exists()) {
                     Log.d(TAG, "User data found in Firestore.");
-
                     String role = document.getString("role");
 
                     if ("Student".equals(role)) {
@@ -65,34 +54,36 @@ public abstract class BaseRouterActivity extends AppCompatActivity {
                         Log.d(TAG, "Role is Organization. Sending to OrgHomeActivity.");
                         goToActivity(OrgHomeActivity.class);
                     } else {
-                        Log.w(TAG, "Role is null or unknown. Sending to LoginActivity.");
-                        Toast.makeText(this, "User role not found.", Toast.LENGTH_SHORT).show();
-                        mAuth.signOut();
-                        goToActivity(AuthActivity.class);
+                        handleRoutingError("Role is null or unknown.");
                     }
                 } else {
-                    Log.w(TAG, "No user document found in Firestore!");
-                    Toast.makeText(this, "User data not found.", Toast.LENGTH_SHORT).show();
-                    mAuth.signOut();
-                    goToActivity(AuthActivity.class);
+                    handleRoutingError("No user document found in Firestore.");
                 }
             } else {
-                Log.w(TAG, "routeUser get failed with ", task.getException());
-                Toast.makeText(this, "Failed to read user data.", Toast.LENGTH_SHORT).show();
-                mAuth.signOut();
-                goToActivity(AuthActivity.class);
+                handleRoutingError("Failed to read user data: " + task.getException());
             }
         });
     }
 
     /**
-     * A helper method to start a new Activity and finish the current one.
-     * This prevents the user from navigating back to the previous screen (e.g., Login or Splash).
-     *
-     * @param activityClass The class of the Activity to start (e.g., StudentHomeActivity.class).
+     * Handles routing failures by logging the error, showing a toast, signing out, and redirecting to Login.
+     * @param errorMessage The error description for logging.
+     */
+    private void handleRoutingError(String errorMessage) {
+        Log.w(TAG, errorMessage);
+        Toast.makeText(this, R.string.error_login_failed, Toast.LENGTH_SHORT).show(); // Ensure this string exists or use literal
+        mAuth.signOut();
+        goToActivity(AuthActivity.class);
+    }
+
+    /**
+     * Helper method to start a new Activity and clear the previous one from the back stack.
+     * This prevents the user from returning to the Login or Splash screen by pressing Back.
+     * @param activityClass The class of the Activity to start.
      */
     public void goToActivity(Class<?> activityClass) {
         Intent intent = new Intent(this, activityClass);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

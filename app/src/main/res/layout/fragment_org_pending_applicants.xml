@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".org.fragments.service.OrgPendingApplicantsFragment">
+    tools:context=".org.service.OrgPendingApplicantsFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_pending_applicants"
@@ -35,7 +35,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Accept All Eligible"
+        android:text="Accept All"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

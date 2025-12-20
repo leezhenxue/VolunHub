@@ -65,12 +65,33 @@
                             android:src="@drawable/default_profile_picture"
                             app:shapeAppearanceOverlay="@style/CircularShapeAppearance" />
 
-                        <Button
-                            android:id="@+id/button_upload_profile_picture"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/btn_upload_image" />
+                            android:orientation="vertical">
+
+                            <Button
+                                android:id="@+id/button_upload_profile_picture"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/btn_upload_image" />
+
+                            <Button
+                                android:id="@+id/button_remove_profile_picture"
+                                style="@style/Widget.MaterialComponents.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:paddingTop="0dp"
+                                android:paddingBottom="0dp"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:minHeight="0dp"
+                                android:layout_gravity="start"
+                                android:text="Remove"
+                                android:textColor="@android:color/holo_red_light"
+                                android:visibility="gone" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -120,7 +141,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/text_input_layout_contact"
+                        android:id="@+id/text_input_layout_contact_number"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
@@ -128,7 +149,7 @@
                         app:prefixText="+60 "
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/edit_text_sign_up_contact"
+                            android:id="@+id/edit_text_sign_up_contact_number"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="phone"
@@ -196,7 +217,8 @@
                                 android:id="@+id/edit_text_student_age"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="number" />
+                                android:inputType="number"
+                                android:maxLength="2"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <TextView
@@ -244,7 +266,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
-                            android:hint="@string/hint_about_me"
+                            android:hint="@string/hint_self_introduction"
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/edit_text_student_introduction"

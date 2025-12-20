@@ -7,15 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The global Application class for VolunHub.
- * This class runs once when the app process is created, before any Activity.
- * It is responsible for initializing global libraries like Cloudinary (used to store profile image).
+ * Runs once when the app starts to initialize global libraries like Cloudinary for image storage.
  */
 public class MyApplication extends Application {
 
     /**
-     * Called when the application is starting, before any other application objects have been created.
-     * Initializes the Cloudinary MediaManager with the app's configuration.
+     * Initializes the Cloudinary configuration with the specific cloud name.
+     * This ensures image uploading works throughout the app.
      */
     @Override
     public void onCreate() {

@@ -5,8 +5,8 @@ import com.google.firebase.firestore.ServerTimestamp;
 import java.util.Date;
 
 /**
- * Represents a document in the "applications" collection.
- * Links a Student to a Service with a status (Pending/Accepted/Rejected).
+ * Represents a document in the "applications" collection in Firestore.
+ * It links a Student to a Service and tracks the status (Pending, Accepted, Rejected).
  */
 public class Application {
     private String orgId;
@@ -16,14 +16,19 @@ public class Application {
     private String status;
     private String studentId;
     private Date serviceDate;
+
     @ServerTimestamp
     private Date appliedAt;
+
     @Exclude
     private String documentId;
-    @Exclude
-    private boolean serviceRemoved = false; // Flag to mark if the service has been deleted
 
-    // Empty constructor for Firestore
+    @Exclude
+    private boolean serviceRemoved = false;
+
+    /**
+     * Empty constructor required by Firestore for automatic data mapping.
+     */
     public Application() {}
 
     // --- Getters ---
@@ -38,9 +43,11 @@ public class Application {
     @Exclude
     public String getDocumentId() { return documentId; }
     @Exclude
-    public void setDocumentId(String documentId) { this.documentId = documentId; }
-    @Exclude
     public boolean isServiceRemoved() { return serviceRemoved; }
+
+    // --- Setters ---
+    @Exclude
+    public void setDocumentId(String documentId) { this.documentId = documentId; }
     @Exclude
     public void setServiceRemoved(boolean serviceRemoved) { this.serviceRemoved = serviceRemoved; }
 }

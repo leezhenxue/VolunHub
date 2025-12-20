@@ -1,6 +1,7 @@
 package com.example.volunhub;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.volunhub.auth.AuthActivity;
 import com.example.volunhub.databinding.ActivityMainBinding;
@@ -8,14 +9,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 /**
  * The initial entry point (Launcher Activity) for the application.
- *
- * <p>This activity displays a Splash/Loading screen while it performs an asynchronous check of the user's authentication state.</p>
- *
- * <p>Its primary purpose is to route the user to the correct destination:</p>
- * <ul>
- * <li>If logged in: Routes to StudentHomeActivity or OrgHomeActivity based on the user's role.</li>
- * <li>If logged out: Routes to LoginActivity.</li>
- * </ul>
+ * It displays a loading screen while checking the user's authentication state.
+ * Based on the result, it routes the user to either the Student/Org Home screen or the Login screen.
  */
 public class MainActivity extends BaseRouterActivity {
 
@@ -27,13 +22,10 @@ public class MainActivity extends BaseRouterActivity {
     }
 
     /**
-     * Called when the activity becomes visible to the user.
-     *
-     * <p>Checks for a currently signed-in Firebase user.</p>
-     * <ul>
-     * <li>If found: Routes the user based on their role (Student vs Org).</li>
-     * <li>If not found: Redirects to the LoginActivity.</li>
-     * </ul>
+     * Called when the activity becomes visible.
+     * It checks if a user is already signed in via Firebase.
+     * If signed in, it routes to the Student/Org Home Page.
+     * If not signed in, it redirects to the Login Page.
      */
     @Override
     protected void onStart() {
@@ -42,8 +34,10 @@ public class MainActivity extends BaseRouterActivity {
         if (currentUser == null) {
             goToActivity(AuthActivity.class);
         } else {
+            BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
+            Log.d("NFRTest", "Auto login (Routing) time start calculate at: " + BaseRouterActivity.nfrLoginStartTime);
+
             routeUser(currentUser.getUid());
         }
     }
-
 }
