@@ -19,9 +19,6 @@ import com.example.volunhub.databinding.FragmentLoginBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-/**
- * Handles user login logic including validation, Firebase authentication, and password reset.
- */
 public class LoginFragment extends Fragment {
 
     private static final String TAG = "LoginFragment";
@@ -47,29 +44,22 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
 
-        // Handle Login Button Click
         binding.buttonLogin.setOnClickListener(v -> {
             String email = getSafeText(binding.editTextLoginEmail.getText());
             String password = getSafeText(binding.editTextLoginPassword.getText());
-
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), R.string.error_login_empty, Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            // [NFR 3 TEST] Start Timer for Manual Login Latency
             BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
-            Log.d("NFRTest", "NFR 3 - Scenario 1 (Manual Login) Started at: " + BaseRouterActivity.nfrLoginStartTime);
-
+            Log.d("NFRTest", "Manual login time start calculate at: " + BaseRouterActivity.nfrLoginStartTime);
             signIn(email, password);
         });
 
-        // Navigate to Sign Up Screen
         binding.buttonGoToSignUp.setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_login_to_sign_up)
         );
 
-        // Show Forgot Password Dialog
         binding.textViewForgotPassword.setOnClickListener(v ->
                 showForgotPasswordDialog()
         );
@@ -103,7 +93,7 @@ public class LoginFragment extends Fragment {
 
     /**
      * Sends a password reset email using Firebase Auth.
-     * * @param email The email address entered in the dialog.
+     * @param email The email address entered in the dialog.
      */
     private void sendPasswordResetEmail(String email) {
         mAuth.sendPasswordResetEmail(email).addOnCompleteListener(task -> {
@@ -119,7 +109,7 @@ public class LoginFragment extends Fragment {
 
     /**
      * Authenticates the user with Firebase and routes them to the correct dashboard.
-     * * @param email The user's email.
+     * @param email The user's email.
      * @param password The user's password.
      */
     private void signIn(String email, String password) {
@@ -127,8 +117,6 @@ public class LoginFragment extends Fragment {
             if (task.isSuccessful()) {
                 Log.d(TAG, "signInWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
-
-                // If login successful, ask BaseRouterActivity to direct user to Student or Org home
                 if (user != null && getActivity() instanceof BaseRouterActivity) {
                     ((BaseRouterActivity) getActivity()).routeUser(user.getUid());
                 } else {
@@ -143,7 +131,7 @@ public class LoginFragment extends Fragment {
 
     /**
      * Helper to get trimmed text from an EditText and handle null values.
-     * * @param editable The raw text object from the view.
+     * @param editable The raw text object from the view.
      * @return A trimmed String, or an empty string if input was null.
      */
     private String getSafeText(android.text.Editable editable) {

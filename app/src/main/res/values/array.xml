@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="gender_options">
-        <item>Male</item>
-        <item>Female</item>
-        <item>Other</item>
-        <item>Prefer not to say</item>
-    </string-array>
-
     <string-array name="org_field_options">
         <item>Environment</item>
         <item>Education</item>

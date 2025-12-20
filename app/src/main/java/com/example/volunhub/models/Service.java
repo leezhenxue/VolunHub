@@ -72,6 +72,5 @@ public class Service {
     public String getDocumentId() { return documentId; }
 
     // --- Setters ---
-    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
     public void setDocumentId(String documentId) { this.documentId = documentId; }
 }

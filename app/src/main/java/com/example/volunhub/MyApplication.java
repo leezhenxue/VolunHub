@@ -7,8 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The global Application class that runs once when the app starts.
- * It is responsible for initializing global libraries like Cloudinary for image storage.
+ * Runs once when the app starts to initialize global libraries like Cloudinary for image storage.
  */
 public class MyApplication extends Application {
 

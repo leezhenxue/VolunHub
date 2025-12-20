@@ -10,13 +10,10 @@ import com.google.firebase.auth.FirebaseUser;
 /**
  * The initial entry point (Launcher Activity) for the application.
  * It displays a loading screen while checking the user's authentication state.
- * Based on the result, it routes the user to either the Home screen or the Login screen.
+ * Based on the result, it routes the user to either the Student/Org Home screen or the Login screen.
  */
 public class MainActivity extends BaseRouterActivity {
 
-    /**
-     * Sets up the layout view when the activity is created.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,8 +24,8 @@ public class MainActivity extends BaseRouterActivity {
     /**
      * Called when the activity becomes visible.
      * It checks if a user is already signed in via Firebase.
-     * If signed in, it routes to the dashboard (NFR 3 Test starts here).
-     * If not signed in, it redirects to the Login page.
+     * If signed in, it routes to the Student/Org Home Page.
+     * If not signed in, it redirects to the Login Page.
      */
     @Override
     protected void onStart() {
@@ -37,10 +34,8 @@ public class MainActivity extends BaseRouterActivity {
         if (currentUser == null) {
             goToActivity(AuthActivity.class);
         } else {
-            // [NFR TEST] SCENARIO 2: AUTO LOGIN
-            // User is already logged in, measuring time to route to Home
             BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
-            Log.d("NFRTest", "NFR 3 - Scenario 2 (Auto-Login) Started at: " + BaseRouterActivity.nfrLoginStartTime);
+            Log.d("NFRTest", "Auto login time start calculate at: " + BaseRouterActivity.nfrLoginStartTime);
 
             routeUser(currentUser.getUid());
         }

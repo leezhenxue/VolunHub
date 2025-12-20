@@ -17,21 +17,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * An abstract base class that provides common authentication and navigation logic.
- * Activities like MainActivity and LoginFragment use this to route users based on their role.
+ * Used by MainActivity and AuthActivity.
  */
 public abstract class BaseRouterActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseRouterActivity";
-
-    // Static variable for NFR 3 (Performance Testing)
     public static long nfrLoginStartTime = 0;
-
     public FirebaseAuth mAuth;
     public FirebaseFirestore db;
 
-    /**
-     * Initializes Firebase instances when the activity is created.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

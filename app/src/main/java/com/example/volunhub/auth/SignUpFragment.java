@@ -64,7 +64,6 @@ public class SignUpFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
         setupValidationListeners();
 
         // Force uppercase input for Student Name
@@ -86,7 +85,6 @@ public class SignUpFragment extends Fragment {
         binding.autoCompleteOrgField.setOnClickListener(v ->
                 binding.autoCompleteOrgField.showDropDown()
         );
-
         String[] orgFields = getResources().getStringArray(R.array.org_field_options);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, orgFields);
         binding.autoCompleteOrgField.setAdapter(adapter);
@@ -158,28 +156,26 @@ public class SignUpFragment extends Fragment {
             return;
         }
 
-        toggleLoading(true);
+        binding.progressBarSignup.setVisibility(View.VISIBLE);
+        binding.buttonSignUp.setEnabled(false);
 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
-            toggleLoading(false);
+            binding.progressBarSignup.setVisibility(View.GONE);
+            binding.buttonSignUp.setEnabled(true);
             if (task.isSuccessful()) {
                 Log.d(TAG, "createUserWithEmail:success");
                 FirebaseUser user = mAuth.getCurrentUser();
-
                 if (user == null) {
                     showToast(R.string.error_signup_failed);
                     return;
                 }
-
                 String uid = user.getUid();
                 Map<String, Object> userData = buildUserData(email, role);
-
                 if (selectedImageUri != null) {
                     uploadImageToCloudinary(uid, selectedImageUri, userData);
                 } else {
                     saveMapToFirestore(uid, userData);
                 }
-
             } else {
                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
                 if (task.getException() instanceof FirebaseAuthUserCollisionException) {
@@ -194,7 +190,7 @@ public class SignUpFragment extends Fragment {
 
     /**
      * Validates all input fields based on the selected role using regex and length checks.
-     * * @param email User email
+     * @param email User email
      * @param password User password
      * @param retypePassword Password confirmation
      * @param role Selected role
@@ -261,9 +257,11 @@ public class SignUpFragment extends Fragment {
                 showToast(R.string.error_gender_required);
                 isValid = false;
             }
+
             if (checkEditTextIsEmpty(binding.textInputLayoutStudentIntroduction, binding.editTextStudentIntroduction, R.string.error_intro_required)) {
                 isValid = false;
             }
+
         } else if (role.equals("Organization")) {
             if (checkEditTextIsEmpty(binding.textInputLayoutOrgCompanyName, binding.editTextOrgCompanyName, R.string.error_company_required)) isValid = false;
             if (checkEditTextIsEmpty(binding.textInputLayoutOrgDescription, binding.editTextOrgDescription, R.string.error_desc_required)) isValid = false;
@@ -275,7 +273,7 @@ public class SignUpFragment extends Fragment {
 
     /**
      * Helper to check if an EditText is empty and set an error on its layout if so.
-     * * @param inputLayout The layout wrapper to display the error.
+     * @param inputLayout The layout wrapper to display the error.
      * @param field The EditText to check.
      * @param errorStringId The Resource ID of the error message string.
      * @return True if empty, false otherwise.
@@ -293,7 +291,7 @@ public class SignUpFragment extends Fragment {
 
     /**
      * Constructs a Map object containing all relevant user data to be saved in Firestore.
-     * * @param email Validated email.
+     * @param email Validated email.
      * @param role Selected role.
      * @return A Map of key-value pairs representing the user profile.
      */
@@ -327,7 +325,7 @@ public class SignUpFragment extends Fragment {
 
     /**
      * Uploads the selected profile image to Cloudinary and saves the resulting URL.
-     * * @param uid User ID.
+     * @param uid User ID.
      * @param imageUri Image file URI.
      * @param userData User data map to append the image URL to.
      */
@@ -396,6 +394,10 @@ public class SignUpFragment extends Fragment {
         clearErrorOnType(binding.textInputLayoutContactNumber);
     }
 
+    /**
+     * Attaches a TextWatcher to clear the error message on a layout as soon as the user types.
+     * @param textInputLayout The layout to attach the listener to.
+     */
     private void clearErrorOnType(TextInputLayout textInputLayout) {
         if (textInputLayout.getEditText() == null) return;
         textInputLayout.getEditText().addTextChangedListener(new android.text.TextWatcher() {
@@ -407,6 +409,11 @@ public class SignUpFragment extends Fragment {
         });
     }
 
+    /**
+     * Checks the size of the selected image file.
+     * @param uri Image file URI.
+     * @return file size or 0 if has error.
+     */
     private long getFileSizeInMB(Uri uri) {
         try (android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, null, null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
@@ -420,17 +427,21 @@ public class SignUpFragment extends Fragment {
         return 0;
     }
 
+    /**
+     * Helper to get a String from an Editable.
+     * @param editable Editable to get text from.
+     * @return String or empty if null.
+     */
     private String getSafeText(android.text.Editable editable) {
         return (editable == null) ? "" : editable.toString().trim();
     }
 
+    /**
+     * Displays a Toast message.
+     * @param stringId
+     */
     private void showToast(int stringId) {
         if (getContext() != null) Toast.makeText(getContext(), stringId, Toast.LENGTH_SHORT).show();
-    }
-
-    private void toggleLoading(boolean isLoading) {
-        binding.progressBarSignup.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        binding.buttonSignUp.setEnabled(!isLoading);
     }
 
     /**
