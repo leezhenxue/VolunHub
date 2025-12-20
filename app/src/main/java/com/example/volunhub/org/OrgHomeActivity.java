@@ -41,17 +41,16 @@ public class OrgHomeActivity extends AppCompatActivity {
         ActivityOrgHomeBinding binding = ActivityOrgHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // [NFR 3 TEST] STOP TIMER: Login/Routing Latency
         if (BaseRouterActivity.nfrLoginStartTime > 0) {
             long endTime = System.currentTimeMillis();
             long duration = endTime - BaseRouterActivity.nfrLoginStartTime;
 
-            Log.d("NFRTest", "NFR 3 - Login/Routing Complete (Activity Created). Duration: " + duration + "ms");
+            Log.d("NFRTest", "Login/Routing Complete (Activity Created). Duration: " + duration + "ms");
 
             if (duration < 5000) {
-                Log.d("NFRTest", "NFR 3 - TEST PASSED (Success < 5.0s)");
+                Log.d("NFRTest", "Login/Routing Test Passed (Success < 5.0s)");
             } else {
-                Log.d("NFRTest", "NFR 3 - TEST FAILED (Too Slow)");
+                Log.d("NFRTest", "Login/Routing Test Failed (Too Slow)");
             }
 
             // Reset to 0 so navigation inside the app doesn't trigger false positives

@@ -35,7 +35,7 @@ public class MainActivity extends BaseRouterActivity {
             goToActivity(AuthActivity.class);
         } else {
             BaseRouterActivity.nfrLoginStartTime = System.currentTimeMillis();
-            Log.d("NFRTest", "Auto login time start calculate at: " + BaseRouterActivity.nfrLoginStartTime);
+            Log.d("NFRTest", "Auto login (Routing) time start calculate at: " + BaseRouterActivity.nfrLoginStartTime);
 
             routeUser(currentUser.getUid());
         }

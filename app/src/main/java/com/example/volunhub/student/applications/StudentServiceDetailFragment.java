@@ -376,7 +376,7 @@ public class StudentServiceDetailFragment extends Fragment {
     private void createApplication() {
         String studentId = mAuth.getCurrentUser().getUid();
         long startTime = System.currentTimeMillis();
-        Log.d("NFRTest", "P2 - Action Started: Apply clicked at " + startTime);
+        Log.d("NFRTest", "Action Started: Apply clicked at " + startTime);
 
         Map<String, Object> newApp = new HashMap<>();
         newApp.put("studentId", studentId);
@@ -392,7 +392,7 @@ public class StudentServiceDetailFragment extends Fragment {
                 .addOnSuccessListener(ref -> {
                     if (binding == null) return;
                     long duration = System.currentTimeMillis() - startTime;
-                    Log.d("NFRTest", "P2 - Feedback shown. Duration: " + duration + "ms");
+                    Log.d("NFRTest", "Feedback shown. Duration: " + duration + "ms");
 
                     Toast.makeText(getContext(), "Application submitted!", Toast.LENGTH_SHORT).show();
                     checkAndSetButtonState();

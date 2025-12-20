@@ -78,7 +78,7 @@ public class StudentHomeFragment extends Fragment {
         navController = Navigation.findNavController(view);
 
         startTime = System.currentTimeMillis();
-        Log.d("NFRTest", "P1 - Start Fetching Services: " + startTime);
+        Log.d("NFRTest", "Start Fetching Services: " + startTime);
 
         setupRecyclerView();
         setupSearch();
@@ -175,10 +175,10 @@ public class StudentHomeFragment extends Fragment {
                     if (querySnapshot == null || querySnapshot.isEmpty()) {
                         long endTime = System.currentTimeMillis();
                         long duration = endTime - startTime;
-                        Log.d("NFRTest", "P1 - List Loaded (Empty). Duration: " + duration + "ms");
+                        Log.d("NFRTest", "List Loaded (Empty). Duration: " + duration + "ms");
 
                         int count = (querySnapshot == null) ? 0 : querySnapshot.size();
-                        Log.d("NFRTest", "SC1 - Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
+                        Log.d("NFRTest", "Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
 
                         binding.emptyView.setVisibility(View.VISIBLE);
                         binding.recyclerStudentHomeServices.setVisibility(View.GONE);
@@ -200,13 +200,12 @@ public class StudentHomeFragment extends Fragment {
                     }
                     adapter.notifyDataSetChanged();
 
-                    // [NFR 1 & 7 TEST] CAPTURE EVIDENCE HERE
                     long endTime = System.currentTimeMillis();
                     long duration = endTime - startTime;
                     int count = querySnapshot.size();
 
-                    Log.d("NFRTest", "P1 - List Rendered Successfully. Duration: " + duration + "ms");
-                    Log.d("NFRTest", "SC1 - Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
+                    Log.d("NFRTest", "List Rendered Successfully. Duration: " + duration + "ms");
+                    Log.d("NFRTest", "Pagination: Initial Batch Loaded. Count: " + count + " items. (Limit set to " + PAGE_SIZE + ")");
 
                     lastVisibleDocument = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                     isLoading = false;
@@ -263,9 +262,8 @@ public class StudentHomeFragment extends Fragment {
 
                     adapter.notifyItemRangeInserted(startPosition, querySnapshot.size());
 
-                    // [NFR 7 TEST] PROOF OF PAGINATION (PAGE 2)
                     int count = querySnapshot.size();
-                    Log.d("NFRTest", "SC1 - Pagination: Next Batch Loaded. Count: " + count + " items.");
+                    Log.d("NFRTest", "Pagination: Next Batch Loaded. Count: " + count + " items.");
 
                     lastVisibleDocument = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                     isLoading = false;
